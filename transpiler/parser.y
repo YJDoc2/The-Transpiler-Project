@@ -4,7 +4,6 @@
     #include<string.h>
     #include "variables.h"
     #include "parserfn.h"
-    
 %}
 
 %union{
@@ -20,10 +19,10 @@
 %token BREAK CONTINUE ELSE FOR IF
 %token RETURN WHILE
 
-%token TRUE FALSE I
+%token I
 %token IN NOT RAW USE
 %token DECL 
-%token <s> IDENTIFIER
+%token <s> IDENTIFIER BOOLVAL
 
 %token <s> INTNUM FLOATNUM
 
@@ -41,7 +40,7 @@ program : stmtlist
 ;
 
 stmtlist :/* nothing */
-    | stmtlist error
+    | stmtlist error {yyerror("unknown token %s\n",yytext);}
     | stmtlist stmt
 ;
 
@@ -71,12 +70,19 @@ declaration : DECL modifier type IDENTIFIER {create_var($2,$3,$4,yylineno); free
     | modifier type IDENTIFIER    {add_var($1,$2,$3,yylineno); free($3);}
     | assignment
 
-assignment : modifier type IDENTIFIER '=' value {add_var_assg($1,$2,$3,$5,yylineno);free($3);free($5);}
+assignment : modifier type IDENTIFIER '=' value {lhst = $2;verify_types();add_var_assg($1,$2,$3,$5,yylineno);free($3);free($5);}
 
-value : cmplxnum
-    | INTNUM
-    | FLOATNUM
-    | IDENTIFIER
+value : cmplxnum {rhst = COMPLEX_TYPE;}
+    | INTNUM {rhst = INT_TYPE;}
+    | FLOATNUM {rhst = FLOAT_TYPE;}
+    | IDENTIFIER { Variable *_t = lookup($$);
+                    if(_t == NULL){
+                        yyerror("Undefined variable %s",$$);
+                    }else{
+                        rhst = _t->t;
+                    }}
+    | BOOLVAL   {rhst = BOOL_TYPE;}
+
 
 cmplxnum : value '+' value '*' I {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
                                     strcat(_t,$1);strcat(_t,"+");strcat(_t,$3);strcat(_t,"*I");

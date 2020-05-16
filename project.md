@@ -1,8 +1,7 @@
 ## Stage 1
 
 create basic required Data structures, define lexer and parser.
-Parse RAW and assignment staements, (without variable checks ?)
-(check for duplicate declarations, but not for assg type)
+Parse RAW and assignment staement , checks for suplicate assignment and valid types for basic types.
 
 ## Stage 2
 

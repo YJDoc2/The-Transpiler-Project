@@ -61,11 +61,13 @@ static                              { yylval.m = STATIC_TYPE; return STATIC; }
 
 I                                    {return I;}
 
-[-]?0[0-7]* | [-+]?[0-9]* | [-+]?0[Xx][0-9a-fA-f]+                 { yylval.s = strdup(yytext); return INTNUM; }
+true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
+
+[-]?0[0-7]*|[-]?[0-9]*|[-]?0[Xx][0-9a-fA-f]+      { yylval.s = strdup(yytext); return INTNUM; }
 
 [-]?([0-9]*\.[0-9]+|[0-9]+([Ee][-+]?[0-9]+)?)       { yylval.s = strdup(yytext); return FLOATNUM; }
 
 [a-zA-Z][a-zA-Z0-9]*           {yylval.s = strdup(yytext); return IDENTIFIER;}
 
-.                               {fprintf(stderr,"unknown token '%s'",yytext);}
+.                               {fprintf(stderr,"unknown token '%s'\n",yytext);}
 %%

@@ -2,6 +2,7 @@
 
 #include <errno.h>
 #include <string.h>
+
 static int errs = 0;
 
 FILE *code = NULL;
