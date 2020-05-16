@@ -19,13 +19,18 @@ typedef struct {
   char *name;
   type t;
   modifier m;
+  int declaration;
 } Variable;
 
 Hashmap varmap;
 
-// void __init_vars__();
+void __init_vars__();
+void __cleanup_vars__();
 
-void decl_var(modifier m, type t, char *ident);
-void assg_decl_var(modifier m, type t, char *ident, char *val);
+void create_var(modifier m, type t, char *ident, int line);
+void add_var(modifier m, type t, char *ident, int line);
+void add_var_assg(modifier m, type t, char *ident, char *val, int line);
+
+Variable *lookup(char *ident);
 
 #endif

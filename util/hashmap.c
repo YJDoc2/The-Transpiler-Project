@@ -87,4 +87,15 @@ hashpair hm_delete(Hashmap *hm, void *key) {
   hashpair ret = {NULL, NULL};
   return ret;
 }
-void delete_hashmap(Hashmap hm) { free(hm.start); }
+void delete_hashmap(Hashmap hm, void (*delfn)(void *, void *)) {
+  hashpair *start = hm.start;
+  hashpair *_t = start;
+
+  while (_t < start + hm.size) {
+    if (_t->key != NULL && _t->value != NULL) {
+      delfn(_t->key, _t->value);
+    }
+    ++_t;
+  }
+  free(start);
+}

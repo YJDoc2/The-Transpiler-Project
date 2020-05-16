@@ -2,6 +2,7 @@
 
 create basic required Data structures, define lexer and parser.
 Parse RAW and assignment staements, (without variable checks ?)
+(check for duplicate declarations, but not for assg type)
 
 ## Stage 2
 

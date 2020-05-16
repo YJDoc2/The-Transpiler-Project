@@ -34,7 +34,7 @@
 %type <t> type
 %type <m> modifier
 
-%type <s> value
+%type <s> value cmplxnum
 
 %%
 program : stmtlist
@@ -51,7 +51,7 @@ stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
 ;
 
 rawlist : /* nothing */
-    | rawlist RAWLINE   {printcode("%s",$2);}
+    | rawlist RAWLINE   {printcode("%s",$2); free($2);}
 
 type : INT
     | LONG
@@ -67,22 +67,45 @@ modifier : /* nothing */ {$$ = NONE_TYPE; }
     | STATIC
 
 
-declaration : DECL modifier type IDENTIFIER {/*decl_var($2,$3,$4); ONLY ADD NO DECLARATION */}
-    | modifier type IDENTIFIER    {decl_var($1,$2,$3);}
+declaration : DECL modifier type IDENTIFIER {create_var($2,$3,$4,yylineno); free($4); }
+    | modifier type IDENTIFIER    {add_var($1,$2,$3,yylineno); free($3);}
     | assignment
 
-assignment : modifier type IDENTIFIER '=' value {assg_decl_var($1,$2,$3,$5);}
+assignment : modifier type IDENTIFIER '=' value {add_var_assg($1,$2,$3,$5,yylineno);free($3);free($5);}
 
-value : INTNUM
+value : cmplxnum
+    | INTNUM
     | FLOATNUM
     | IDENTIFIER
 
-
+cmplxnum : value '+' value '*' I {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
+                                    strcat(_t,$1);strcat(_t,"+");strcat(_t,$3);strcat(_t,"*I");
+                                    $$ = (char*)_t;}
+    | value '-' value '*' I {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
+                                    strcat(_t,$1);strcat(_t,"-");strcat(_t,$3);strcat(_t,"*I");
+                                    $$ = (char*)_t;}
 %%
+
+void printhm(Hashmap *hm) {
+  hashpair *start = hm->start;
+  hashpair *t = start;
+  while (t < start + hm->size) {
+    if (t->key == NULL) {
+      printf("---\n");
+    } else {
+      printf("key :%s,value: %s\n", (char *)t->key, ((Variable *)t->value)->name);
+    }
+    ++t;
+  }
+  printf("\n");
+}
 
 void main(int argc , char **argv){
 
     __init_io__("./test.t",NULL);
+     __init_vars__();
     yyparse();
+    //printhm(&varmap);
+    __cleanup_vars__();
     __close_io__();
 }

@@ -1,6 +1,8 @@
 #ifndef __HASHMAP__
 #define __HASHMAP__
 
+#define ll_clear(ll) ll_delete((ll), ll_nullfn)
+
 typedef struct {
   void *key;
   void *value;
@@ -20,5 +22,6 @@ int hm_add(Hashmap *hm, void *key, void *value);
 void *hm_get(Hashmap *hm, void *key);
 void rehash(Hashmap *hm);
 hashpair hm_delete(Hashmap *hm, void *key);
-void delete_hashmap(Hashmap hm);
+void delete_hashmap(Hashmap hm, void (*delfn)(void *, void *));
+
 #endif

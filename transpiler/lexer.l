@@ -12,7 +12,7 @@
 
 %%
                         /* GENERAL SYMBOL LIST */
-\{|\}|!|=|;                   {return yytext[0];}
+\{|\}|!|=|"+"|"-"|"*"|;                   {return yytext[0];}
 
 
 
@@ -59,9 +59,11 @@ void                                { yylval.t = VOID_TYPE;return VOID;}
 const                               { yylval.m = CONST_TYPE; return CONST; }
 static                              { yylval.m = STATIC_TYPE; return STATIC; }
 
-[-+]?0[0-7]* | [-+]?[0-9]* | [-+]?0[Xx][0-9a-fA-f]+                 { yylval.s = strdup(yytext); return INTNUM; }
+I                                    {return I;}
 
-[-+]?([0-9]*\.[0-9]+|[0-9]+([Ee][-+]?[0-9]+)?)       { yylval.s = strdup(yytext); return FLOATNUM; }
+[-]?0[0-7]* | [-+]?[0-9]* | [-+]?0[Xx][0-9a-fA-f]+                 { yylval.s = strdup(yytext); return INTNUM; }
+
+[-]?([0-9]*\.[0-9]+|[0-9]+([Ee][-+]?[0-9]+)?)       { yylval.s = strdup(yytext); return FLOATNUM; }
 
 [a-zA-Z][a-zA-Z0-9]*           {yylval.s = strdup(yytext); return IDENTIFIER;}
 
