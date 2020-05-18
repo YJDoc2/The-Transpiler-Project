@@ -1,7 +1,7 @@
 %{
     #include<stdio.h>
     #include "../lib/variables.h"
-    #include "parser.tab.h"
+    #include "parser.h"
     int lastState = 0;
     int yyerror(char *s);
 %}

@@ -1,5 +1,5 @@
 
-#line 3 "lex.yy.c"
+#line 3 "<stdout>"
 
 #define  YY_INT_ALIGNED short int
 
@@ -555,12 +555,12 @@ char *yytext;
 #line 2 "lexer.l"
     #include<stdio.h>
     #include "../lib/variables.h"
-    #include "parser.tab.h"
+    #include "parser.h"
     int lastState = 0;
     int yyerror(char *s);
-#line 562 "lex.yy.c"
+#line 562 "<stdout>"
 
-#line 564 "lex.yy.c"
+#line 564 "<stdout>"
 
 #define INITIAL 0
 #define RAWSTATE 1
@@ -782,7 +782,7 @@ YY_DECL
 
 #line 15 "lexer.l"
                         /* GENERAL SYMBOL LIST */
-#line 786 "lex.yy.c"
+#line 786 "<stdout>"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1001,7 +1001,7 @@ YY_RULE_SETUP
 #line 74 "lexer.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1005 "lex.yy.c"
+#line 1005 "<stdout>"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(RAWSTATE):
 	yyterminate();
