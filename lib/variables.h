@@ -11,6 +11,7 @@ typedef enum {
   COMPLEX_TYPE,
   LONG_TYPE,
   SHORT_TYPE,
+  STRING_TYPE,
   VOID_TYPE,
 } type;
 

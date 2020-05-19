@@ -8,7 +8,8 @@
 #define VAR_HM_INIT_SIZE 10
 
 char* type_arr[] = {
-    "int", "float", "double", "bool", "float complex", "long", "short", "void",
+    "int",  "float", "double", "bool", "float complex",
+    "long", "short", "char *", "void",
 };
 
 char* mod_arr[] = {"", "const", "static"};
@@ -22,14 +23,14 @@ void __del_var__(void* a, void* b) { free(a); }
 void __cleanup_vars__() { delete_hashmap(varmap, __del_var__); }
 
 void create_var(modifier m, type t, char* ident, int line) {
-  char* _t =
+  char* _name =
       strdup(ident);  // MUST duplicate as Parser discards ident ptr after call
   Variable* v = (Variable*)malloc(sizeof(Variable));
-  v->name = _t;
+  v->name = _name;
   v->m = m;
   v->t = t;
   v->declaration = line;
-  hm_add(&varmap, _t, v);
+  hm_add(&varmap, _name, v);
 }
 
 void add_var(modifier m, type t, char* ident, int line) {

@@ -5,6 +5,7 @@
     #include "variables.h"
     #include "parserfn.h"
     #include "actions.h"
+    #include "literals.h"
 %}
 
 %union{
@@ -55,26 +56,25 @@ stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
     | printactstmt {yyerror("missing ;");}
 ;
 
-printactstmt : PRINTACT '(' arglist ')' {perform_action("print");}
+printactstmt : PRINTACT '(' arglist ')' {perform_action("print");clear_literals();}
 
 arglist : /* nothing */
-    | arglist IDENTIFIER ','  {
-                    Variable *v = lookup_var($2);
-                    if(v == NULL){
-                        yyerror("Undefined variable %s",$2);
-                    }else{
-                        ll_add(&arglist,v);
-                    }
-                    }
-    | arglist IDENTIFIER {
-                    Variable *v = lookup_var($2);
-                    if(v == NULL){
-                        yyerror("Undefined variable %s",$2);
-                    }else{
-                        ll_add(&arglist,v);
-                    }
-                    }
+    | arglist args
+    | arglist ',' args
 ;
+
+args : IDENTIFIER  {Variable *v = lookup_var($1);
+                    if(v == NULL){
+                        yyerror("Undefined variable %s",$1);
+                    }else{
+                        ll_add(&arglist,v);
+                    }}
+        | INTNUM {void* v = add_literal(NONE_TYPE,INT_TYPE,$1);
+                    ll_add(&arglist,v);}
+        | FLOATNUM {void* v = add_literal(NONE_TYPE,DOUBLE_TYPE,$1);
+                    ll_add(&arglist,v);}
+        | BOOLVAL {void* v = add_literal(NONE_TYPE,BOOL_TYPE,$1);
+                    ll_add(&arglist,v);}
 
 
 rawlist : /* nothing */
@@ -145,8 +145,10 @@ void main(int argc , char **argv){
     __init_io__("./test.ttp",NULL);
     __init_vars__();
     __init_actions__();
+    __init_literals__();
     yyparse();
     //printhm(&varmap);
+    __cleanup_literals__();
     __cleanup_actions__();
     __cleanup_vars__();
     __cleanup_io__();

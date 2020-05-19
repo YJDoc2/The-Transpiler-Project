@@ -6,7 +6,7 @@ Linked_list arglist;
 Hashmap act_map;
 
 char* type_str_arr[] = {
-    "%d", "%f", "%lf", "%s", "%f %s %fi", "%ld", "%d", "void",
+    "%d", "%f", "%lf", "%s", "%f %s %fi", "%ld", "%d", "%s", "void",
 };
 
 void __print_var__(void* v) {
@@ -16,7 +16,6 @@ void __print_var__(void* v) {
       yyerror("error : cannot print value of variable of type void : %s",
               var->name);
       break;
-
     default:
       printcode("%s ", type_str_arr[var->t]);
       break;
@@ -34,6 +33,8 @@ void action_print() {
     if (var->t == COMPLEX_TYPE) {
       printcode("crealf(%s),cimagf(%s)>=0 ? \"+\" : \"\\b\",cimagf(%s)",
                 var->name, var->name, var->name);
+    } else if (var->t == BOOL_TYPE) {
+      printcode("%s ? \"true\":\"false\"", var->name);
     } else {
       printcode("%s", var->name);
     }
