@@ -4,6 +4,7 @@
     #include<string.h>
     #include "variables.h"
     #include "parserfn.h"
+    #include "actions.h"
 %}
 
 %union{
@@ -15,6 +16,9 @@
 %token <t> BOOL COMPLEX
 %token <m> CONST STATIC
 %token <t> DOUBLE FLOAT LONG SHORT VOID INT
+
+// temp
+%token PRINTACT
 
 %token BREAK CONTINUE ELSE FOR IF
 %token RETURN WHILE
@@ -47,10 +51,35 @@ stmtlist :/* nothing */
 stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
     | declaration ';'
     | declaration {yyerror("missing ;");}
+    | printactstmt ';'
+    | printactstmt {yyerror("missing ;");}
 ;
+
+printactstmt : PRINTACT '(' arglist ')' {perform_action("print");}
+
+arglist : /* nothing */
+    | arglist IDENTIFIER ','  {
+                    Variable *v = lookup_var($2);
+                    if(v == NULL){
+                        yyerror("Undefined variable %s",$2);
+                    }else{
+                        ll_add(&arglist,v);
+                    }
+                    }
+    | arglist IDENTIFIER {
+                    Variable *v = lookup_var($2);
+                    if(v == NULL){
+                        yyerror("Undefined variable %s",$2);
+                    }else{
+                        ll_add(&arglist,v);
+                    }
+                    }
+;
+
 
 rawlist : /* nothing */
     | rawlist RAWLINE   {printcode("%s",$2); free($2);}
+;
 
 type : INT
     | LONG
@@ -60,36 +89,41 @@ type : INT
     | BOOL
     | COMPLEX
     | VOID
+;
 
 modifier : /* nothing */ {$$ = NONE_TYPE; }
     | CONST
     | STATIC
-
+;
 
 declaration : DECL modifier type IDENTIFIER {create_var($2,$3,$4,yylineno); free($4); }
     | modifier type IDENTIFIER    {add_var($1,$2,$3,yylineno); free($3);}
     | assignment
-
+;
 assignment : modifier type IDENTIFIER '=' value {lhst = $2;verify_types();add_var_assg($1,$2,$3,$5,yylineno);free($3);free($5);}
-
+;
 value : cmplxnum {rhst = COMPLEX_TYPE;}
     | INTNUM {rhst = INT_TYPE;}
     | FLOATNUM {rhst = FLOAT_TYPE;}
-    | IDENTIFIER { Variable *_t = lookup($$);
+    | IDENTIFIER { Variable *_t = lookup_var($$);
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$$);
                     }else{
                         rhst = _t->t;
                     }}
     | BOOLVAL   {rhst = BOOL_TYPE;}
-
+;
 
 cmplxnum : value '+' value '*' I {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
                                     strcat(_t,$1);strcat(_t,"+");strcat(_t,$3);strcat(_t,"*I");
                                     $$ = (char*)_t;}
-    | value '-' value '*' I {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
+    | value '-' value '*' I      {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
                                     strcat(_t,$1);strcat(_t,"-");strcat(_t,$3);strcat(_t,"*I");
                                     $$ = (char*)_t;}
+    | value value '*' I{void *_t = calloc(1,strlen($1)+strlen($2)+1); 
+                                    strcat(_t,$1);strcat(_t,$2);strcat(_t,"*I");
+                                    $$ = (char*)_t;}
+;
 %%
 
 void printhm(Hashmap *hm) {
@@ -108,10 +142,12 @@ void printhm(Hashmap *hm) {
 
 void main(int argc , char **argv){
 
-    __init_io__("./test.t",NULL);
-     __init_vars__();
+    __init_io__("./test.ttp",NULL);
+    __init_vars__();
+    __init_actions__();
     yyparse();
     //printhm(&varmap);
+    __cleanup_actions__();
     __cleanup_vars__();
-    __close_io__();
+    __cleanup_io__();
 }

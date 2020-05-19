@@ -1,5 +1,6 @@
 #ifndef __VARIABLES__
 #define __VARIABLES__
+#include "common.h"
 #include "hashmap.h"
 
 typedef enum {
@@ -32,7 +33,7 @@ void create_var(modifier m, type t, char *ident, int line);
 void add_var(modifier m, type t, char *ident, int line);
 void add_var_assg(modifier m, type t, char *ident, char *val, int line);
 
-Variable *lookup(char *ident);
+Variable *lookup_var(char *ident);
 int verify_types();
 
 #endif

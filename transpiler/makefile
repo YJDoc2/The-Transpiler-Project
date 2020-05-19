@@ -1,20 +1,24 @@
 VPATH = ../lib ../util
 
 CPPFLAGS = -I../util -I../lib
-CFLAGS = -c
+CFLAGS = -c -g
 
-all : tpp
+all : ttp
 
-tpp : lexer.c parser.o libutil.a liblib.a
+ttp : parser.o lexer.o libutil liblib
 	cp ../lib/liblib.a ./
 	cp ../util/libutil.a ./
-	$(CC) $(CPPFLAGS) lexer.c parser.o -L. liblib.a libutil.a -ottp
+	$(CC) $(CPPFLAGS) lexer.o parser.o -L. liblib.a libutil.a -ottp
 
-libutil.a :
+libutil :
 	cd ../util && make
 
-liblib.a :
+liblib :
 	cd ../lib && make
+
+lexer.o : lexer.l
+	flex -t lexer.l > lexer.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) lexer.c
 
 parser.o: parser.y
 	bison -d parser.y

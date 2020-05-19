@@ -16,7 +16,7 @@ int yyerror(char *s, ...) {
   vfprintf(stderr, s, ap);
   fprintf(stderr, "\n");
   if (errs > ERR_LIM) {
-    __close_io__();
+    __cleanup_io__();
     exit(EXIT_FAILURE);
   }
 }
@@ -24,13 +24,13 @@ int yyerror(char *s, ...) {
 int __init_io__(char *infile, char *outfile) {
   if (infile == NULL) {
     fprintf(stderr, "No input file found. exiting...\n");
-    __close_io__();
+    __cleanup_io__();
     exit(1);
   }
   yyin = fopen(infile, "r");
   if (yyin == NULL) {
     perror("cannot open given codefile");
-    __close_io__();
+    __cleanup_io__();
     exit(EXIT_FAILURE);
   }
   if (outfile == NULL) {
@@ -49,19 +49,19 @@ int __init_io__(char *infile, char *outfile) {
   code = fopen(codename, "w");
   if (code == NULL) {
     perror("cannot create new file for compiling");
-    __close_io__();
+    __cleanup_io__();
     exit(EXIT_FAILURE);
   }
   header = fopen(headname, "w");
   if (header == NULL) {
     perror("cannot create new file for compiling");
-    __close_io__();
+    __cleanup_io__();
     exit(EXIT_FAILURE);
   }
   return 0;
 }
 
-int __close_io__() {
+int __cleanup_io__() {
   if (code != NULL) {
     fclose(code);
   }

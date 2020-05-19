@@ -1,0 +1,18 @@
+RAW <{
+#include<stdio.h>
+#include<complex.h>
+void main(){
+    const int t =5;
+}>
+
+@decl int t;
+const int c = 3554;
+const float g = 354.336;
+complex d = 9+7*I;
+complex e = 9- 5*I;
+
+print(t,c,g,g,d,e);
+
+RAW<{
+}
+}>

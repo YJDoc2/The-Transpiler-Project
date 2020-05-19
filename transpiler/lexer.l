@@ -14,7 +14,7 @@
                         /* GENERAL SYMBOL LIST */
 \{|\}|!|=|"+"|"-"|"*"|;                   {return yytext[0];}
 
-
+"("|")"|","                                {return yytext[0];}
 
                                 /* RULES FOR RAW input*/
                                 /* In code, this expects Syntax RAW <{...}>
@@ -62,6 +62,8 @@ static                              { yylval.m = STATIC_TYPE; return STATIC; }
 I                                    {return I;}
 
 true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
+
+print                                {return PRINTACT;}
 
 [-]?0[0-7]*|[-]?[0-9]*|[-]?0[Xx][0-9a-fA-f]+      { yylval.s = strdup(yytext); return INTNUM; }
 

@@ -19,6 +19,6 @@ int printcode(char* s, ...);
 // int printheader();  //! ???ARGS???
 
 int __init_io__(char* infile, char* outfile);
-int __close_io__();
+int __cleanup_io__();
 
 #endif

@@ -38,7 +38,7 @@ void ll_for_each(Linked_list *ll, void (*each)(void *)) {
 }
 
 void ll_delete(Linked_list *ll, void (*delfn)(void *)) {
-  if (!ll->start) return;
+  if (ll->start == NULL) return;
   link *t = ll->start;
   link *_t = t;
   while (t != NULL) {
@@ -52,4 +52,4 @@ void ll_delete(Linked_list *ll, void (*delfn)(void *)) {
   ll->size = 0;
 }
 
-void nullfn(void *p) { return; }
+void ll_nullfn(void *p) { return; }
