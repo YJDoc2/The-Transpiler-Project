@@ -18,6 +18,10 @@ char* type_str_arr[] = {
 
 void __print_var__(void* v) {
   Variable* var = (Variable*)v;
+  if (var->is_raw && var->t == STRING_TYPE) {
+    printcode("%s", type_str_arr[var->t]);
+    return;
+  }
   switch (var->t) {
     case VOID_TYPE:
       yyerror("error : cannot print value of variable of type void : %s",
@@ -57,6 +61,15 @@ void __input_var__(void* v) {
   char* _tempname;
   if (var->m == CONST_TYPE) {
     yyerror("error : cannot change value of constant variable %s", var->name);
+    return;
+  }
+  if (var->is_raw) {
+    if (var->t != STRING_TYPE) {
+      printcode("printf(\"%%s \",\"%s\");\n", var->name);
+    } else {
+      printcode("printf(\"%%s\",%s);\n", var->name);
+    }
+
     return;
   }
   switch (var->t) {

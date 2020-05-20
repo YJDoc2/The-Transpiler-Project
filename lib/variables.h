@@ -2,6 +2,7 @@
 #define __VARIABLES__
 #include "common.h"
 #include "hashmap.h"
+#include "stdbool.h"
 
 typedef enum {
   INT_TYPE,
@@ -18,6 +19,7 @@ typedef enum {
 typedef enum { NONE_TYPE, CONST_TYPE, STATIC_TYPE } modifier;
 
 typedef struct {
+  bool is_raw;
   char *name;
   type t;
   modifier m;

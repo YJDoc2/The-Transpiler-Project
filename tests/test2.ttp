@@ -1,0 +1,23 @@
+RAW <{
+#include<stdio.h>
+#include <stdbool.h>
+#include<complex.h>
+void main(){
+    const int t =5;
+    bool e = false;
+}>
+
+@decl const int t;
+const int c = 3554;
+int g = 354;
+@decl bool e;
+complex d = t+c*I;
+bool b = true;
+
+print("hello world!\n");
+input("Give an int : ",g,"Now give a complex number (real and img without i) : ",d);
+print("Int given was :" ,g,"\nComplex given was : ",d);
+
+RAW<{
+}
+}>

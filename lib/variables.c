@@ -30,6 +30,7 @@ void create_var(modifier m, type t, char* ident, int line) {
   v->m = m;
   v->t = t;
   v->declaration = line;
+  v->is_raw = false;
   hm_add(&varmap, _name, v);
 }
 
@@ -70,6 +71,12 @@ int verify_types() {
   }
   if (lhst == BOOL_TYPE) {
     if (rhst != BOOL_TYPE) {
+      yyerror("Invalid assignment : %s cannot be assigned to var type %s",
+              type_arr[rhst], type_arr[lhst]);
+    }
+  }
+  if (lhst == STRING_TYPE) {
+    if (rhst != STRING_TYPE) {
       yyerror("Invalid assignment : %s cannot be assigned to var type %s",
               type_arr[rhst], type_arr[lhst]);
     }

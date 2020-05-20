@@ -17,6 +17,7 @@
 %token <t> BOOL COMPLEX
 %token <m> CONST STATIC
 %token <t> DOUBLE FLOAT LONG SHORT VOID INT
+%token <t> STRING
 
 // temp
 %token PRINTACT
@@ -28,7 +29,7 @@
 %token I
 %token IN NOT RAW USE
 %token DECL 
-%token <s> IDENTIFIER BOOLVAL
+%token <s> IDENTIFIER BOOLVAL STRINGVAL
 
 %token <s> INTNUM FLOATNUM
 
@@ -77,8 +78,11 @@ args : IDENTIFIER  {Variable *v = lookup_var($1);
                     ll_add(&arglist,v);}
         | FLOATNUM {void* v = add_literal(NONE_TYPE,DOUBLE_TYPE,$1);
                     ll_add(&arglist,v);}
+        | cmplxnum {void* v = add_literal(NONE_TYPE,COMPLEX_TYPE,$1);
+                    ll_add(&arglist,v);}
         | BOOLVAL {void* v = add_literal(NONE_TYPE,BOOL_TYPE,$1);
                     ll_add(&arglist,v);}
+        | STRINGVAL   {void *v = add_literal(NONE_TYPE,STRING_TYPE,$1);ll_add(&arglist,v);}
 
 
 rawlist : /* nothing */
@@ -93,6 +97,7 @@ type : INT
     | BOOL
     | COMPLEX
     | VOID
+    | STRING
 ;
 
 modifier : /* nothing */ {$$ = NONE_TYPE; }
@@ -116,6 +121,7 @@ value : cmplxnum {rhst = COMPLEX_TYPE;}
                         rhst = _t->t;
                     }}
     | BOOLVAL   {rhst = BOOL_TYPE;}
+    | STRINGVAL {rhst = STRING_TYPE;}
 ;
 
 cmplxnum : value '+' value '*' I {void *_t = calloc(1,strlen($1)+strlen($3)+1); 

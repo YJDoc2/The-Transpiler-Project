@@ -16,4 +16,4 @@ clean :
 	cd ./util && make clean
 	cd ./lib && make clean
 	cd ./transpiler && make clean
-	rm ./ttp
+	rm ./ttp -f

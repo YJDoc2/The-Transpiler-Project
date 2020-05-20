@@ -27,6 +27,6 @@ parser.o: parser.y
 	$(CC) $(CPPFLAGS) $(CFLAGS) parser.c
 
 clean:
-	rm ./*.o ./ttp -f
+	rm ./*.o ./ttp ./a.out -f
 reset:
 	rm ./*.o  ./*.a ./lexer.c ./parser.c ./parser.h ./ttp -f

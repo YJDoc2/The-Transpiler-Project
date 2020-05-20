@@ -54,7 +54,8 @@ double                              { yylval.t = DOUBLE_TYPE;return DOUBLE; }
 float                               { yylval.t = FLOAT_TYPE;return FLOAT; }
 long                                { yylval.t = LONG_TYPE;return LONG; }
 short                               { yylval.t = SHORT_TYPE;return SHORT; }
-void                                { yylval.t = VOID_TYPE;return VOID;}
+void                                { yylval.t = VOID_TYPE;return VOID; }
+string                              { yylval.t = STRING_TYPE; return STRING; }
 
 const                               { yylval.m = CONST_TYPE; return CONST; }
 static                              { yylval.m = STATIC_TYPE; return STATIC; }
@@ -62,6 +63,9 @@ static                              { yylval.m = STATIC_TYPE; return STATIC; }
 I                                    {return I;}
 
 true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
+
+\"(\\.|[^\"])*\"                      {yylval.s = strdup(yytext);return STRINGVAL;}
+\"(\\.|[^\"])*$                       {yyerror("error : unterminated string "); yylval.s = strdup(yytext);return STRINGVAL;}
 
 print                                {return PRINTACT;}
 input                                {return INPUTACT;}

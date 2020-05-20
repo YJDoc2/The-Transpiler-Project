@@ -11,6 +11,7 @@ void *add_literal(modifier m, type t, char *ident) {
   v->m = m;
   v->t = t;
   v->declaration = 0;
+  v->is_raw = true;
   return (void *)v;
 }
 
