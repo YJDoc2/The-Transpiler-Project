@@ -5,6 +5,7 @@
 #include "hashmap.h"
 #include "linkedlist.h"
 #include "parserfn.h"
+#include "tempvar.h"
 #include "variables.h"
 
 extern Linked_list arglist;

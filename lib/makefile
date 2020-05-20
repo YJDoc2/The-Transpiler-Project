@@ -3,7 +3,7 @@ VAPTH = ../util
 CPPFLAGS = -I../util
 CFLAGS = -c -g
 
-OBJLIST := parserfn.o variables.o actions.o common.o literals.o
+OBJLIST := parserfn.o variables.o actions.o common.o literals.o tempvar.o
 
 all : liblib.a
 

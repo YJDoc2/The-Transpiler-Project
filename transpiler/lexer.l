@@ -64,6 +64,7 @@ I                                    {return I;}
 true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
 
 print                                {return PRINTACT;}
+input                                {return INPUTACT;}
 
 [-]?0[0-7]*|[-]?[0-9]*|[-]?0[Xx][0-9a-fA-f]+      { yylval.s = strdup(yytext); return INTNUM; }
 

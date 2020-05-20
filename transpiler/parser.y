@@ -20,6 +20,7 @@
 
 // temp
 %token PRINTACT
+%token INPUTACT
 
 %token BREAK CONTINUE ELSE FOR IF
 %token RETURN WHILE
@@ -54,9 +55,12 @@ stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
     | declaration {yyerror("missing ;");}
     | printactstmt ';'
     | printactstmt {yyerror("missing ;");}
+    | inputactstmt ';'
+    | inputactstmt {yyerror("missing ;");}
 ;
 
 printactstmt : PRINTACT '(' arglist ')' {perform_action("print");clear_literals();}
+inputactstmt : INPUTACT '(' arglist ')' {perform_action("input");clear_literals();}
 
 arglist : /* nothing */
     | arglist args

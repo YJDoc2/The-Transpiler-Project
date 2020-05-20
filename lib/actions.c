@@ -5,8 +5,15 @@
 Linked_list arglist;
 Hashmap act_map;
 
+/*
+  char* type_arr[] = {
+    "int",  "float", "double", "bool", "float complex",
+    "long", "short", "char *", "void",
+  };
+*/
+
 char* type_str_arr[] = {
-    "%d", "%f", "%lf", "%s", "%f %s %fi", "%ld", "%d", "%s", "void",
+    "%d", "%f", "%lf", "%s", "%f %s %fi", "%ld", "%hd", "%s", "void",
 };
 
 void __print_var__(void* v) {
@@ -41,6 +48,47 @@ void action_print() {
     _t = _t->next;
   }
   printcode(");\n");
+  ll_clear(&arglist);
+  return;
+}
+
+void __input_var__(void* v) {
+  Variable* var = (Variable*)v;
+  char* _tempname;
+  if (var->m == CONST_TYPE) {
+    yyerror("error : cannot change value of constant variable %s", var->name);
+    return;
+  }
+  switch (var->t) {
+    case VOID_TYPE:
+      yyerror("error : cannot scan value of variable of type void : %s",
+              var->name);
+      break;
+    case BOOL_TYPE:
+      _tempname = get_temp_var();
+      printcode("short %s = 0;\n", _tempname);
+      printcode("scanf(\"%%hd\",&%s);\n", _tempname);
+      printcode("%s = %s;\n", var->name, _tempname);
+      free(_tempname);
+      break;
+    case COMPLEX_TYPE:
+      _tempname = get_temp_var();
+      printcode("float %s = 0;\n", _tempname);
+      printcode("scanf(\"%%f\",&%s);\n", _tempname);
+      printcode("%s = %s;\n", var->name, _tempname);
+      printcode("scanf(\"%%f\",&%s);\n", _tempname);
+      printcode("%s += %s*I;\n", var->name, _tempname);
+      free(_tempname);
+      break;
+    default:
+      printcode("scanf(\"%s\",&%s);\n", type_str_arr[var->t], var->name);
+      break;
+  }
+}
+
+void action_input() {
+  ll_for_each(&arglist, __input_var__);
+  ll_clear(&arglist);
   return;
 }
 
@@ -50,6 +98,7 @@ void __init_actions__() {
   act_map = make_hashmap(20, __hash_str__, __compair__str__);
   arglist = make_linkedlist();
   hm_add(&act_map, "print", action_print);
+  hm_add(&act_map, "input", action_input);
 }
 
 int find_action(char* s) {
