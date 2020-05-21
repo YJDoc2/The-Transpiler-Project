@@ -30,7 +30,8 @@
 %token IN NOT RAW USE
 %token DECL 
 %token <s> IDENTIFIER BOOLVAL STRINGVAL
-
+%token FNDECL 
+%token RETTYPE "->"
 %token <s> INTNUM FLOATNUM
 
 %token RAWSTART "<{"
@@ -43,8 +44,26 @@
 %type <s> value cmplxnum
 
 %%
-program : stmtlist
+program : topstmtlist
 ;
+
+topstmtlist :  /* nothin */
+    | topstmtlist error {yyerror("unknown token %s\n",yytext);}
+    | topstmtlist topstmt
+
+
+topstmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
+    | vardeclaration ';'
+    | vardeclaration {yyerror("missing ;");}
+    | fndeclaration
+
+fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type {printcode("%d %d %s {\n",$7,$8,$2); } '{' stmtlist'}' {printcode("}\n");}
+
+paramlist : /* nothing */
+    | paramlist param
+    | paramlist ','  param
+
+param : type IDENTIFIER    {/*add_var($1,$2,$3,yylineno);*/ free($2);}
 
 stmtlist :/* nothing */
     | stmtlist error {yyerror("unknown token %s\n",yytext);}
@@ -52,8 +71,8 @@ stmtlist :/* nothing */
 ;
 
 stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
-    | declaration ';'
-    | declaration {yyerror("missing ;");}
+    | vardeclaration ';'
+    | vardeclaration {yyerror("missing ;");}
     | printactstmt ';'
     | printactstmt {yyerror("missing ;");}
     | inputactstmt ';'
@@ -105,7 +124,7 @@ modifier : /* nothing */ {$$ = NONE_TYPE; }
     | STATIC
 ;
 
-declaration : DECL modifier type IDENTIFIER {create_var($2,$3,$4,yylineno); free($4); }
+vardeclaration : DECL modifier type IDENTIFIER {create_var($2,$3,$4,yylineno); free($4); }
     | modifier type IDENTIFIER    {add_var($1,$2,$3,yylineno); free($3);}
     | assignment
 ;

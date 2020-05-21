@@ -13,4 +13,9 @@ Add print action...and input action <br />
 \# test2.c transpiled from test2.tpp for testing print and input funtion (variables and literals)
 Add string declaration. <br />
 make header file generating function , gnerate header file after successful code compiling.<br />
+Add fn declaration and cross verification.
+
+## Stage 4
+
+add expression and multiple declaration.
 Parse Function...all kind...(?)

@@ -46,6 +46,9 @@ RAW                               { return RAW; } /* Start of the RAW direction,
                         /* Rules of declarations */
 @decl                               {return DECL;} /* Explicit declaration , used to declare the variables that are declared in RAW code*/
 
+fn                                  {return FNDECL;}
+
+"->"                                {return RETTYPE;}
 
 bool                                { yylval.t = BOOL_TYPE; return BOOL; }
 complex                             { yylval.t = COMPLEX_TYPE; return COMPLEX; }
@@ -73,6 +76,8 @@ input                                {return INPUTACT;}
 [-]?0[0-7]*|[-]?[0-9]*|[-]?0[Xx][0-9a-fA-f]+      { yylval.s = strdup(yytext); return INTNUM; }
 
 [-]?([0-9]*\.[0-9]+|[0-9]+([Ee][-+]?[0-9]+)?)       { yylval.s = strdup(yytext); return FLOATNUM; }
+
+__temp[0-9]*                                        {yyerror("error : Invalid variable name : Variable name format '__temp(num)' is reserved.");}
 
 [a-zA-Z][a-zA-Z0-9]*           {yylval.s = strdup(yytext); return IDENTIFIER;}
 

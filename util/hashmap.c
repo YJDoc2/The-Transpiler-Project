@@ -1,6 +1,8 @@
 #include "hashmap.h"
 
 #include <stdlib.h>
+#define HM_REHASH_LIM(x) (x / 2)
+#define HM_REHASH_FAC 3
 
 Hashmap make_hashmap(int size, int (*hashfn)(void *),
                      int (*compairfn)(void *, void *)) {
@@ -28,7 +30,7 @@ void *hm_get(Hashmap *hm, void *key) {
 
 int hm_add(Hashmap *hm, void *key, void *value) {
   int hash = hm->hash(key) % hm->size;
-  if (hm->used >= 3 * hm->size / 4) {
+  if (hm->used >= HM_REHASH_LIM(hm->size)) {
     rehash(hm);
   }
   hashpair *search = hm->start + hash;
@@ -48,14 +50,14 @@ int hm_add(Hashmap *hm, void *key, void *value) {
 
 void rehash(Hashmap *hm) {
   int size = hm->size;
-  hashpair *temp = (hashpair *)calloc(size * 2, sizeof(hashpair));
+  hashpair *temp = (hashpair *)calloc(size * HM_REHASH_FAC, sizeof(hashpair));
   if (!temp) {
     return;
   }
   hashpair *newstart = temp;
   hashpair *oldstart = hm->start;
   hm->start = newstart;
-  hm->size = size * 2;
+  hm->size = size * HM_REHASH_FAC;
   hm->used = 0;
 
   hashpair *start = oldstart;

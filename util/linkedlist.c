@@ -53,3 +53,21 @@ void ll_delete(Linked_list *ll, void (*delfn)(void *)) {
 }
 
 void ll_nullfn(void *p) { return; }
+
+int are_same(Linked_list *l1, Linked_list *l2,
+             int (*compairfn)(void *, void *)) {
+  if (l1->size != l2->size) return 0;
+  int i = 0;
+  link *t1 = l1->start;
+  link *t2 = l2->start;
+  while (t1 != NULL && t2 != NULL) {
+    ++i;
+    if (!compairfn(t1->data, t2->data)) {
+      return 0;
+    }
+    t1 = t1->next;
+    t2 = t2->next;
+  }
+  if (i != l1->size) return 0;
+  return 1;
+}

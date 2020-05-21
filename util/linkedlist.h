@@ -17,4 +17,7 @@ int ll_add(Linked_list *ll, void *data);
 void ll_for_each(Linked_list *ll, void (*each)(void *));
 void ll_delete(Linked_list *ll, void (*delfn)(void *));
 void ll_nullfn(void *);
+
+int are_same(Linked_list *l1, Linked_list *l2,
+             int (*compairfn)(void *, void *));
 #endif

@@ -4,8 +4,8 @@
 
 #include "parserfn.h"
 
-// Largest prime below 5000 4931
-#define VAR_HM_INIT_SIZE 10
+// Largest prime below 5000
+#define VAR_HM_INIT_SIZE 4931
 
 char* type_arr[] = {
     "int",  "float", "double", "bool", "float complex",
