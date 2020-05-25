@@ -15,5 +15,6 @@ typedef struct {
 Stack make_stack();
 int st_push(Stack *st, void *data);
 void *st_pop(Stack *st);
+void st_delete(Stack *st, void (*delfn)(void *));
 
 #endif

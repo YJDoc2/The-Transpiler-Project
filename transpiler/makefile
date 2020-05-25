@@ -21,7 +21,7 @@ lexer.o : lexer.l
 	$(CC) $(CPPFLAGS) $(CFLAGS) lexer.c
 
 parser.o: parser.y
-	bison -dv parser.y
+	bison -d parser.y
 	mv ./parser.tab.c ./parser.c
 	mv ./parser.tab.h ./parser.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) parser.c

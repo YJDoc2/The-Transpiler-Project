@@ -6,6 +6,7 @@
     #include "parserfn.h"
     #include "actions.h"
     #include "literals.h"
+    #include "functions.h"
 %}
 
 %union{
@@ -57,13 +58,13 @@ topstmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
     | vardeclaration {yyerror("missing ;");}
     | fndeclaration
 
-fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type {printcode("%d %d %s {\n",$7,$8,$2); } '{' stmtlist'}' {printcode("}\n");}
+fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type {add_function($7,$8,$2,$2,yylineno);print_fn_delc($2); free($2);} '{' stmtlist'}' {printcode("}\n");}
 
 paramlist : /* nothing */
     | paramlist param
     | paramlist ','  param
 
-param : type IDENTIFIER    {/*add_var($1,$2,$3,yylineno);*/ free($2);}
+param : modifier type IDENTIFIER    {add_param($1,$2,$3);create_var($1,$2,$3,yylineno); free($3);}
 
 stmtlist :/* nothing */
     | stmtlist error {yyerror("unknown token %s\n",yytext);}
@@ -172,13 +173,15 @@ void printhm(Hashmap *hm) {
 void main(int argc , char **argv){
 
     __init_io__("./test.ttp",NULL);
+    __init_literals__();
     __init_vars__();
     __init_actions__();
-    __init_literals__();
+    __init_functions__();
     yyparse();
     //printhm(&varmap);
-    __cleanup_literals__();
+    __cleanup_functions__();
     __cleanup_actions__();
     __cleanup_vars__();
+    __cleanup_literals__();
     __cleanup_io__();
 }

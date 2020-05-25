@@ -79,7 +79,7 @@ input                                {return INPUTACT;}
 
 __temp[0-9]*                                        {yyerror("error : Invalid variable name : Variable name format '__temp(num)' is reserved.");}
 
-[a-zA-Z][a-zA-Z0-9]*           {yylval.s = strdup(yytext); return IDENTIFIER;}
+[_a-zA-Z][_a-zA-Z0-9]*           {yylval.s = strdup(yytext); return IDENTIFIER;}
 
 .                               {fprintf(stderr,"unknown token '%s'\n",yytext);}
 %%

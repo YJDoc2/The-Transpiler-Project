@@ -30,3 +30,15 @@ void *st_pop(Stack *st) {
 
   return ret;
 }
+
+void st_delete(Stack *st, void (*delfn)(void *)) {
+  stack_link *_sl = st->start;
+  stack_link *_t;
+  while (_sl != NULL) {
+    delfn(_sl->data);
+    _t = _sl;
+    _sl = _sl->next;
+    free(_t);
+  }
+  return;
+}

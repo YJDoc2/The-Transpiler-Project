@@ -3,6 +3,7 @@
 #include <string.h>
 
 #include "parserfn.h"
+#include "scope.h"
 
 // Largest prime below 5000
 #define VAR_HM_INIT_SIZE 4931
@@ -31,7 +32,9 @@ void create_var(modifier m, type t, char* ident, int line) {
   v->t = t;
   v->declaration = line;
   v->is_raw = false;
-  hm_add(&varmap, _name, v);
+  Hashmap* hm =
+      scopelist.start == NULL ? &varmap : (Hashmap*)scopelist.start->data;
+  hm_add(hm, _name, v);
 }
 
 void add_var(modifier m, type t, char* ident, int line) {
@@ -57,7 +60,14 @@ void add_var_assg(modifier m, type t, char* ident, char* val, int line) {
 }
 
 Variable* lookup_var(char* ident) {
-  void* look = hm_get(&varmap, ident);
+  stack_link* _sc = scopelist.start;
+  void* look = NULL;
+  while (_sc != NULL && look == NULL) {
+    Hashmap* hm = (Hashmap*)_sc->data;
+    look = hm_get(hm, ident);
+    _sc = _sc->next;
+  }
+  if (look == NULL) look = hm_get(&varmap, ident);
   return (Variable*)look;
 }
 
