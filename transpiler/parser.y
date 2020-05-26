@@ -7,6 +7,7 @@
     #include "actions.h"
     #include "literals.h"
     #include "functions.h"
+    #include "scope.h"
 %}
 
 %union{
@@ -19,10 +20,6 @@
 %token <m> CONST STATIC
 %token <t> DOUBLE FLOAT LONG SHORT VOID INT
 %token <t> STRING
-
-// temp
-%token PRINTACT
-%token INPUTACT
 
 %token BREAK CONTINUE ELSE FOR IF
 %token RETURN WHILE
@@ -42,71 +39,10 @@
 %type <t> type
 %type <m> modifier
 
-%type <s> value cmplxnum
+%type <s> value cmplxnum intnum floatnum endval
 
 %%
 program : topstmtlist
-;
-
-topstmtlist :  /* nothin */
-    | topstmtlist error {yyerror("unknown token %s\n",yytext);}
-    | topstmtlist topstmt
-
-
-topstmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
-    | vardeclaration ';'
-    | vardeclaration {yyerror("missing ;");}
-    | fndeclaration
-
-fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type {add_function($7,$8,$2,$2,yylineno);print_fn_delc($2); free($2);} '{' stmtlist'}' {printcode("}\n");}
-
-paramlist : /* nothing */
-    | paramlist param
-    | paramlist ','  param
-
-param : modifier type IDENTIFIER    {add_param($1,$2,$3);create_var($1,$2,$3,yylineno); free($3);}
-
-stmtlist :/* nothing */
-    | stmtlist error {yyerror("unknown token %s\n",yytext);}
-    | stmtlist stmt
-;
-
-stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
-    | vardeclaration ';'
-    | vardeclaration {yyerror("missing ;");}
-    | printactstmt ';'
-    | printactstmt {yyerror("missing ;");}
-    | inputactstmt ';'
-    | inputactstmt {yyerror("missing ;");}
-;
-
-printactstmt : PRINTACT '(' arglist ')' {perform_action("print");clear_literals();}
-inputactstmt : INPUTACT '(' arglist ')' {perform_action("input");clear_literals();}
-
-arglist : /* nothing */
-    | arglist args
-    | arglist ',' args
-;
-
-args : IDENTIFIER  {Variable *v = lookup_var($1);
-                    if(v == NULL){
-                        yyerror("Undefined variable %s",$1);
-                    }else{
-                        ll_add(&arglist,v);
-                    }}
-        | INTNUM {void* v = add_literal(NONE_TYPE,INT_TYPE,$1);
-                    ll_add(&arglist,v);}
-        | FLOATNUM {void* v = add_literal(NONE_TYPE,DOUBLE_TYPE,$1);
-                    ll_add(&arglist,v);}
-        | cmplxnum {void* v = add_literal(NONE_TYPE,COMPLEX_TYPE,$1);
-                    ll_add(&arglist,v);}
-        | BOOLVAL {void* v = add_literal(NONE_TYPE,BOOL_TYPE,$1);
-                    ll_add(&arglist,v);}
-        | STRINGVAL   {void *v = add_literal(NONE_TYPE,STRING_TYPE,$1);ll_add(&arglist,v);}
-
-
-rawlist : /* nothing */
-    | rawlist RAWLINE   {printcode("%s",$2); free($2);}
 ;
 
 type : INT
@@ -125,35 +61,115 @@ modifier : /* nothing */ {$$ = NONE_TYPE; }
     | STATIC
 ;
 
+
+topstmtlist :  /* nothin */
+    | topstmtlist error {yyerror("unknown token %s\n",yytext);}
+    | topstmtlist topstmt
+
+
+topstmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
+    | vardeclaration ';'
+    | vardeclaration {yyerror("missing ;");}
+    | fndeclaration
+
+rawlist : /* nothing */
+    | rawlist RAWLINE   {printcode("%s",$2); free($2);}
+;
+
+fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type {add_function($7,$8,$2,$2,yylineno);print_fn_delc($2); free($2);} '{' stmtlist'}' {printcode("}\n");}
+
+paramlist : /* nothing */
+    | paramlist param
+    | paramlist ','  param
+
+param : modifier type IDENTIFIER    {add_param($1,$2,$3);create_var($1,$2,$3,yylineno); free($3);}
+
+stmtlist :/* nothing */
+    | stmtlist error {yyerror("unknown token %s\n",yytext);}
+    | stmtlist stmt
+;
+
+stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
+    | vardeclaration ';'
+    | vardeclaration {yyerror("missing ;");}
+    | fncall {yyerror("missing ;");}
+    | fncall ';'
+;
+
+fncall : IDENTIFIER '(' arglist ')' {if(find_action($1)){
+                                        perform_action($1);
+                                    }else{
+                                        Function *fn = find_fn($1);
+                                        if(fn == NULL){
+                                            add_call($1,yylineno);
+                                            print_call($1);
+                                            arglist.end = arglist.start = NULL;
+                                            arglist.size = 0;
+                                        }else{
+                                            verify_call($1,fn,yylineno);
+                                            print_call($1);
+                                            ll_clear(&arglist);
+                                        }
+                                    }
+                                    free($1);}
+
+arglist : /* nothing */
+    | arglist arg
+    | arglist ',' arg
+;
+
+arg : IDENTIFIER  {Variable *v = lookup_var($1);
+                    if(v == NULL){
+                        yyerror("Undefined variable %s",$1);
+                    }else{
+                        ll_add(&arglist,v);
+                    }
+                    free($1);}
+        | intnum {void* v = add_literal(NONE_TYPE,INT_TYPE,$1);
+                    ll_add(&arglist,v);free($1);}
+        | floatnum {void* v = add_literal(NONE_TYPE,DOUBLE_TYPE,$1);
+                    ll_add(&arglist,v);free($1);}
+        | cmplxnum {void* v = add_literal(NONE_TYPE,COMPLEX_TYPE,$1);
+                    ll_add(&arglist,v);free($1);}
+        | BOOLVAL {void* v = add_literal(NONE_TYPE,BOOL_TYPE,$1);
+                    ll_add(&arglist,v);free($1);}
+        | STRINGVAL   {void *v = add_literal(NONE_TYPE,STRING_TYPE,$1);ll_add(&arglist,v);free($1);}
+
 vardeclaration : DECL modifier type IDENTIFIER {create_var($2,$3,$4,yylineno); free($4); }
     | modifier type IDENTIFIER    {add_var($1,$2,$3,yylineno); free($3);}
     | assignment
 ;
+
 assignment : modifier type IDENTIFIER '=' value {lhst = $2;verify_types();add_var_assg($1,$2,$3,$5,yylineno);free($3);free($5);}
 ;
 value : cmplxnum {rhst = COMPLEX_TYPE;}
-    | INTNUM {rhst = INT_TYPE;}
-    | FLOATNUM {rhst = FLOAT_TYPE;}
+    | endval
+    | BOOLVAL   {rhst = BOOL_TYPE;}
+    | STRINGVAL {rhst = STRING_TYPE;}
+;
+
+cmplxnum : endval '+' endval '*' I {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
+                                    strcat(_t,$1);strcat(_t,"+");strcat(_t,$3);strcat(_t,"*I");
+                                    $$ = (char*)_t;}
+    | endval '-' endval '*' I      {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
+                                    strcat(_t,$1);strcat(_t,"-");strcat(_t,$3);strcat(_t,"*I");
+                                    $$ = (char*)_t;}
+;
+
+endval : intnum {rhst = INT_TYPE;}
+    | floatnum {rhst = FLOAT_TYPE;}
     | IDENTIFIER { Variable *_t = lookup_var($$);
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$$);
                     }else{
                         rhst = _t->t;
                     }}
-    | BOOLVAL   {rhst = BOOL_TYPE;}
-    | STRINGVAL {rhst = STRING_TYPE;}
-;
 
-cmplxnum : value '+' value '*' I {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
-                                    strcat(_t,$1);strcat(_t,"+");strcat(_t,$3);strcat(_t,"*I");
-                                    $$ = (char*)_t;}
-    | value '-' value '*' I      {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
-                                    strcat(_t,$1);strcat(_t,"-");strcat(_t,$3);strcat(_t,"*I");
-                                    $$ = (char*)_t;}
-    | value value '*' I{void *_t = calloc(1,strlen($1)+strlen($2)+1); 
-                                    strcat(_t,$1);strcat(_t,$2);strcat(_t,"*I");
-                                    $$ = (char*)_t;}
-;
+intnum : INTNUM
+    | '-' INTNUM {char *_s = calloc(1,strlen($2)+2); strcpy(_s,"-"); strcat(_s,$2); $$ = _s; free($2);}
+floatnum : FLOATNUM 
+    | '-' FLOATNUM {char *_s = calloc(1,strlen($2)+2); strcpy(_s,"-"); strcat(_s,$2); $$ = _s; free($2);}
+
 %%
 
 void printhm(Hashmap *hm) {
@@ -177,8 +193,9 @@ void main(int argc , char **argv){
     __init_vars__();
     __init_actions__();
     __init_functions__();
+    __init_scopes__();
     yyparse();
-    //printhm(&varmap);
+    __cleanup_scopes__();
     __cleanup_functions__();
     __cleanup_actions__();
     __cleanup_vars__();

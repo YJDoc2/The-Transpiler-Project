@@ -8,6 +8,14 @@ Hashmap callmap;
 
 Linked_list* temp_list = NULL;
 
+char* fncall_incorrect_arg_num_msg =
+    "incorrect %s function call on line %d :\n\texpected %d params as "
+    "per function delcaration on line %d,but got %d\n ";
+
+char* fncall_incorrect_arg_type_msg =
+    "incorrect argument type in function call on line %d :\n\tfor "
+    "argument %d expected tpe %s as per declaration on line %d, got %s";
+
 void __ll_del_fn__(void* a) {
   Param* p = (Param*)a;
   free(p->name);
@@ -24,10 +32,17 @@ void __fnmap_del_fn__(void* a, void* b) {
   return;
 }
 
+void __del_fncall__(void* c) {
+  Fncall* _c = (Fncall*)c;
+  ll_clear(_c->arglist);
+  free(c);
+}
+
 void __callmap_del_fn__(void* a, void* b) {
   free(a);
-  Function* f = (Function*)b;
-  free(f->print_name);
+  Linked_list* _ll = (Linked_list*)b;
+  ll_delete(_ll, __del_fncall__);
+  free(_ll);
   return;
 }
 void __init_functions__() {
@@ -54,6 +69,42 @@ void add_param(modifier m, type t, char* param_name) {
   ll_add(temp_list, p);
   return;
 }
+
+void verify_previous_calls(char* fnname, Function* f) {
+  Linked_list* call_list = (Linked_list*)hm_get(&callmap, fnname);
+  if (call_list == NULL) return;
+  ll_link* call_list_itr = call_list->start;
+  ll_link* fn_params_itr;
+  int num_params = f->param_list->size;
+  int argnum;
+  while (call_list_itr != NULL) {
+    Fncall* call = (Fncall*)call_list_itr->data;
+    if (call->arglist->size != num_params) {
+      yyerror(fncall_incorrect_arg_num_msg, fnname, call->declaration,
+              num_params, f->declaration, call->arglist->size);
+      call_list_itr = call_list_itr->next;
+      continue;
+    }
+    argnum = 1;
+    fn_params_itr = f->param_list->start;
+    ll_link* arglist_itr = call->arglist->start;
+    while (arglist_itr != NULL) {
+      Variable* arg = (Variable*)arglist_itr->data;
+      Param* p = (Param*)fn_params_itr->data;
+      if (p->t != arg->t) {
+        yyerror(fncall_incorrect_arg_type_msg, call->declaration, argnum,
+                type_arr[p->t], f->declaration, type_arr[arg->t]);
+      }
+      fn_params_itr = fn_params_itr->next;
+      arglist_itr = arglist_itr->next;
+      ++argnum;
+    }
+    call_list_itr = call_list_itr->next;
+  }
+  hashpair hp = hm_delete(&callmap, fnname);
+  __callmap_del_fn__(hp.key, hp.value);
+}
+
 void add_function(modifier m, type t, char* fnname, char* printname,
                   int lineno) {
   Function* f = calloc(1, sizeof(Function));
@@ -64,6 +115,7 @@ void add_function(modifier m, type t, char* fnname, char* printname,
   f->ret_t = t;
   f->ret_m = m;
   hm_add(&fnmap, strdup(fnname), f);
+  verify_previous_calls(fnname, f);
 }
 
 static void print_param(Param* p) {
@@ -72,7 +124,7 @@ static void print_param(Param* p) {
 
 static void print_params(Linked_list* ll) {
   if (ll == NULL) return;
-  link* _l = ll->start;
+  ll_link* _l = ll->start;
   print_param((Param*)_l->data);
   if (_l->next == NULL) return;
   _l = _l->next;
@@ -98,4 +150,60 @@ void print_fn_delc(char* name) {
   print_params(f->param_list);
   printcode(" ) {\n");
   return;
+}
+
+Function* find_fn(char* fnname) { return (Function*)hm_get(&fnmap, fnname); }
+
+void add_call(char* fnname, int lineno) {
+  Linked_list* _ll = (Linked_list*)hm_get(&callmap, fnname);
+  Fncall* call = (Fncall*)calloc(1, sizeof(Fncall));
+  call->declaration = lineno;
+  call->arglist = (Linked_list*)calloc(1, sizeof(Linked_list));
+  *(call->arglist) = arglist;
+  if (_ll != NULL) {
+    ll_add(_ll, call);
+    return;
+  }
+  _ll = (Linked_list*)calloc(1, sizeof(Linked_list));
+  ll_add(_ll, call);
+  hm_add(&callmap, strdup(fnname), _ll);
+  return;
+}
+
+void print_call(char* fn) {
+  printcode("%s(", fn);
+  ll_link* _t = arglist.start;
+  Variable* _var;
+  while (_t != NULL) {
+    _var = (Variable*)_t->data;
+    printcode("%s", _var->name);
+    if (_t->next != NULL) {
+      printcode(" , ");
+    }
+    _t = _t->next;
+  }
+  printcode(" );\n");
+}
+
+int verify_call(char* fnname, Function* fn, int lineno) {
+  if (arglist.size != fn->param_list->size) {
+    yyerror(fncall_incorrect_arg_num_msg, fnname, lineno, fn->param_list->size,
+            fn->declaration, arglist.size);
+    return 1;
+  }
+  int argnum = 1;
+  ll_link* fn_params_itr = fn->param_list->start;
+  ll_link* arglist_itr = arglist.start;
+  while (arglist_itr != NULL) {
+    Variable* arg = (Variable*)arglist_itr->data;
+    Param* p = (Param*)fn_params_itr->data;
+    if (p->t != arg->t) {
+      yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, type_arr[p->t],
+              fn->declaration, type_arr[arg->t]);
+    }
+    fn_params_itr = fn_params_itr->next;
+    arglist_itr = arglist_itr->next;
+    ++argnum;
+  }
+  return 0;
 }

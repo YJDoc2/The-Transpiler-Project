@@ -8,13 +8,13 @@ Linked_list make_linkedlist() {
 }
 
 int ll_add(Linked_list *ll, void *data) {
-  link *last = ll->end;
-  link *temp = (link *)malloc(sizeof(link));
+  ll_link *last = ll->end;
+  ll_link *temp = (ll_link *)malloc(sizeof(ll_link));
   if (!temp) {
     return -1;
   }
 
-  link *nl = temp;
+  ll_link *nl = temp;
   nl->data = data;
   nl->next = NULL;
   if (last) {
@@ -30,7 +30,7 @@ int ll_add(Linked_list *ll, void *data) {
 
 void ll_for_each(Linked_list *ll, void (*each)(void *)) {
   if (!ll->start) return;
-  link *t = ll->start;
+  ll_link *t = ll->start;
   while (t != NULL) {
     each(t->data);
     t = t->next;
@@ -39,8 +39,8 @@ void ll_for_each(Linked_list *ll, void (*each)(void *)) {
 
 void ll_delete(Linked_list *ll, void (*delfn)(void *)) {
   if (ll->start == NULL) return;
-  link *t = ll->start;
-  link *_t = t;
+  ll_link *t = ll->start;
+  ll_link *_t = t;
   while (t != NULL) {
     delfn(t->data);
     _t = t->next;
@@ -58,8 +58,8 @@ int are_same(Linked_list *l1, Linked_list *l2,
              int (*compairfn)(void *, void *)) {
   if (l1->size != l2->size) return 0;
   int i = 0;
-  link *t1 = l1->start;
-  link *t2 = l2->start;
+  ll_link *t1 = l1->start;
+  ll_link *t2 = l2->start;
   while (t1 != NULL && t2 != NULL) {
     ++i;
     if (!compairfn(t1->data, t2->data)) {

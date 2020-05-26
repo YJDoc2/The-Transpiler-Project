@@ -1,5 +1,7 @@
 #include "common.h"
 
+Linked_list arglist;
+
 int __hash_str__(void* s) {
   char* t = (char*)s;
   int hash = 0;

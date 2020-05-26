@@ -2,7 +2,6 @@
 
 #define ACT_MAP_INIT_SIZE 20
 
-Linked_list arglist;
 Hashmap act_map;
 
 /*
@@ -37,7 +36,7 @@ void action_print() {
   printcode("printf(\"");
   ll_for_each(&arglist, __print_var__);
   printcode("\"");
-  link* _t = arglist.start;
+  ll_link* _t = arglist.start;
   while (_t != NULL) {
     printcode(",");
     Variable* var = (Variable*)_t->data;

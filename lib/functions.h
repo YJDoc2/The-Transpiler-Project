@@ -25,7 +25,6 @@ typedef struct {
 } Function;
 
 typedef struct {
-  char* fnname;
   Linked_list* arglist;
   int declaration;
 } Fncall;
@@ -33,12 +32,14 @@ typedef struct {
 void __init_functions__();
 void __cleanup_functions__();
 
-void add_call(char* fn, Fncall call);
-void verify_previous_calls(char* fn);  // Will consume respective callmap
+void add_call(char* fn, int lineno);
+void print_call(char* fn);
 
-int verify_call(char* fn, Fncall call);
+int verify_call(char* fnname, Function* fn, int lineno);
 
 void add_param(modifier m, type t, char* param_name);
+
+Function* find_fn(char* fnname);
 void add_function(modifier m, type t, char* fnname, char* printname,
                   int lineno);
 void print_fn_delc(char* name);

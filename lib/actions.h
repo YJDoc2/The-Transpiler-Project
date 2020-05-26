@@ -8,8 +8,6 @@
 #include "tempvar.h"
 #include "variables.h"
 
-extern Linked_list arglist;
-
 void __init_actions__();
 void __cleanup_actions__();
 int find_action(char* s);

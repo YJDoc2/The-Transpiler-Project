@@ -70,12 +70,9 @@ true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
 \"(\\.|[^\"])*\"                      {yylval.s = strdup(yytext);return STRINGVAL;}
 \"(\\.|[^\"])*$                       {yyerror("error : unterminated string "); yylval.s = strdup(yytext);return STRINGVAL;}
 
-print                                {return PRINTACT;}
-input                                {return INPUTACT;}
+0[0-7]*|[0-9]*|0[Xx][0-9a-fA-f]+      { yylval.s = strdup(yytext); return INTNUM; }
 
-[-]?0[0-7]*|[-]?[0-9]*|[-]?0[Xx][0-9a-fA-f]+      { yylval.s = strdup(yytext); return INTNUM; }
-
-[-]?([0-9]*\.[0-9]+|[0-9]+([Ee][-+]?[0-9]+)?)       { yylval.s = strdup(yytext); return FLOATNUM; }
+([0-9]*\.[0-9]+|[0-9]*\.[0-9]+([Ee][-+]?[0-9]+)?)       { yylval.s = strdup(yytext); return FLOATNUM; }
 
 __temp[0-9]*                                        {yyerror("error : Invalid variable name : Variable name format '__temp(num)' is reserved.");}
 

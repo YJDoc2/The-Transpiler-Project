@@ -1,15 +1,15 @@
 #ifndef __LINKEDLIST__
 #define __LINKEDLIST__
 #define ll_clear(ll) ll_delete((ll), ll_nullfn)
-typedef struct link {
+typedef struct ll_link {
   void *data;
-  struct link *next;
-} link;
+  struct ll_link *next;
+} ll_link;
 
 typedef struct {
   int size;
-  link *start;
-  link *end;
+  ll_link *start;
+  ll_link *end;
 } Linked_list;
 
 Linked_list make_linkedlist();
