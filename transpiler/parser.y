@@ -2,12 +2,19 @@
     #include<stdio.h> 
     #include<stdlib.h>   
     #include<string.h>
+    #include <stdbool.h>
     #include "variables.h"
     #include "parserfn.h"
     #include "actions.h"
     #include "literals.h"
     #include "functions.h"
     #include "scope.h"
+
+    extern char *type_arr[];
+    bool is_in_fn = false;
+    bool has_returned = false;
+    type fn_type = VOID_TYPE;
+
 %}
 
 %union{
@@ -76,7 +83,21 @@ rawlist : /* nothing */
     | rawlist RAWLINE   {printcode("%s",$2); free($2);}
 ;
 
-fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type {add_function($7,$8,$2,$2,yylineno);print_fn_delc($2); free($2);} '{' stmtlist'}' {printcode("}\n");}
+fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type fndecldummy'{' stmtlist'}' {printcode("}\n");
+                                                                                                    if(fn_type != VOID_TYPE && !has_returned){
+                                                                                                        yyerror("function %s require %s return type, corresponding return statement not found",$2,type_arr[fn_type]);
+                                                                                                    }
+                                                                                                    free($2);
+                                                                                                    is_in_fn = false;
+                                                                                                    popscope();
+                                                                                                    }
+
+fndecldummy : /* nothing */ {add_function($<m>-1,$<t>0,$<s>-6,$<s>-6,yylineno);
+                            print_fn_delc($<s>-6);
+                            fn_type = $<t>0;
+                            is_in_fn = true;
+                            has_returned = false;
+                            pushscope();} 
 
 paramlist : /* nothing */
     | paramlist param
@@ -85,16 +106,30 @@ paramlist : /* nothing */
 param : modifier type IDENTIFIER    {add_param($1,$2,$3);create_var($1,$2,$3,yylineno); free($3);}
 
 stmtlist :/* nothing */
-    | stmtlist error {yyerror("unknown token %s\n",yytext);}
-    | stmtlist stmt
+    | stmtlist error ';'
+    | stmtlist stmt ';'
+    | stmtlist stmt {yyerror("missing ;");}
 ;
 
 stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
-    | vardeclaration ';'
-    | vardeclaration {yyerror("missing ;");}
-    | fncall {yyerror("missing ;");}
-    | fncall ';'
+    | vardeclaration
+    | fncall
+    | returnstmt
 ;
+
+returnstmt : RETURN value { if(rhst != fn_type){
+                                yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[rhst]);
+                            }else{
+                                printcode("return %s;\n",$2);
+                                has_returned = true;
+                            }}
+            | RETURN    {if(fn_type != VOID_TYPE){
+                            yyerror("return statement without value is not allowed for function type other than void.");
+                        }else{
+                            printcode("return;\n");
+                            has_returned = true;
+                        }}
+
 
 fncall : IDENTIFIER '(' arglist ')' {if(find_action($1)){
                                         perform_action($1);
@@ -112,6 +147,7 @@ fncall : IDENTIFIER '(' arglist ')' {if(find_action($1)){
                                         }
                                     }
                                     free($1);}
+;
 
 arglist : /* nothing */
     | arglist arg
@@ -171,20 +207,6 @@ floatnum : FLOATNUM
     | '-' FLOATNUM {char *_s = calloc(1,strlen($2)+2); strcpy(_s,"-"); strcat(_s,$2); $$ = _s; free($2);}
 
 %%
-
-void printhm(Hashmap *hm) {
-  hashpair *start = hm->start;
-  hashpair *t = start;
-  while (t < start + hm->size) {
-    if (t->key == NULL) {
-      printf("---\n");
-    } else {
-      printf("key :%s,value: %s\n", (char *)t->key, ((Variable *)t->value)->name);
-    }
-    ++t;
-  }
-  printf("\n");
-}
 
 void main(int argc , char **argv){
 

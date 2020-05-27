@@ -19,7 +19,10 @@ void __init_vars__() {
   varmap = make_hashmap(VAR_HM_INIT_SIZE, __hash_str__, __compair__str__);
 }
 
-void __del_var__(void* a, void* b) { free(a); }
+void __del_var__(void* a, void* b) {
+  free(a);
+  // We do not free the b->name, as that and key (a) is the same.
+}
 
 void __cleanup_vars__() { delete_hashmap(varmap, __del_var__); }
 

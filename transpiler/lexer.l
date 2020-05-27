@@ -1,9 +1,11 @@
 %{
     #include<stdio.h>
-    #include "../lib/variables.h"
+    #include <stdbool.h>
+    #include "variables.h"
     #include "parser.h"
     int lastState = 0;
-    int yyerror(char *s);
+    extern int yyerror(char *,...);
+    extern bool is_in_fn;
 %}
 
 %option noyywrap nodefault yylineno
@@ -67,14 +69,16 @@ I                                    {return I;}
 
 true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
 
-\"(\\.|[^\"])*\"                      {yylval.s = strdup(yytext);return STRINGVAL;}
-\"(\\.|[^\"])*$                       {yyerror("error : unterminated string "); yylval.s = strdup(yytext);return STRINGVAL;}
+return                               { if(is_in_fn){return RETURN;}else{yyerror("Cannot use return outside function.\n");} }
+
+\"(\\.|[^\"\n])*\"                      {yylval.s = strdup(yytext);return STRINGVAL;}
+\"(\\.|[^\"\n])*$                       {yyerror("unterminated string "); yylval.s = strdup(yytext);return ';';}
 
 0[0-7]*|[0-9]*|0[Xx][0-9a-fA-f]+      { yylval.s = strdup(yytext); return INTNUM; }
 
 ([0-9]*\.[0-9]+|[0-9]*\.[0-9]+([Ee][-+]?[0-9]+)?)       { yylval.s = strdup(yytext); return FLOATNUM; }
 
-__temp[0-9]*                                        {yyerror("error : Invalid variable name : Variable name format '__temp(num)' is reserved.");}
+__temp[0-9]+                                        {yyerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
 
 [_a-zA-Z][_a-zA-Z0-9]*           {yylval.s = strdup(yytext); return IDENTIFIER;}
 

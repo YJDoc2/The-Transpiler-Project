@@ -13,11 +13,11 @@ Add print action...and input action <br />
 \# test2.c transpiled from test2.tpp for testing print and input funtion (variables and literals)
 Add string declaration. <br />
 Add function declaration and scoping<br />
-\# test3.c transpiled from test3.tpp for testing function declaration and scoping (variables and literals)
-<strong>test1.ttp test2.ttp do not work from here on as top level statements can only be declarations or fn def. </strong><br />
-Added function params varification (for fns declared before as well as later , but no declarations) <br />
-\# test4.c transpiled from test4.tpp for testing function param varifications
-<strong>Does not verify for return type yet </strong>
+\# test3.c transpiled from test3.tpp for testing function declaration and scoping (variables and literals) <br />
+<strong>test1.ttp test2.ttp do not work from here on as top level statements can only be variable declarations or functionn definations </strong><br />
+Added function params varification (for fns declared before as well as later , but no declarations in header yet) <br />
+\# test4.c transpiled from test4.tpp for testing function param varifications <br />
+verifies for return type. if not void shows error if corresponding high level(not inside other constructs like if, for etc) is not found, does not show error for void type.<br />
 
 ## Stage 3
 
