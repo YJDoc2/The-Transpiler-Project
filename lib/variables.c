@@ -21,6 +21,7 @@ void __init_vars__() {
 
 void __del_var__(void* a, void* b) {
   free(a);
+  free(b);
   // We do not free the b->name, as that and key (a) is the same.
 }
 
@@ -29,7 +30,7 @@ void __cleanup_vars__() { delete_hashmap(varmap, __del_var__); }
 void create_var(modifier m, type t, char* ident, int line) {
   char* _name =
       strdup(ident);  // MUST duplicate as Parser discards ident ptr after call
-  Variable* v = (Variable*)malloc(sizeof(Variable));
+  Variable* v = (Variable*)calloc(1, sizeof(Variable));
   v->name = _name;
   v->m = m;
   v->t = t;
@@ -44,7 +45,6 @@ void add_var(modifier m, type t, char* ident, int line) {
   Variable* look = lookup_var(ident);
   if (look == NULL) {
     create_var(m, t, ident, line);
-    printcode("%s %s %s;\n", mod_arr[m], type_arr[t], ident);
   } else {
     yyerror("Variable %s already delcared on line %d", ident,
             look->declaration);

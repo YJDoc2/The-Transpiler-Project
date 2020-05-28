@@ -17,10 +17,11 @@ Add function declaration and scoping<br />
 <strong>test1.ttp test2.ttp do not work from here on as top level statements can only be variable declarations or functionn definations </strong><br />
 Added function params varification (for fns declared before as well as later , but no declarations in header yet) <br />
 \# test4.c transpiled from test4.tpp for testing function param varifications <br />
-verifies for return type. if not void shows error if corresponding high level(not inside other constructs like if, for etc) is not found, does not show error for void type.<br />
+verifies for return type. if not void shows error if corresponding high level(not inside other constructs like if, for etc) return statement is not found, does not show error for void type.<br />
 
 ## Stage 3
 
-add expression and multiple declaration.<br />
-Parse Function...all kind...(?)(What did I meant by this ???)<br/>
+Add multiple declaration in same line support, compacted normal and assignment declaratin in single rule
+add expression<br />
+Parse Function...all kind...(?)(What did I meant by this ???)(I guess includeing built in and inbuilt C functions...)<br/>
 make header file generating function , gnerate header file after successful code compiling.<br />

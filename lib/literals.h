@@ -1,7 +1,7 @@
 #ifndef __LITERAL__
 #define __LITERAL__
 
-#include <malloc.h>
+#include <stdlib.h>
 
 #include "linkedlist.h"
 #include "variables.h"

@@ -12,6 +12,7 @@ Stack scopelist;
 
 void __del_scope__(void *a, void *b) {
   free(a);
+  free(b);
   // We do not free the b->name, as that and key (a) is the same.
 }
 

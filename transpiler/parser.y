@@ -10,7 +10,7 @@
     #include "functions.h"
     #include "scope.h"
 
-    extern char *type_arr[];
+    extern char *type_arr[],*mod_arr[];
     bool is_in_fn = false;
     bool has_returned = false;
     type fn_type = VOID_TYPE;
@@ -171,13 +171,29 @@ arg : IDENTIFIER  {Variable *v = lookup_var($1);
                     ll_add(&arglist,v);free($1);}
         | STRINGVAL   {void *v = add_literal(NONE_TYPE,STRING_TYPE,$1);ll_add(&arglist,v);free($1);}
 
-vardeclaration : DECL modifier type IDENTIFIER {create_var($2,$3,$4,yylineno); free($4); }
-    | modifier type IDENTIFIER    {add_var($1,$2,$3,yylineno); free($3);}
-    | assignment
+vardeclaration : DECL modifier type decllist
+    | modifier type {printcode("%s %s ",mod_arr[$1],type_arr[$2]);} varlist {printcode(" ;\n");}
 ;
 
-assignment : modifier type IDENTIFIER '=' value {lhst = $2;verify_types();add_var_assg($1,$2,$3,$5,yylineno);free($3);free($5);}
+decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
+    | decllist ',' IDENTIFIER {create_var($<m>-1,$<t>0,$3,yylineno); free($3); }
 ;
+
+varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno); 
+                        printcode("%s ",$1);
+                        free($1); }
+    | IDENTIFIER '=' value {lhst = $<t>0;verify_types();
+                                add_var($<m>-2,$<t>-1,$1,yylineno);
+                                printcode("%s = %s",$1,$3);
+                                free($1);free($3);}
+    | varlist ',' IDENTIFIER {add_var($<m>-2,$<t>-1,$3,yylineno); 
+                                printcode(",%s ",$3);
+                                free($3);}
+    | varlist ',' IDENTIFIER '=' value {lhst = $<t>0;verify_types();
+                                        add_var($<m>-2,$<t>-1,$3,yylineno);
+                                        printcode(",%s = %s",$3,$5);
+                                        free($3);free($5);}
+
 value : cmplxnum {rhst = COMPLEX_TYPE;}
     | endval
     | BOOLVAL   {rhst = BOOL_TYPE;}

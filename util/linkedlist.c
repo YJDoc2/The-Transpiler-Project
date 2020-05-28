@@ -9,7 +9,7 @@ Linked_list make_linkedlist() {
 
 int ll_add(Linked_list *ll, void *data) {
   ll_link *last = ll->end;
-  ll_link *temp = (ll_link *)malloc(sizeof(ll_link));
+  ll_link *temp = (ll_link *)calloc(1, sizeof(ll_link));
   if (!temp) {
     return -1;
   }
