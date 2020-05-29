@@ -13,7 +13,7 @@ extern char* yytext;
 
 extern int yylex();
 
-int yyerror(char* s, ...);
+void yyerror(char* s, ...);
 
 int printcode(char* s, ...);
 // int printheader();  //! ???ARGS???

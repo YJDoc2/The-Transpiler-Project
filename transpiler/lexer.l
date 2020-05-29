@@ -14,7 +14,7 @@
 
 %%
                         /* GENERAL SYMBOL LIST */
-\{|\}|!|=|"+"|"-"|"*"|;                   {return yytext[0];}
+\{|\}|!|=|"+"|"-"|"*"|"/"|;                   {return yytext[0];}
 
 "("|")"|","                                {return yytext[0];}
 
@@ -66,6 +66,7 @@ const                               { yylval.m = CONST_TYPE; return CONST; }
 static                              { yylval.m = STATIC_TYPE; return STATIC; }
 
 I                                    {return I;}
+mod                                  { return MOD;}
 
 true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
 

@@ -73,26 +73,3 @@ Variable* lookup_var(char* ident) {
   if (look == NULL) look = hm_get(&varmap, ident);
   return (Variable*)look;
 }
-
-int verify_types() {
-  if (lhst == INT_TYPE) {
-    if (!(rhst == INT_TYPE || rhst == LONG_TYPE || rhst == SHORT_TYPE ||
-          rhst == COMPLEX_TYPE)) {
-      yyerror("Invalid assignment : %s cannot be assigned to var type %s",
-              type_arr[rhst], type_arr[lhst]);
-    }
-  }
-  if (lhst == BOOL_TYPE) {
-    if (rhst != BOOL_TYPE) {
-      yyerror("Invalid assignment : %s cannot be assigned to var type %s",
-              type_arr[rhst], type_arr[lhst]);
-    }
-  }
-  if (lhst == STRING_TYPE) {
-    if (rhst != STRING_TYPE) {
-      yyerror("Invalid assignment : %s cannot be assigned to var type %s",
-              type_arr[rhst], type_arr[lhst]);
-    }
-  }
-  return 0;
-}

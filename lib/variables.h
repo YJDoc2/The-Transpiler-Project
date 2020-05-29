@@ -27,7 +27,6 @@ typedef struct {
 } Variable;
 
 Hashmap varmap;
-type rhst, lhst;
 
 void __init_vars__();
 void __cleanup_vars__();
@@ -37,6 +36,4 @@ void add_var(modifier m, type t, char *ident, int line);
 void add_var_assg(modifier m, type t, char *ident, char *val, int line);
 
 Variable *lookup_var(char *ident);
-int verify_types();
-
 #endif

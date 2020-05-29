@@ -4,11 +4,14 @@
 #include <string.h>
 
 static int errs = 0;
+static int last_err = -1;
 
 FILE *code = NULL;
 FILE *header = NULL;
 
-int yyerror(char *s, ...) {
+void yyerror(char *s, ...) {
+  if (last_err == yylineno) return;
+  last_err = yylineno;
   ++errs;
   va_list ap;
   va_start(ap, s);

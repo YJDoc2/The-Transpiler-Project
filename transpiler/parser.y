@@ -9,10 +9,12 @@
     #include "literals.h"
     #include "functions.h"
     #include "scope.h"
+    #include "expressions.h"
 
     extern char *type_arr[],*mod_arr[];
     bool is_in_fn = false;
     bool has_returned = false;
+    type rhst = VOID_TYPE, lhst = VOID_TYPE;
     type fn_type = VOID_TYPE;
 
 %}
@@ -23,6 +25,12 @@
     modifier m;
 }
 
+
+%left '+' '-'
+    /* I'm not sure of MOD yet...*/
+%left '*' '/' MOD
+%nonassoc UMINUS
+
 %token <t> BOOL COMPLEX
 %token <m> CONST STATIC
 %token <t> DOUBLE FLOAT LONG SHORT VOID INT
@@ -31,7 +39,7 @@
 %token BREAK CONTINUE ELSE FOR IF
 %token RETURN WHILE
 
-%token I
+%token I MOD
 %token IN NOT RAW USE
 %token DECL 
 %token <s> IDENTIFIER BOOLVAL STRINGVAL
@@ -46,7 +54,7 @@
 %type <t> type
 %type <m> modifier
 
-%type <s> value cmplxnum intnum floatnum endval
+%type <s> value cmplxnum expr
 
 %%
 program : topstmtlist
@@ -106,9 +114,9 @@ paramlist : /* nothing */
 param : modifier type IDENTIFIER    {add_param($1,$2,$3);create_var($1,$2,$3,yylineno); free($3);}
 
 stmtlist :/* nothing */
-    | stmtlist error ';'
-    | stmtlist stmt ';'
-    | stmtlist stmt {yyerror("missing ;");}
+    | stmtlist error ';' {rhst = VOID_TYPE;}
+    | stmtlist stmt ';' {rhst = VOID_TYPE;}
+    | stmtlist stmt {yyerror("missing ;");rhst = VOID_TYPE;}
 ;
 
 stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
@@ -117,19 +125,31 @@ stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
     | returnstmt
 ;
 
-returnstmt : RETURN value { if(rhst != fn_type){
-                                yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[rhst]);
-                            }else{
-                                printcode("return %s;\n",$2);
-                                has_returned = true;
-                            }}
-            | RETURN    {if(fn_type != VOID_TYPE){
-                            yyerror("return statement without value is not allowed for function type other than void.");
-                        }else{
-                            printcode("return;\n");
-                            has_returned = true;
-                        }}
+vardeclaration : DECL modifier type decllist
+    | modifier type {printcode("%s %s ",mod_arr[$1],type_arr[$2]);} varlist {printcode(" ;\n");}
+;
 
+decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
+    | decllist ',' IDENTIFIER {create_var($<m>-1,$<t>0,$3,yylineno); free($3); }
+;
+
+varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno); 
+                        printcode("%s ",$1);
+                        free($1); }
+    | IDENTIFIER '=' expr {lhst = $<t>-1;
+                                if(verify_types(lhst,rhst))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[rhst], type_arr[lhst]);
+                                add_var($<m>-2,$<t>-1,$1,yylineno);
+                                printcode("%s = %s",$1,$3);
+                                free($1);free($3);}
+    | varlist ',' IDENTIFIER {add_var($<m>-2,$<t>-1,$3,yylineno); 
+                                printcode(",%s ",$3);
+                                free($3);}
+    | varlist ',' IDENTIFIER '=' expr {lhst = $<t>-1;
+                                        if(verify_types(lhst,rhst))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[rhst], type_arr[lhst]);
+                                        add_var($<m>-2,$<t>-1,$3,yylineno);
+                                        printcode(",%s = %s",$3,$5);
+                                        free($3);free($5);}
+;
 
 fncall : IDENTIFIER '(' arglist ')' {if(find_action($1)){
                                         perform_action($1);
@@ -150,78 +170,81 @@ fncall : IDENTIFIER '(' arglist ')' {if(find_action($1)){
 ;
 
 arglist : /* nothing */
-    | arglist arg
-    | arglist ',' arg
+    | arglist arg {rhst = VOID_TYPE;}
+    | arglist ',' arg {rhst = VOID_TYPE;}
 ;
 
-arg : IDENTIFIER  {Variable *v = lookup_var($1);
-                    if(v == NULL){
-                        yyerror("Undefined variable %s",$1);
-                    }else{
-                        ll_add(&arglist,v);
-                    }
-                    free($1);}
-        | intnum {void* v = add_literal(NONE_TYPE,INT_TYPE,$1);
-                    ll_add(&arglist,v);free($1);}
-        | floatnum {void* v = add_literal(NONE_TYPE,DOUBLE_TYPE,$1);
-                    ll_add(&arglist,v);free($1);}
-        | cmplxnum {void* v = add_literal(NONE_TYPE,COMPLEX_TYPE,$1);
-                    ll_add(&arglist,v);free($1);}
-        | BOOLVAL {void* v = add_literal(NONE_TYPE,BOOL_TYPE,$1);
-                    ll_add(&arglist,v);free($1);}
-        | STRINGVAL   {void *v = add_literal(NONE_TYPE,STRING_TYPE,$1);ll_add(&arglist,v);free($1);}
-
-vardeclaration : DECL modifier type decllist
-    | modifier type {printcode("%s %s ",mod_arr[$1],type_arr[$2]);} varlist {printcode(" ;\n");}
+arg : expr  {void *v = add_literal(NONE_TYPE,rhst,$1);ll_add(&arglist,v);free($1);}
 ;
 
-decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
-    | decllist ',' IDENTIFIER {create_var($<m>-1,$<t>0,$3,yylineno); free($3); }
+returnstmt : RETURN value { if(rhst != fn_type){
+                                yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[rhst]);
+                            }else{
+                                printcode("return %s;\n",$2);
+                                has_returned = true;
+                            }}
+            | RETURN    {if(fn_type != VOID_TYPE){
+                            yyerror("return statement without value is not allowed for function type other than void.");
+                        }else{
+                            printcode("return;\n");
+                            has_returned = true;
+                        }}
 ;
 
-varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno); 
-                        printcode("%s ",$1);
-                        free($1); }
-    | IDENTIFIER '=' value {lhst = $<t>0;verify_types();
-                                add_var($<m>-2,$<t>-1,$1,yylineno);
-                                printcode("%s = %s",$1,$3);
-                                free($1);free($3);}
-    | varlist ',' IDENTIFIER {add_var($<m>-2,$<t>-1,$3,yylineno); 
-                                printcode(",%s ",$3);
-                                free($3);}
-    | varlist ',' IDENTIFIER '=' value {lhst = $<t>0;verify_types();
-                                        add_var($<m>-2,$<t>-1,$3,yylineno);
-                                        printcode(",%s = %s",$3,$5);
-                                        free($3);free($5);}
+expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3);}
+    | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3);}
+    | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3);}
+    | expr '/' expr  {$$=join($1,"/",$3); free($1);free($3);}
+    | expr MOD expr  {$$=join($1,"%",$3); free($1);free($3);}
+    | '(' expr ')'   {$$=join("( ",$2," )"); free($2);}
+    | '-' expr %prec UMINUS {$$=join("-","",$2); free($2);}
+    | value 
 
-value : cmplxnum {rhst = COMPLEX_TYPE;}
-    | endval
-    | BOOLVAL   {rhst = BOOL_TYPE;}
-    | STRINGVAL {rhst = STRING_TYPE;}
-;
-
-cmplxnum : endval '+' endval '*' I {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
-                                    strcat(_t,$1);strcat(_t,"+");strcat(_t,$3);strcat(_t,"*I");
-                                    $$ = (char*)_t;}
-    | endval '-' endval '*' I      {void *_t = calloc(1,strlen($1)+strlen($3)+1); 
-                                    strcat(_t,$1);strcat(_t,"-");strcat(_t,$3);strcat(_t,"*I");
-                                    $$ = (char*)_t;}
-;
-
-endval : intnum {rhst = INT_TYPE;}
-    | floatnum {rhst = FLOAT_TYPE;}
+value : cmplxnum {if(rhst == BOOL_TYPE || rhst == STRING_TYPE){
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[rhst]);;
+                }else{
+                    rhst = COMPLEX_TYPE;
+                }}
+    | INTNUM {if(rhst == BOOL_TYPE || rhst == STRING_TYPE){
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[INT_TYPE],type_arr[rhst]);;
+                }else if(!(rhst == FLOAT_TYPE || rhst == DOUBLE_TYPE || rhst == COMPLEX_TYPE)){
+                    rhst = INT_TYPE;
+                }}
+    | FLOATNUM { if(rhst == BOOL_TYPE || rhst == STRING_TYPE){
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[rhst]);;
+                }else if(rhst != COMPLEX_TYPE){
+                    rhst = FLOAT_TYPE;
+                }}
     | IDENTIFIER { Variable *_t = lookup_var($$);
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$$);
-                    }else{
+                    }else if(rhst == BOOL_TYPE || rhst == STRING_TYPE){
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[_t->t],type_arr[rhst]);;
+                    }else if(_t->t ==COMPLEX_TYPE){
+                        rhst = COMPLEX_TYPE;
+                    }else if(_t->t == FLOAT_TYPE && rhst != COMPLEX_TYPE){
+                        rhst = FLOAT_TYPE;
+                    }else if(rhst != COMPLEX_TYPE && rhst != FLOAT_TYPE){
                         rhst = _t->t;
                     }}
+    | BOOLVAL   {if(rhst == VOID_TYPE){
+                    rhst = BOOL_TYPE;
+                }else if(rhst != BOOL_TYPE){
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[rhst],type_arr[BOOL_TYPE]);;
+                    rhst = BOOL_TYPE;
+                    
+                }}
+    | STRINGVAL {if(rhst != VOID_TYPE){yyerror("Cannot combine string type with any type.");}rhst = STRING_TYPE;}
+;
 
-intnum : INTNUM
-    | '-' INTNUM {char *_s = calloc(1,strlen($2)+2); strcpy(_s,"-"); strcat(_s,$2); $$ = _s; free($2);}
-floatnum : FLOATNUM 
-    | '-' FLOATNUM {char *_s = calloc(1,strlen($2)+2); strcpy(_s,"-"); strcat(_s,$2); $$ = _s; free($2);}
-
+cmplxnum : '(' expr ',' expr ')' {void* _t = calloc(1, strlen($2) + strlen($4) + 1+2+2);/*1 for the + symbol,
+                                                                                        2 for the perenthesis around the img part
+                                                                                        2 for the parenthesis around the whole*/
+                                        strcat(_t,"(");strcat(_t, $2);strcat(_t,"+");
+                                        strcat(_t,"(");strcat(_t, $4);strcat(_t,")");
+                                        strcat(_t, "*I");strcat(_t,")");
+                                            $$ = (char*)_t;}
+;
 %%
 
 void main(int argc , char **argv){

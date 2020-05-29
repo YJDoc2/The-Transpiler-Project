@@ -49,40 +49,42 @@ extern int yydebug;
 # define YYTOKENTYPE
   enum yytokentype
   {
-    BOOL = 258,
-    COMPLEX = 259,
-    CONST = 260,
-    STATIC = 261,
-    DOUBLE = 262,
-    FLOAT = 263,
-    LONG = 264,
-    SHORT = 265,
-    VOID = 266,
-    INT = 267,
-    STRING = 268,
-    BREAK = 269,
-    CONTINUE = 270,
-    ELSE = 271,
-    FOR = 272,
-    IF = 273,
-    RETURN = 274,
-    WHILE = 275,
-    I = 276,
-    IN = 277,
-    NOT = 278,
-    RAW = 279,
-    USE = 280,
-    DECL = 281,
-    IDENTIFIER = 282,
-    BOOLVAL = 283,
-    STRINGVAL = 284,
-    FNDECL = 285,
-    RETTYPE = 286,
-    INTNUM = 287,
-    FLOATNUM = 288,
-    RAWSTART = 289,
-    RAWEND = 290,
-    RAWLINE = 291
+    MOD = 258,
+    UMINUS = 259,
+    BOOL = 260,
+    COMPLEX = 261,
+    CONST = 262,
+    STATIC = 263,
+    DOUBLE = 264,
+    FLOAT = 265,
+    LONG = 266,
+    SHORT = 267,
+    VOID = 268,
+    INT = 269,
+    STRING = 270,
+    BREAK = 271,
+    CONTINUE = 272,
+    ELSE = 273,
+    FOR = 274,
+    IF = 275,
+    RETURN = 276,
+    WHILE = 277,
+    I = 278,
+    IN = 279,
+    NOT = 280,
+    RAW = 281,
+    USE = 282,
+    DECL = 283,
+    IDENTIFIER = 284,
+    BOOLVAL = 285,
+    STRINGVAL = 286,
+    FNDECL = 287,
+    RETTYPE = 288,
+    INTNUM = 289,
+    FLOATNUM = 290,
+    RAWSTART = 291,
+    RAWEND = 292,
+    RAWLINE = 293
   };
 #endif
 
@@ -90,13 +92,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 20 "parser.y"
+#line 22 "parser.y"
 
     char *s;
     type t;
     modifier m;
 
-#line 100 "parser.tab.h"
+#line 102 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
