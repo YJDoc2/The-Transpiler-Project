@@ -25,5 +25,11 @@ Add multiple declaration in same line support, compacted normal and assignment d
 Changed representation of complex numbers to (real,img) and added mod keyword for % operation <br />
 Add expressions (without fncall) and type varification, but more testing is required. <br />
 \# test5.c transpiled from test5.tpp for testing expressions without fncall (more testing is required)<br />
+use stack to parser nested fncall, revamp the expression and remove unneccessary fns <br />
 Parse Function...all kind...(?)(What did I meant by this ???)(I guess includeing built in and inbuilt C functions...)<br/>
+
 make header file generating function , gnerate header file after successful code compiling.<br />
+
+## Stage 4
+
+Add Array support, add conditions add if statement.

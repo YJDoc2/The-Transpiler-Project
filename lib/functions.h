@@ -27,15 +27,16 @@ typedef struct {
 typedef struct {
   Linked_list* arglist;
   int declaration;
+  type ret_type;
 } Fncall;
 
 void __init_functions__();
 void __cleanup_functions__();
 
-void add_call(char* fn, int lineno);
-void print_call(char* fn);
+void add_call(char* fn, type t, int lineno);
+char* get_fncall_str(char* fnname);
 
-int verify_call(char* fnname, Function* fn, int lineno);
+int verify_call(char* fnname, type t, Function* fn, int lineno);
 
 void add_param(modifier m, type t, char* param_name);
 

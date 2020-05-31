@@ -16,6 +16,10 @@ char* fncall_incorrect_arg_type_msg =
     "incorrect argument type in function call on line %d :\n\tfor "
     "argument %d expected tpe %s as per declaration on line %d, got %s";
 
+char* fncall_incorrect_ret_tpe_msg =
+    "incorrect return type in function call on line %d :\n\texpected %s but "
+    "found %s as per declaration on line %d";
+
 void __ll_del_fn__(void* a) {
   Param* p = (Param*)a;
   free(p->name);
@@ -115,7 +119,6 @@ void add_function(modifier m, type t, char* fnname, char* printname,
   f->ret_t = t;
   f->ret_m = m;
   hm_add(&fnmap, strdup(fnname), f);
-  verify_previous_calls(fnname, f);
 }
 
 static void print_param(Param* p) {
@@ -154,12 +157,13 @@ void print_fn_delc(char* name) {
 
 Function* find_fn(char* fnname) { return (Function*)hm_get(&fnmap, fnname); }
 
-void add_call(char* fnname, int lineno) {
+void add_call(char* fnname, type t, int lineno) {
   Linked_list* _ll = (Linked_list*)hm_get(&callmap, fnname);
   Fncall* call = (Fncall*)calloc(1, sizeof(Fncall));
   call->declaration = lineno;
   call->arglist = (Linked_list*)calloc(1, sizeof(Linked_list));
   *(call->arglist) = arglist;
+  call->ret_type = t;
   if (_ll != NULL) {
     ll_add(_ll, call);
     return;
@@ -170,27 +174,44 @@ void add_call(char* fnname, int lineno) {
   return;
 }
 
-void print_call(char* fn) {
-  printcode("%s(", fn);
+char* get_fncall_str(char* fnname) {
   ll_link* _t = arglist.start;
   Variable* _var;
+  int len = strlen(fnname) + 2;
   while (_t != NULL) {
     _var = (Variable*)_t->data;
-    printcode("%s", _var->name);
+    len += strlen(_var->name) + 1;
+    _t = _t->next;
+  }
+  void* ret = calloc(1, len + 1);
+  strcat(ret, fnname);
+  strcat(ret, "(");
+  _t = arglist.start;
+  while (_t != NULL) {
+    _var = (Variable*)_t->data;
+    strcat(ret, _var->name);
     if (_t->next != NULL) {
-      printcode(" , ");
+      strcat(ret, ",");
     }
     _t = _t->next;
   }
-  printcode(" );\n");
+  strcat(ret, ")");
+  return ret;
 }
 
-int verify_call(char* fnname, Function* fn, int lineno) {
-  if (arglist.size != fn->param_list->size) {
-    yyerror(fncall_incorrect_arg_num_msg, fnname, lineno, fn->param_list->size,
+int verify_call(char* fnname, type t, Function* fn, int lineno) {
+  int params = fn->param_list == NULL ? 0 : fn->param_list->size;
+  if (arglist.size != params) {
+    yyerror(fncall_incorrect_arg_num_msg, fnname, lineno, params,
             fn->declaration, arglist.size);
     return 1;
   }
+  if (t != fn->ret_t) {
+    yyerror(fncall_incorrect_ret_tpe_msg, lineno, type_arr[t],
+            type_arr[fn->ret_t], fn->declaration);
+    return 1;
+  }
+  if (arglist.size == 0) return 0;
   int argnum = 1;
   ll_link* fn_params_itr = fn->param_list->start;
   ll_link* arglist_itr = arglist.start;

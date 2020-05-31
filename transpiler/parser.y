@@ -11,11 +11,13 @@
     #include "scope.h"
     #include "expressions.h"
 
+    void preparse();
     extern char *type_arr[],*mod_arr[];
     bool is_in_fn = false;
     bool has_returned = false;
-    type rhst = VOID_TYPE, lhst = VOID_TYPE;
     type fn_type = VOID_TYPE;
+    type arg_type;
+    type expr_type = VOID_TYPE;
 
 %}
 
@@ -54,7 +56,7 @@
 %type <t> type
 %type <m> modifier
 
-%type <s> value cmplxnum expr
+%type <s> value cmplxnum expr fncall
 
 %%
 program : topstmtlist
@@ -100,8 +102,7 @@ fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type fndecldum
                                                                                                     popscope();
                                                                                                     }
 
-fndecldummy : /* nothing */ {add_function($<m>-1,$<t>0,$<s>-6,$<s>-6,yylineno);
-                            print_fn_delc($<s>-6);
+fndecldummy : /* nothing */ {print_fn_delc($<s>-6);
                             fn_type = $<t>0;
                             is_in_fn = true;
                             has_returned = false;
@@ -114,19 +115,19 @@ paramlist : /* nothing */
 param : modifier type IDENTIFIER    {add_param($1,$2,$3);create_var($1,$2,$3,yylineno); free($3);}
 
 stmtlist :/* nothing */
-    | stmtlist error ';' {rhst = VOID_TYPE;}
-    | stmtlist stmt ';' {rhst = VOID_TYPE;}
-    | stmtlist stmt {yyerror("missing ;");rhst = VOID_TYPE;}
+    | stmtlist error ';' {expr_type = VOID_TYPE;}
+    | stmtlist stmt ';' {expr_type= VOID_TYPE;}
+    | stmtlist stmt {yyerror("missing ;");expr_type =  VOID_TYPE;}
 ;
 
 stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
     | vardeclaration
-    | fncall
+    | fncall {printcode($1);if(strcmp($1,"")!=0)printcode(";\n");free($1);}
     | returnstmt
 ;
 
 vardeclaration : DECL modifier type decllist
-    | modifier type {printcode("%s %s ",mod_arr[$1],type_arr[$2]);} varlist {printcode(" ;\n");}
+    | modifier type { printcode("%s %s ",mod_arr[$1],type_arr[$2]);} varlist {printcode(" ;\n");}
 ;
 
 decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
@@ -136,49 +137,52 @@ decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
 varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno); 
                         printcode("%s ",$1);
                         free($1); }
-    | IDENTIFIER '=' expr {lhst = $<t>-1;
-                                if(verify_types(lhst,rhst))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[rhst], type_arr[lhst]);
+    | IDENTIFIER '=' expr {
+                                if(verify_types($<t>-1,expr_type))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[expr_type], type_arr[$<t>-1]);
                                 add_var($<m>-2,$<t>-1,$1,yylineno);
                                 printcode("%s = %s",$1,$3);
                                 free($1);free($3);}
     | varlist ',' IDENTIFIER {add_var($<m>-2,$<t>-1,$3,yylineno); 
                                 printcode(",%s ",$3);
                                 free($3);}
-    | varlist ',' IDENTIFIER '=' expr {lhst = $<t>-1;
-                                        if(verify_types(lhst,rhst))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[rhst], type_arr[lhst]);
+    | varlist ',' IDENTIFIER '=' expr {
+                                        if(verify_types($<t>-1,expr_type))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[expr_type], type_arr[$<t>-1]);
                                         add_var($<m>-2,$<t>-1,$3,yylineno);
                                         printcode(",%s = %s",$3,$5);
                                         free($3);free($5);}
 ;
 
-fncall : IDENTIFIER '(' arglist ')' {if(find_action($1)){
+fncall : IDENTIFIER '(' {push_arg_type();push_expr_type();set_arg_iter($1);} arglist ')' {if(!is_in_fn){
+                                        yyerror("Function call is not allowed outside a function.");
+                                    }else if(find_action($1)){
                                         perform_action($1);
+                                        $$ = strdup("");
                                     }else{
                                         Function *fn = find_fn($1);
                                         if(fn == NULL){
-                                            add_call($1,yylineno);
-                                            print_call($1);
+                                            $$ = get_fncall_str($1);
                                             arglist.end = arglist.start = NULL;
                                             arglist.size = 0;
                                         }else{
-                                            verify_call($1,fn,yylineno);
-                                            print_call($1);
+                                            verify_call($1,arg_type,fn,yylineno);
+                                            $$ = get_fncall_str($1);
                                             ll_clear(&arglist);
                                         }
                                     }
+                                    pop_arg_type();pop_expr_type();
                                     free($1);}
 ;
 
-arglist : /* nothing */
-    | arglist arg {rhst = VOID_TYPE;}
-    | arglist ',' arg {rhst = VOID_TYPE;}
+arglist : /* nothing */ 
+    | arglist arg {arg_type = shift_arg_type();}
+    | arglist ',' arg {arg_type = get_arg_type();}
 ;
 
-arg : expr  {void *v = add_literal(NONE_TYPE,rhst,$1);ll_add(&arglist,v);free($1);}
+arg : expr  {void *v = add_literal(NONE_TYPE,expr_type,$1);ll_add(&arglist,v);free($1);}
 ;
 
-returnstmt : RETURN value { if(rhst != fn_type){
-                                yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[rhst]);
+returnstmt : RETURN expr { if(expr_type != fn_type){
+                                yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[expr_type]);
                             }else{
                                 printcode("return %s;\n",$2);
                                 has_returned = true;
@@ -198,43 +202,42 @@ expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3);}
     | expr MOD expr  {$$=join($1,"%",$3); free($1);free($3);}
     | '(' expr ')'   {$$=join("( ",$2," )"); free($2);}
     | '-' expr %prec UMINUS {$$=join("-","",$2); free($2);}
-    | value 
+    | value
 
-value : cmplxnum {if(rhst == BOOL_TYPE || rhst == STRING_TYPE){
-                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[rhst]);;
+value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);;
                 }else{
-                    rhst = COMPLEX_TYPE;
+                    expr_type = COMPLEX_TYPE;
                 }}
-    | INTNUM {if(rhst == BOOL_TYPE || rhst == STRING_TYPE){
-                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[INT_TYPE],type_arr[rhst]);;
-                }else if(!(rhst == FLOAT_TYPE || rhst == DOUBLE_TYPE || rhst == COMPLEX_TYPE)){
-                    rhst = INT_TYPE;
+    | INTNUM {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[INT_TYPE],type_arr[expr_type]);;
+                }else if(!(expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == COMPLEX_TYPE)){
+                    expr_type = INT_TYPE;
                 }}
-    | FLOATNUM { if(rhst == BOOL_TYPE || rhst == STRING_TYPE){
-                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[rhst]);;
-                }else if(rhst != COMPLEX_TYPE){
-                    rhst = FLOAT_TYPE;
+    | FLOATNUM { if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);;
+                }else if(expr_type != COMPLEX_TYPE){
+                    expr_type = FLOAT_TYPE;
                 }}
     | IDENTIFIER { Variable *_t = lookup_var($$);
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$$);
-                    }else if(rhst == BOOL_TYPE || rhst == STRING_TYPE){
-                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[_t->t],type_arr[rhst]);;
+                    }else if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[_t->t],type_arr[expr_type]);;
                     }else if(_t->t ==COMPLEX_TYPE){
-                        rhst = COMPLEX_TYPE;
-                    }else if(_t->t == FLOAT_TYPE && rhst != COMPLEX_TYPE){
-                        rhst = FLOAT_TYPE;
-                    }else if(rhst != COMPLEX_TYPE && rhst != FLOAT_TYPE){
-                        rhst = _t->t;
+                        expr_type = COMPLEX_TYPE;
+                    }else if(_t->t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
+                        expr_type = FLOAT_TYPE;
+                    }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
+                        expr_type = _t->t;
                     }}
-    | BOOLVAL   {if(rhst == VOID_TYPE){
-                    rhst = BOOL_TYPE;
-                }else if(rhst != BOOL_TYPE){
-                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[rhst],type_arr[BOOL_TYPE]);;
-                    rhst = BOOL_TYPE;
-                    
+    | BOOLVAL   {if(expr_type == VOID_TYPE){
+                    expr_type = BOOL_TYPE;
+                }else if(expr_type != BOOL_TYPE){
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);;
                 }}
-    | STRINGVAL {if(rhst != VOID_TYPE){yyerror("Cannot combine string type with any type.");}rhst = STRING_TYPE;}
+    | STRINGVAL {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
+    | fncall    
 ;
 
 cmplxnum : '(' expr ',' expr ')' {void* _t = calloc(1, strlen($2) + strlen($4) + 1+2+2);/*1 for the + symbol,
@@ -255,7 +258,10 @@ void main(int argc , char **argv){
     __init_actions__();
     __init_functions__();
     __init_scopes__();
+    __init_expr__();
+    preparse();
     yyparse();
+    __cleanup_expr__();
     __cleanup_scopes__();
     __cleanup_functions__();
     __cleanup_actions__();

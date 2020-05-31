@@ -31,7 +31,8 @@ int __init_io__(char *infile, char *outfile) {
     exit(1);
   }
   yyin = fopen(infile, "r");
-  if (yyin == NULL) {
+  prein = fopen(infile, "r");
+  if (yyin == NULL || prein == NULL) {
     perror("cannot open given codefile");
     __cleanup_io__();
     exit(EXIT_FAILURE);
@@ -74,6 +75,10 @@ int __cleanup_io__() {
   if (yyin != NULL) {
     fclose(yyin);
   }
+  if (prein != NULL) {
+    fclose(prein);
+  }
+
   return 0;
 }
 

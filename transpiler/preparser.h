@@ -34,81 +34,67 @@
 /* Undocumented macros, especially those whose name start with YY_,
    are private implementation details.  Do not rely on them.  */
 
-#ifndef YY_YY_PARSER_TAB_H_INCLUDED
-# define YY_YY_PARSER_TAB_H_INCLUDED
+#ifndef YY_PRE_PREPARSER_TAB_H_INCLUDED
+# define YY_PRE_PREPARSER_TAB_H_INCLUDED
 /* Debug traces.  */
-#ifndef YYDEBUG
-# define YYDEBUG 0
-#endif
+#ifndef PREDEBUG
+# if defined YYDEBUG
 #if YYDEBUG
-extern int yydebug;
+#   define PREDEBUG 1
+#  else
+#   define PREDEBUG 0
+#  endif
+# else /* ! defined YYDEBUG */
+#  define PREDEBUG 0
+# endif /* ! defined YYDEBUG */
+#endif  /* ! defined PREDEBUG */
+#if PREDEBUG
+extern int predebug;
 #endif
 
 /* Token type.  */
-#ifndef YYTOKENTYPE
-# define YYTOKENTYPE
-  enum yytokentype
+#ifndef PRETOKENTYPE
+# define PRETOKENTYPE
+  enum pretokentype
   {
-    MOD = 258,
-    UMINUS = 259,
-    BOOL = 260,
-    COMPLEX = 261,
-    CONST = 262,
-    STATIC = 263,
-    DOUBLE = 264,
-    FLOAT = 265,
-    LONG = 266,
-    SHORT = 267,
-    VOID = 268,
-    INT = 269,
-    STRING = 270,
-    BREAK = 271,
-    CONTINUE = 272,
-    ELSE = 273,
-    FOR = 274,
-    IF = 275,
-    RETURN = 276,
-    WHILE = 277,
-    I = 278,
-    IN = 279,
-    NOT = 280,
-    RAW = 281,
-    USE = 282,
-    DECL = 283,
-    IDENTIFIER = 284,
-    BOOLVAL = 285,
-    STRINGVAL = 286,
-    FNDECL = 287,
-    RETTYPE = 288,
-    INTNUM = 289,
-    FLOATNUM = 290,
-    RAWSTART = 291,
-    RAWEND = 292,
-    RAWLINE = 293
+    BOOL = 258,
+    COMPLEX = 259,
+    CONST = 260,
+    STATIC = 261,
+    DOUBLE = 262,
+    FLOAT = 263,
+    LONG = 264,
+    SHORT = 265,
+    VOID = 266,
+    INT = 267,
+    STRING = 268,
+    FNDECL = 269,
+    RETTYPE = 270,
+    IDENTIFIER = 271
   };
 #endif
 
 /* Value type.  */
-#if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
-union YYSTYPE
+#if ! defined PRESTYPE && ! defined PRESTYPE_IS_DECLARED
+union PRESTYPE
 {
-#line 24 "parser.y"
+#line 16 "preparser.y"
 
     char *s;
     type t;
     modifier m;
 
-#line 102 "parser.tab.h"
+#line 88 "preparser.tab.h"
 
 };
-typedef union YYSTYPE YYSTYPE;
-# define YYSTYPE_IS_TRIVIAL 1
-# define YYSTYPE_IS_DECLARED 1
+typedef union PRESTYPE PRESTYPE;
+# define PRESTYPE_IS_TRIVIAL 1
+# define PRESTYPE_IS_DECLARED 1
 #endif
 
 
-extern YYSTYPE yylval;
+extern PRESTYPE prelval;
 
-int yyparse (void);
+int preparse (void);
 
-#endif /* !YY_YY_PARSER_TAB_H_INCLUDED  */
+#endif /* !YY_PRE_PREPARSER_TAB_H_INCLUDED  */

@@ -7,7 +7,7 @@
 
 #define ERR_LIM 10
 
-extern FILE* yyin;
+extern FILE *yyin, *prein;
 extern int yylineno;
 extern char* yytext;
 

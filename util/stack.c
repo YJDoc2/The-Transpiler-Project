@@ -20,7 +20,7 @@ int st_push(Stack *st, void *data) {
   return 0;
 }
 void *st_pop(Stack *st) {
-  if (st->start == NULL) return NULL;
+  if (st->start == NULL) return (void *)-1;
 
   stack_link *temp = st->start;
   st->start = st->start->next;
