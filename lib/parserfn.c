@@ -3,14 +3,14 @@
 #include <errno.h>
 #include <string.h>
 
-static int errs = 0;
+int errs = 0;
 static int last_err = -1;
 
 FILE *code = NULL;
 FILE *header = NULL;
 
 void yyerror(char *s, ...) {
-  if (last_err == yylineno) return;
+  if (last_err == yylineno && strcmp(s, "syntax error") == 0) return;
   last_err = yylineno;
   ++errs;
   va_list ap;

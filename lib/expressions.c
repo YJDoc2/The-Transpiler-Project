@@ -5,42 +5,41 @@
 
 #include "stack.h"
 
-Stack expr_t, arg_t;
+Stack exprt_st, args_st;
 extern char *type_arr;
 ll_link *arg;
 
 void __init_expr__() {
-  expr_t = make_stack();
-  arg_t = make_stack();
-}
-void __cleanup_expr__() {
-  st_delete(&expr_t, ll_nullfn);
-  st_delete(&arg_t, ll_nullfn);
+  exprt_st = make_stack();
+  args_st = make_stack();
 }
 
-void push_arg_type() {
-  st_push(&arg_t, arg_type);
-  arg_type = VOID_TYPE;
+void __clean_args_st__(void *a) {
+  if (a == NULL) return;
+  Linked_list *l = (Linked_list *)a;
+  ll_clear(l);
+  free(a);
 }
-void pop_arg_type() {
-  void *_t = st_pop(&arg_t);
-  if (_t == (void *)-1) {
-    arg_type = VOID_TYPE;
-  } else {
-    arg_type = (type)_t;
-  }
+
+void __cleanup_expr__() {
+  st_delete(&exprt_st, ll_nullfn);
+  st_delete(&args_st, __clean_args_st__);
 }
-void push_expr_type() {
-  st_push(&expr_t, arg_type);
+
+void push_expr_and_args() {
+  st_push(&exprt_st, (void *)expr_type);
+  st_push(&args_st, (void *)arglist);
+  arglist = (Linked_list *)calloc(1, sizeof(Linked_list));
+  *arglist = make_linkedlist();
   expr_type = VOID_TYPE;
 }
-void pop_expr_type() {
-  void *_t = st_pop(&expr_t);
-  if (_t == (void *)-1) {
-    expr_type = VOID_TYPE;
-  } else {
-    expr_type = (type)_t;
-  }
+
+void pop_expr_and_args() {
+  ll_clear(arglist);
+  free(arglist);
+  type _t = (type)st_pop(&exprt_st);
+  expr_type = _t == -1 ? VOID_TYPE : _t;
+  arglist = (Linked_list *)st_pop(&args_st);
 }
 
 char *join(char *start, char *middle, char *end) {
@@ -79,11 +78,4 @@ int verify_types(type combining_with, type combining_type) {
     if (combining_type == BOOL_TYPE) return 1;
 
   return 0;
-}
-
-void set_arg_iter(char *fn) {
-  Function *f = find_fn(fn);
-  if (fn == NULL) return;
-  arg = f->param_list->start;
-  arg_type =
 }

@@ -1,0 +1,21 @@
+RAW <{
+#include<stdio.h>
+#include <stdbool.h>
+#include<complex.h>
+
+void test_fn(char *,const int);
+char * test2();
+}>
+fn main() -> void{
+    int k = 80;
+    printf("Hello world!");
+    int g = k+test_fn(test2(),test_fn(test2(),test_fn("hello",5)));
+}
+fn test_fn(string s, const int k)->int{
+    print(s," == ",k);
+    return 9;
+}
+
+fn test2() ->string{
+    return "9";
+}

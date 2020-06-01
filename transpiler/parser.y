@@ -152,7 +152,7 @@ varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno);
                                         free($3);free($5);}
 ;
 
-fncall : IDENTIFIER '(' {push_arg_type();push_expr_type();set_arg_iter($1);} arglist ')' {if(!is_in_fn){
+fncall : IDENTIFIER '(' {push_expr_and_args();} arglist ')' {if(!is_in_fn){
                                         yyerror("Function call is not allowed outside a function.");
                                     }else if(find_action($1)){
                                         perform_action($1);
@@ -161,24 +161,26 @@ fncall : IDENTIFIER '(' {push_arg_type();push_expr_type();set_arg_iter($1);} arg
                                         Function *fn = find_fn($1);
                                         if(fn == NULL){
                                             $$ = get_fncall_str($1);
-                                            arglist.end = arglist.start = NULL;
-                                            arglist.size = 0;
+                                            ll_clear(arglist);
                                         }else{
-                                            verify_call($1,arg_type,fn,yylineno);
+                                            verify_call($1,fn,yylineno);
                                             $$ = get_fncall_str($1);
-                                            ll_clear(&arglist);
+                                            ll_clear(arglist);
+                                            pop_expr_and_args();
+                                            /*verify if the erpr_t and ret types are combinable*/
+                                            verify_types(expr_type,fn->ret_t);
+                                            expr_type = fn->ret_t;
                                         }
                                     }
-                                    pop_arg_type();pop_expr_type();
                                     free($1);}
 ;
 
 arglist : /* nothing */ 
-    | arglist arg {arg_type = shift_arg_type();}
-    | arglist ',' arg {arg_type = get_arg_type();}
+    | arglist arg 
+    | arglist ',' arg 
 ;
 
-arg : expr  {void *v = add_literal(NONE_TYPE,expr_type,$1);ll_add(&arglist,v);free($1);}
+arg : expr  {void *v = add_literal(NONE_TYPE,expr_type,$1);ll_add(arglist,v);free($1);expr_type = VOID_TYPE;}
 ;
 
 returnstmt : RETURN expr { if(expr_type != fn_type){

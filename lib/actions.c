@@ -34,9 +34,9 @@ void __print_var__(void* v) {
 
 void action_print() {
   printcode("printf(\"");
-  ll_for_each(&arglist, __print_var__);
+  ll_for_each(arglist, __print_var__);
   printcode("\"");
-  ll_link* _t = arglist.start;
+  ll_link* _t = arglist->start;
   while (_t != NULL) {
     printcode(",");
     Variable* var = (Variable*)_t->data;
@@ -51,7 +51,7 @@ void action_print() {
     _t = _t->next;
   }
   printcode(");\n");
-  ll_clear(&arglist);
+  ll_clear(arglist);
   return;
 }
 
@@ -99,8 +99,8 @@ void __input_var__(void* v) {
 }
 
 void action_input() {
-  ll_for_each(&arglist, __input_var__);
-  ll_clear(&arglist);
+  ll_for_each(arglist, __input_var__);
+  ll_clear(arglist);
   return;
 }
 
@@ -108,7 +108,8 @@ void action_input() {
 
 void __init_actions__() {
   act_map = make_hashmap(20, __hash_str__, __compair__str__);
-  arglist = make_linkedlist();
+  arglist = (Linked_list*)calloc(1, sizeof(Linked_list));
+  *arglist = make_linkedlist();
   hm_add(&act_map, "print", action_print);
   hm_add(&act_map, "input", action_input);
 }
@@ -131,5 +132,6 @@ void __del_hm__(void* a, void* b) { return; }
 
 void __cleanup_actions__() {
   delete_hashmap(act_map, __del_hm__);
-  ll_clear(&arglist);
+  ll_clear(arglist);
+  free(arglist);
 }

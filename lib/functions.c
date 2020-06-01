@@ -111,6 +111,14 @@ void verify_previous_calls(char* fnname, Function* f) {
 
 void add_function(modifier m, type t, char* fnname, char* printname,
                   int lineno) {
+  void* _t = hm_get(&fnmap, fnname);
+  if (_t != NULL) {
+    yyerror(
+        "Redefination of function %s on line %d : previously defined on line "
+        "%d",
+        printname, yylineno, ((Function*)_t)->declaration);
+    return;
+  }
   Function* f = calloc(1, sizeof(Function));
   f->declaration = lineno;
   f->param_list = temp_list;
@@ -143,7 +151,7 @@ void print_fn_delc(char* name) {
   Function* f = (Function*)hm_get(&fnmap, name);
   if (f == NULL) {
     yyerror(
-        "Error : Internal Error : trying to print declration of non-existent "
+        "Internal Error : trying to print declration of non-existent "
         "function %s\n",
         name);
     return;
@@ -157,7 +165,7 @@ void print_fn_delc(char* name) {
 
 Function* find_fn(char* fnname) { return (Function*)hm_get(&fnmap, fnname); }
 
-void add_call(char* fnname, type t, int lineno) {
+/*void add_call(char* fnname, type t, int lineno) {
   Linked_list* _ll = (Linked_list*)hm_get(&callmap, fnname);
   Fncall* call = (Fncall*)calloc(1, sizeof(Fncall));
   call->declaration = lineno;
@@ -172,10 +180,10 @@ void add_call(char* fnname, type t, int lineno) {
   ll_add(_ll, call);
   hm_add(&callmap, strdup(fnname), _ll);
   return;
-}
+}*/
 
 char* get_fncall_str(char* fnname) {
-  ll_link* _t = arglist.start;
+  ll_link* _t = arglist->start;
   Variable* _var;
   int len = strlen(fnname) + 2;
   while (_t != NULL) {
@@ -186,7 +194,7 @@ char* get_fncall_str(char* fnname) {
   void* ret = calloc(1, len + 1);
   strcat(ret, fnname);
   strcat(ret, "(");
-  _t = arglist.start;
+  _t = arglist->start;
   while (_t != NULL) {
     _var = (Variable*)_t->data;
     strcat(ret, _var->name);
@@ -199,22 +207,17 @@ char* get_fncall_str(char* fnname) {
   return ret;
 }
 
-int verify_call(char* fnname, type t, Function* fn, int lineno) {
+int verify_call(char* fnname, Function* fn, int lineno) {
   int params = fn->param_list == NULL ? 0 : fn->param_list->size;
-  if (arglist.size != params) {
+  if (arglist->size != params) {
     yyerror(fncall_incorrect_arg_num_msg, fnname, lineno, params,
-            fn->declaration, arglist.size);
+            fn->declaration, arglist->size);
     return 1;
   }
-  if (t != fn->ret_t) {
-    yyerror(fncall_incorrect_ret_tpe_msg, lineno, type_arr[t],
-            type_arr[fn->ret_t], fn->declaration);
-    return 1;
-  }
-  if (arglist.size == 0) return 0;
+  if (arglist->size == 0) return 0;
   int argnum = 1;
   ll_link* fn_params_itr = fn->param_list->start;
-  ll_link* arglist_itr = arglist.start;
+  ll_link* arglist_itr = arglist->start;
   while (arglist_itr != NULL) {
     Variable* arg = (Variable*)arglist_itr->data;
     Param* p = (Param*)fn_params_itr->data;

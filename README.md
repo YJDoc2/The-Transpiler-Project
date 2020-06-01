@@ -8,3 +8,5 @@ Funtion declaration suntax is fn name(paramlist) -> ret type {...} because other
 
 Note that in denoting complex numbers (a,b) a is part which will not be multipiled by I and b is part which will be multiplied by I.
 In case the a and/or be themselves are complex, the resulting number will be formed by the said multiplications of I.<br />
+
+The scheme used for recursively varifying expressionf in fncalls is (kind-of) ad-hoc. It basically pushes the arglist ptr and current type of expression in two individual stacks and when it completes parsing a fncall it pops those two back.<br />

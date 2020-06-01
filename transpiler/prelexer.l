@@ -6,6 +6,7 @@
     int preerror(char *);
     extern bool in_fn;
     int nbrack = 0;
+    extern int errs;
 %}
 
 %option noyywrap nodefault yylineno
@@ -48,6 +49,9 @@ const                               { prelval.m = CONST_TYPE; if(!in_fn)return C
 static                              { prelval.m = STATIC_TYPE; if(!in_fn)return STATIC; }
 
 
+\"(\\.|[^\"\n])*\"                      {}
+\"(\\.|[^\"\n])*$                       {preerror("unterminated string ");}
+
 __temp[0-9]+                                        {preerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
 
 [_a-zA-Z][_a-zA-Z0-9]*           {if(!in_fn){prelval.s = strdup(yytext);return IDENTIFIER;}}
@@ -57,6 +61,9 @@ __temp[0-9]+                                        {preerror("Invalid variable 
 %%
 
 int preerror(char *s){
-    printf("%s\n",s);
+    ++errs;
+    if(s == NULL)return 0;
+    printf("%s on line %d\n",s,prelineno);
+    return 0;
 
 }

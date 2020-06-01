@@ -5,7 +5,7 @@
 
 #include "linkedlist.h"
 
-extern Linked_list arglist;
+extern Linked_list *arglist;
 int __hash_str__(void *s);
 int __compair__str__(void *a, void *b);
 

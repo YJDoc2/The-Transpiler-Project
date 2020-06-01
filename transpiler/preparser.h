@@ -78,7 +78,7 @@ extern int predebug;
 #if ! defined PRESTYPE && ! defined PRESTYPE_IS_DECLARED
 union PRESTYPE
 {
-#line 16 "preparser.y"
+#line 17 "preparser.y"
 
     char *s;
     type t;

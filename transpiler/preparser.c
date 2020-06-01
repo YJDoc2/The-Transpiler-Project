@@ -88,8 +88,9 @@
     #include "scope.h"
     #include "expressions.h"
     bool in_fn = false;
+    extern int prelineno;
 
-#line 93 "preparser.tab.c"
+#line 94 "preparser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -166,13 +167,13 @@ extern int predebug;
 #if ! defined PRESTYPE && ! defined PRESTYPE_IS_DECLARED
 union PRESTYPE
 {
-#line 16 "preparser.y"
+#line 17 "preparser.y"
 
     char *s;
     type t;
     modifier m;
 
-#line 176 "preparser.tab.c"
+#line 177 "preparser.tab.c"
 
 };
 typedef union PRESTYPE PRESTYPE;
@@ -549,9 +550,9 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int8 yyrline[] =
 {
-       0,    38,    38,    39,    40,    42,    42,    45,    46,    47,
-      49,    52,    53,    54,    55,    56,    57,    58,    59,    60,
-      63,    64,    65
+       0,    39,    39,    40,    41,    43,    43,    46,    47,    48,
+      50,    53,    54,    55,    56,    57,    58,    59,    60,    61,
+      64,    65,    66
 };
 #endif
 
@@ -1357,38 +1358,32 @@ yyreduce:
   YY_REDUCE_PRINT (yyn);
   switch (yyn)
     {
-  case 4:
-#line 40 "preparser.y"
-                       {printf("text = %s on line %d\n",yytext,yylineno);}
-#line 1364 "preparser.tab.c"
-    break;
-
   case 5:
-#line 42 "preparser.y"
+#line 43 "preparser.y"
                                                                           {in_fn = true;}
-#line 1370 "preparser.tab.c"
+#line 1365 "preparser.tab.c"
     break;
 
   case 6:
-#line 42 "preparser.y"
-                                                                                             {add_function((yyvsp[-4].m),(yyvsp[-3].t),(yyvsp[-9].s),(yyvsp[-9].s),yylineno);free((yyvsp[-9].s));in_fn=false;}
-#line 1376 "preparser.tab.c"
+#line 43 "preparser.y"
+                                                                                             {add_function((yyvsp[-4].m),(yyvsp[-3].t),(yyvsp[-9].s),(yyvsp[-9].s),prelineno);free((yyvsp[-9].s));in_fn=false;}
+#line 1371 "preparser.tab.c"
     break;
 
   case 10:
-#line 49 "preparser.y"
+#line 50 "preparser.y"
                                     {add_param((yyvsp[-2].m),(yyvsp[-1].t),(yyvsp[0].s)); free((yyvsp[0].s));}
-#line 1382 "preparser.tab.c"
+#line 1377 "preparser.tab.c"
     break;
 
   case 20:
-#line 63 "preparser.y"
+#line 64 "preparser.y"
                          {(yyval.m) = NONE_TYPE; }
-#line 1388 "preparser.tab.c"
+#line 1383 "preparser.tab.c"
     break;
 
 
-#line 1392 "preparser.tab.c"
+#line 1387 "preparser.tab.c"
 
       default: break;
     }
@@ -1620,4 +1615,4 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 68 "preparser.y"
+#line 69 "preparser.y"

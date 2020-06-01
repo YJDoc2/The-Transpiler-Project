@@ -11,6 +11,7 @@
     #include "scope.h"
     #include "expressions.h"
     bool in_fn = false;
+    extern int prelineno;
 %}
 
 %union{
@@ -37,9 +38,9 @@
 %%
 fndecllist :/*nothing*/
     | fndecllist fndeclaration
-    | fndecllist error {printf("text = %s on line %d\n",yytext,yylineno);}
+    | fndecllist error
 
-fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type '{'{in_fn = true;}'}' {add_function($7,$8,$2,$2,yylineno);free($2);in_fn=false;}
+fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type '{'{in_fn = true;}'}' {add_function($7,$8,$2,$2,prelineno);free($2);in_fn=false;}
 
 
 paramlist : /* nothing */
