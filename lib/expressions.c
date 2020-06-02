@@ -43,7 +43,7 @@ void pop_expr_and_args() {
 }
 
 char *join(char *start, char *middle, char *end) {
-  void *_t = calloc(1, strlen(start) + strlen(middle) + strlen(end));
+  void *_t = calloc(1, strlen(start) + strlen(middle) + strlen(end) + 1);
   strcat(_t, start);
   strcat(_t, middle);
   strcat(_t, end);

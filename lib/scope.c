@@ -19,6 +19,7 @@ void __del_scope__(void *a, void *b) {
 void __scopelist_del_fn__(void *a) {
   Hashmap *hm = (Hashmap *)a;
   delete_hashmap(*hm, __del_scope__);
+  free(a);
 }
 
 void __init_scopes__() { scopelist = make_stack(); }
@@ -33,4 +34,5 @@ void pushscope() {
 void popscope() {
   Hashmap *hm = (Hashmap *)st_pop(&scopelist);
   delete_hashmap(*hm, __del_scope__);
+  free(hm);
 }

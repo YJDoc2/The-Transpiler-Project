@@ -195,7 +195,8 @@ returnstmt : RETURN expr { if(expr_type != fn_type){
                             }else{
                                 printcode("return %s;\n",$2);
                                 has_returned = true;
-                            }}
+                            }
+                            free($2);}
             | RETURN    {if(fn_type != VOID_TYPE){
                             yyerror("return statement without value is not allowed for function type other than void.");
                         }else{

@@ -36,6 +36,9 @@ preparser.o : preparser.y
 	mv ./preparser.tab.h ./preparser.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) preparser.c
 
+memcheck : ttp
+	valgrind --leak-check=full --show-leak-kinds=all  ./ttp
+
 clean:
 	rm ./*.o ./ttp ./a.out -f
 reset:

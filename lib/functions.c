@@ -20,7 +20,7 @@ char* fncall_incorrect_ret_tpe_msg =
     "incorrect return type in function call on line %d :\n\texpected %s but "
     "found %s as per declaration on line %d";
 
-void __ll_del_fn__(void* a) {
+void __paramlist_del_fn__(void* a) {
   Param* p = (Param*)a;
   free(p->name);
   free(a);
@@ -31,8 +31,10 @@ void __fnmap_del_fn__(void* a, void* b) {
   Function* f = (Function*)b;
   free(f->print_name);
   if (f->param_list != NULL) {
-    ll_delete(f->param_list, __ll_del_fn__);
+    ll_delete(f->param_list, __paramlist_del_fn__);
   }
+  free(f->param_list);
+  free(b);
   return;
 }
 
@@ -57,7 +59,8 @@ void __cleanup_functions__() {
   delete_hashmap(fnmap, __fnmap_del_fn__);
   delete_hashmap(callmap, __callmap_del_fn__);
   if (temp_list != NULL) {
-    ll_delete(temp_list, __ll_del_fn__);
+    ll_delete(temp_list, __paramlist_del_fn__);
+    free(temp_list);
   }
 }
 
@@ -165,23 +168,6 @@ void print_fn_delc(char* name) {
 
 Function* find_fn(char* fnname) { return (Function*)hm_get(&fnmap, fnname); }
 
-/*void add_call(char* fnname, type t, int lineno) {
-  Linked_list* _ll = (Linked_list*)hm_get(&callmap, fnname);
-  Fncall* call = (Fncall*)calloc(1, sizeof(Fncall));
-  call->declaration = lineno;
-  call->arglist = (Linked_list*)calloc(1, sizeof(Linked_list));
-  *(call->arglist) = arglist;
-  call->ret_type = t;
-  if (_ll != NULL) {
-    ll_add(_ll, call);
-    return;
-  }
-  _ll = (Linked_list*)calloc(1, sizeof(Linked_list));
-  ll_add(_ll, call);
-  hm_add(&callmap, strdup(fnname), _ll);
-  return;
-}*/
-
 char* get_fncall_str(char* fnname) {
   ll_link* _t = arglist->start;
   Variable* _var;
@@ -229,5 +215,6 @@ int verify_call(char* fnname, Function* fn, int lineno) {
     arglist_itr = arglist_itr->next;
     ++argnum;
   }
+
   return 0;
 }

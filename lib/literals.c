@@ -12,12 +12,14 @@ void *add_literal(modifier m, type t, char *ident) {
   v->t = t;
   v->declaration = 0;
   v->is_raw = true;
+  ll_add(&literals, v);
   return (void *)v;
 }
 
-void __del__(void *v) {
+void __del_literal__(void *v) {
   Variable *var = (Variable *)v;
   free(var->name);
+  free(v);
 }
-void clear_literals() { ll_delete(&literals, __del__); }
-void __cleanup_literals__() { ll_delete(&literals, __del__); }
+
+void __cleanup_literals__() { ll_delete(&literals, __del_literal__); }

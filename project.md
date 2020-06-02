@@ -26,6 +26,8 @@ Changed representation of complex numbers to (real,img) and added mod keyword fo
 Add expressions (without fncall) and type varification, but more testing is required. <br />
 \# test5.c transpiled from test5.tpp for testing expressions without fncall (more testing is required)<br />
 use stack to parser nested fncall, revamp the expression and remove unneccessary fns <br />
+
+setup and use Valgrind to check and remove memory leaks;
 Parse Function...all kind...(?)(What did I meant by this ???)(I guess includeing built in and inbuilt C functions...)<br/>
 
 make header file generating function , gnerate header file after successful code compiling.<br />
