@@ -10,3 +10,5 @@ Note that in denoting complex numbers (a,b) a is part which will not be multipil
 In case the a and/or be themselves are complex, the resulting number will be formed by the said multiplications of I.<br />
 
 The scheme used for recursively varifying expressionf in fncalls is (kind-of) ad-hoc. It basically pushes the arglist ptr and current type of expression in two individual stacks and when it completes parsing a fncall it pops those two back.<br />
+
+Does Not Support bitwise operators & | ~ ^ <br />

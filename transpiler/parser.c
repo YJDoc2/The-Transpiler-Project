@@ -569,10 +569,10 @@ static const yytype_uint8 yyrline[] =
       72,    73,    76,    77,    78,    82,    83,    84,    87,    88,
       89,    90,    92,    93,    96,   105,   111,   112,   113,   115,
      117,   118,   119,   120,   123,   124,   125,   126,   129,   130,
-     130,   133,   134,   137,   140,   145,   148,   155,   155,   176,
-     177,   178,   181,   184,   190,   198,   199,   200,   201,   202,
-     203,   204,   205,   207,   212,   217,   222,   234,   239,   240,
-     243
+     130,   133,   134,   137,   140,   145,   148,   155,   155,   185,
+     186,   187,   190,   193,   199,   207,   208,   209,   210,   211,
+     212,   213,   214,   216,   221,   226,   231,   243,   248,   249,
+     252
 };
 #endif
 
@@ -1616,116 +1616,125 @@ yyreduce:
                                             verify_call((yyvsp[-4].s),fn,yylineno);
                                             (yyval.s) = get_fncall_str((yyvsp[-4].s));
                                             ll_clear(arglist);
-                                            pop_expr_and_args();
-                                            expr_type = fn->ret_t;
+                                            pop_expr_and_args();\
+                                            // TODOverify error types...
+                                            type fn_ret = fn->ret_t;
+                                            if(expr_type == STRING_TYPE || fn_ret == STRING_TYPE ){yyerror("Cannot combine string type with any type.");}
+                                            if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
+                                                (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);}
+                                            if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
+                                                expr_type = COMPLEX_TYPE;
+                                            }else if(expr_type == FLOAT_TYPE || fn_ret == FLOAT_TYPE || fn_ret == DOUBLE_TYPE){
+                                                expr_type = FLOAT_TYPE;
+                                            }
                                         }
                                     }
                                     free((yyvsp[-4].s));}
-#line 1625 "parser.tab.c"
+#line 1634 "parser.tab.c"
     break;
 
   case 52:
-#line 181 "parser.y"
+#line 190 "parser.y"
             {void *v = add_literal(NONE_TYPE,expr_type,(yyvsp[0].s));ll_add(arglist,v);free((yyvsp[0].s));expr_type = VOID_TYPE;}
-#line 1631 "parser.tab.c"
+#line 1640 "parser.tab.c"
     break;
 
   case 53:
-#line 184 "parser.y"
+#line 193 "parser.y"
                          { if(expr_type != fn_type){
                                 yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[expr_type]);
                             }else{
                                 printcode("return %s;\n",(yyvsp[0].s));
                                 has_returned = true;
                             }}
-#line 1642 "parser.tab.c"
+#line 1651 "parser.tab.c"
     break;
 
   case 54:
-#line 190 "parser.y"
+#line 199 "parser.y"
                         {if(fn_type != VOID_TYPE){
                             yyerror("return statement without value is not allowed for function type other than void.");
                         }else{
                             printcode("return;\n");
                             has_returned = true;
                         }}
-#line 1653 "parser.tab.c"
+#line 1662 "parser.tab.c"
     break;
 
   case 55:
-#line 198 "parser.y"
+#line 207 "parser.y"
                      {(yyval.s)=join((yyvsp[-2].s),"+",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 1659 "parser.tab.c"
+#line 1668 "parser.tab.c"
     break;
 
   case 56:
-#line 199 "parser.y"
+#line 208 "parser.y"
                      {(yyval.s)=join((yyvsp[-2].s),"-",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 1665 "parser.tab.c"
+#line 1674 "parser.tab.c"
     break;
 
   case 57:
-#line 200 "parser.y"
+#line 209 "parser.y"
                      {(yyval.s)=join((yyvsp[-2].s),"*",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 1671 "parser.tab.c"
+#line 1680 "parser.tab.c"
     break;
 
   case 58:
-#line 201 "parser.y"
+#line 210 "parser.y"
                      {(yyval.s)=join((yyvsp[-2].s),"/",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 1677 "parser.tab.c"
+#line 1686 "parser.tab.c"
     break;
 
   case 59:
-#line 202 "parser.y"
+#line 211 "parser.y"
                      {(yyval.s)=join((yyvsp[-2].s),"%",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 1683 "parser.tab.c"
+#line 1692 "parser.tab.c"
     break;
 
   case 60:
-#line 203 "parser.y"
+#line 212 "parser.y"
                      {(yyval.s)=join("( ",(yyvsp[-1].s)," )"); free((yyvsp[-1].s));}
-#line 1689 "parser.tab.c"
+#line 1698 "parser.tab.c"
     break;
 
   case 61:
-#line 204 "parser.y"
+#line 213 "parser.y"
                             {(yyval.s)=join("-","",(yyvsp[0].s)); free((yyvsp[0].s));}
-#line 1695 "parser.tab.c"
+#line 1704 "parser.tab.c"
     break;
 
   case 63:
-#line 207 "parser.y"
+#line 216 "parser.y"
                  {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);;
                 }else{
                     expr_type = COMPLEX_TYPE;
                 }}
-#line 1705 "parser.tab.c"
+#line 1714 "parser.tab.c"
     break;
 
   case 64:
-#line 212 "parser.y"
+#line 221 "parser.y"
              {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[INT_TYPE],type_arr[expr_type]);;
                 }else if(!(expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == COMPLEX_TYPE)){
                     expr_type = INT_TYPE;
                 }}
-#line 1715 "parser.tab.c"
+#line 1724 "parser.tab.c"
     break;
 
   case 65:
-#line 217 "parser.y"
+#line 226 "parser.y"
                { if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);;
                 }else if(expr_type != COMPLEX_TYPE){
                     expr_type = FLOAT_TYPE;
                 }}
-#line 1725 "parser.tab.c"
+#line 1734 "parser.tab.c"
     break;
 
   case 66:
-#line 222 "parser.y"
+#line 231 "parser.y"
                  { Variable *_t = lookup_var((yyval.s));
                     if(_t == NULL){
                         yyerror("Undefined variable %s",(yyval.s));
@@ -1738,27 +1747,27 @@ yyreduce:
                     }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
                         expr_type = _t->t;
                     }}
-#line 1742 "parser.tab.c"
+#line 1751 "parser.tab.c"
     break;
 
   case 67:
-#line 234 "parser.y"
+#line 243 "parser.y"
                 {if(expr_type == VOID_TYPE){
                     expr_type = BOOL_TYPE;
                 }else if(expr_type != BOOL_TYPE){
-                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);;
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
                 }}
-#line 1752 "parser.tab.c"
+#line 1761 "parser.tab.c"
     break;
 
   case 68:
-#line 239 "parser.y"
+#line 248 "parser.y"
                 {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
-#line 1758 "parser.tab.c"
+#line 1767 "parser.tab.c"
     break;
 
   case 70:
-#line 243 "parser.y"
+#line 252 "parser.y"
                                  {void* _t = calloc(1, strlen((yyvsp[-3].s)) + strlen((yyvsp[-1].s)) + 1+2+2);/*1 for the + symbol,
                                                                                         2 for the perenthesis around the img part
                                                                                         2 for the parenthesis around the whole*/
@@ -1766,11 +1775,11 @@ yyreduce:
                                         strcat(_t,"(");strcat(_t, (yyvsp[-1].s));strcat(_t,")");
                                         strcat(_t, "*I");strcat(_t,")");
                                             (yyval.s) = (char*)_t;}
-#line 1770 "parser.tab.c"
+#line 1779 "parser.tab.c"
     break;
 
 
-#line 1774 "parser.tab.c"
+#line 1783 "parser.tab.c"
 
       default: break;
     }
@@ -2002,7 +2011,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 251 "parser.y"
+#line 260 "parser.y"
 
 
 void main(int argc , char **argv){

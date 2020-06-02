@@ -166,10 +166,17 @@ fncall : IDENTIFIER '(' {push_expr_and_args();} arglist ')' {if(!is_in_fn){
                                             verify_call($1,fn,yylineno);
                                             $$ = get_fncall_str($1);
                                             ll_clear(arglist);
-                                            pop_expr_and_args();
-                                            /*verify if the erpr_t and ret types are combinable*/
-                                            verify_types(expr_type,fn->ret_t);
-                                            expr_type = fn->ret_t;
+                                            pop_expr_and_args();\
+                                            // TODOverify error types...
+                                            type fn_ret = fn->ret_t;
+                                            if(expr_type == STRING_TYPE || fn_ret == STRING_TYPE ){yyerror("Cannot combine string type with any type.");}
+                                            if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
+                                                (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);}
+                                            if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
+                                                expr_type = COMPLEX_TYPE;
+                                            }else if(expr_type == FLOAT_TYPE || fn_ret == FLOAT_TYPE || fn_ret == DOUBLE_TYPE){
+                                                expr_type = FLOAT_TYPE;
+                                            }
                                         }
                                     }
                                     free($1);}
@@ -236,7 +243,7 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
     | BOOLVAL   {if(expr_type == VOID_TYPE){
                     expr_type = BOOL_TYPE;
                 }else if(expr_type != BOOL_TYPE){
-                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);;
+                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
                 }}
     | STRINGVAL {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
     | fncall    
