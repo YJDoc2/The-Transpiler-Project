@@ -169,10 +169,14 @@ fncall : IDENTIFIER '(' {push_expr_and_args();} arglist ')' {if(!is_in_fn){
                                             pop_expr_and_args();\
                                             // TODOverify error types...
                                             type fn_ret = fn->ret_t;
-                                            if(expr_type == STRING_TYPE || fn_ret == STRING_TYPE ){yyerror("Cannot combine string type with any type.");}
-                                            if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
-                                                (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);}
-                                            if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
+                                            if(expr_type == VOID_TYPE){
+                                                expr_type = fn_ret;
+                                            }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
+                                                yyerror("Cannot combine string type with any type.");
+                                            }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
+                                                (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){
+                                                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
+                                            }else if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
                                                 expr_type = COMPLEX_TYPE;
                                             }else if(expr_type == FLOAT_TYPE || fn_ret == FLOAT_TYPE || fn_ret == DOUBLE_TYPE){
                                                 expr_type = FLOAT_TYPE;
