@@ -56,8 +56,8 @@ void __init_functions__() {
   callmap = make_hashmap(50, __hash_str__, __compair__str__);
 }
 void __cleanup_functions__() {
-  delete_hashmap(fnmap, __fnmap_del_fn__);
-  delete_hashmap(callmap, __callmap_del_fn__);
+  hm_delete(fnmap, __fnmap_del_fn__);
+  hm_delete(callmap, __callmap_del_fn__);
   if (temp_list != NULL) {
     ll_delete(temp_list, __paramlist_del_fn__);
     free(temp_list);
@@ -108,7 +108,7 @@ void verify_previous_calls(char* fnname, Function* f) {
     }
     call_list_itr = call_list_itr->next;
   }
-  hashpair hp = hm_delete(&callmap, fnname);
+  hashpair hp = hm_delete_key(&callmap, fnname);
   __callmap_del_fn__(hp.key, hp.value);
 }
 

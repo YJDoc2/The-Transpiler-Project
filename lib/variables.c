@@ -25,7 +25,7 @@ void __del_var__(void* a, void* b) {
   // We do not free the b->name, as that and key (a) is the same.
 }
 
-void __cleanup_vars__() { delete_hashmap(varmap, __del_var__); }
+void __cleanup_vars__() { hm_delete(varmap, __del_var__); }
 
 void create_var(modifier m, type t, char* ident, int line) {
   char* _name =
@@ -36,8 +36,7 @@ void create_var(modifier m, type t, char* ident, int line) {
   v->t = t;
   v->declaration = line;
   v->is_raw = false;
-  Hashmap* hm =
-      scopelist.start == NULL ? &varmap : (Hashmap*)scopelist.start->data;
+  Hashmap* hm = scopelist.top == NULL ? &varmap : (Hashmap*)scopelist.top->data;
   hm_add(hm, _name, v);
 }
 
@@ -63,7 +62,7 @@ void add_var_assg(modifier m, type t, char* ident, char* val, int line) {
 }
 
 Variable* lookup_var(char* ident) {
-  stack_link* _sc = scopelist.start;
+  stack_link* _sc = scopelist.top;
   void* look = NULL;
   while (_sc != NULL && look == NULL) {
     Hashmap* hm = (Hashmap*)_sc->data;

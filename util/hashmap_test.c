@@ -47,7 +47,7 @@ void main() {
   printhm(&hm);
   printf("value at non-existing key is %s\n", (char *)hm_get(&hm, "NULL"));
   printf("used = %d\n", hm.used);
-  hashpair hp = hm_delete(&hm, "test2");
+  hashpair hp = hm_delete_key(&hm, "test2");
   printf("used = %d\t\t", hm.used);
   printf("returned : key %s val %s \n", (char *)hp.key, (char *)hp.value);
   printhm(&hm);

@@ -28,9 +28,10 @@ Add expressions (without fncall) and type varification, but more testing is requ
 use stack to parser nested fncall, revamp the expression and remove unneccessary fns <br />
 
 setup and use Valgrind to check and remove memory leaks;
+Commment Document and refactor code
 Parse Function...all kind...(?)(What did I meant by this ???)(I guess includeing built in and inbuilt C functions...)<br/>
 
-make header file generating function , gnerate header file after successful code compiling.<br />
+make header file generating function , gnerate header file after successful code compiling.(Should move this to stage 4?)<br />
 
 ## Stage 4
 

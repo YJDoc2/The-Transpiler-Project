@@ -131,7 +131,7 @@ void perform_action(char* s) {
 void __del_hm__(void* a, void* b) { return; }
 
 void __cleanup_actions__() {
-  delete_hashmap(act_map, __del_hm__);
+  hm_delete(act_map, __del_hm__);
   ll_clear(arglist);
   free(arglist);
 }
