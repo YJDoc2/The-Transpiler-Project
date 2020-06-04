@@ -54,7 +54,9 @@ int st_push(Stack *st, void *data) {
  *          NULL if stack is empty
  */
 void *st_pop(Stack *st) {
-  if (st->top == NULL) return NULL;  // Stack is empty
+  if (st->top == NULL)
+    return (void *)-1;  // Stack is empty MUST return one as in expression.c
+                        // NULL (0) can be confused with incorrect expr_type
 
   stack_link *temp = st->top;
   st->top = st->top->next;

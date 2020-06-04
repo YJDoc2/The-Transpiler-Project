@@ -100,6 +100,7 @@ fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type fndecldum
                                                                                                     free($2);
                                                                                                     is_in_fn = false;
                                                                                                     popscope();
+                                                                                                    clear_literals();
                                                                                                     }
 
 fndecldummy : /* nothing */ {print_fn_delc($<s>-6);
@@ -191,7 +192,11 @@ arglist : /* nothing */
     | arglist ',' arg 
 ;
 
-arg : expr  {void *v = add_literal(NONE_TYPE,expr_type,$1);ll_add(arglist,v);free($1);expr_type = VOID_TYPE;}
+arg : expr  { void *v = lookup_var($1);
+                if(v == NULL){
+                    v = add_literal(NONE_TYPE,expr_type,$1);
+                }
+                ll_add(arglist,v);free($1);expr_type = VOID_TYPE;}
 ;
 
 returnstmt : RETURN expr { if(expr_type != fn_type){

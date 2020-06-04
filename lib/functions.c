@@ -1,11 +1,12 @@
 #include "functions.h"
-#define FNAMP_INIT_SIZE 50
-#define CALLMAP_INIT_SIZE 50
+
+#define FNAMP_INIT_SIZE 50  // initial size for fnmap hashmap
 
 extern char *type_arr[], *mod_arr[];
-Hashmap fnmap;
-Hashmap callmap;
 
+Hashmap fnmap;
+
+// A temporary LL to store the params of the function declaration
 Linked_list* temp_list = NULL;
 
 char* fncall_incorrect_arg_num_msg =
@@ -20,51 +21,63 @@ char* fncall_incorrect_ret_tpe_msg =
     "incorrect return type in function call on line %d :\n\texpected %s but "
     "found %s as per declaration on line %d";
 
+/*
+ * A helper function to delete the paramlist in each Function struct
+ */
 void __paramlist_del_fn__(void* a) {
   Param* p = (Param*)a;
   free(p->name);
   free(a);
 }
 
+/*
+ * A helper function to delete fnmap
+ */
 void __fnmap_del_fn__(void* a, void* b) {
-  free(a);
+  free(a);  // free the key,which is char * to name
   Function* f = (Function*)b;
-  free(f->print_name);
-  if (f->param_list != NULL) {
+  free(f->print_name);  // free the name which is actually to be printed in
+                        // generated code
+  if (f->param_list != NULL) {  // if it had any params, free the paramlist
     ll_delete(f->param_list, __paramlist_del_fn__);
   }
-  free(f->param_list);
-  free(b);
+  free(f->param_list);  // free the memory allocated to paramlist LL struct
+  free(b);              // free the memory allocated to Function struct
   return;
 }
 
-void __del_fncall__(void* c) {
-  Fncall* _c = (Fncall*)c;
-  ll_clear(_c->arglist);
-  free(c);
-}
-
-void __callmap_del_fn__(void* a, void* b) {
-  free(a);
-  Linked_list* _ll = (Linked_list*)b;
-  ll_delete(_ll, __del_fncall__);
-  free(_ll);
-  return;
-}
+/*
+ * initializes all required DS and allocated memory in this module
+ * Must be called before any other function call in this module
+ */
 void __init_functions__() {
   fnmap = make_hashmap(50, __hash_str__, __compair__str__);
-  callmap = make_hashmap(50, __hash_str__, __compair__str__);
 }
+/*
+ * cleans up and frees the memory allocated in this module
+ * Should be called before exiting the program
+ */
 void __cleanup_functions__() {
   hm_delete(fnmap, __fnmap_del_fn__);
-  hm_delete(callmap, __callmap_del_fn__);
-  if (temp_list != NULL) {
+  if (temp_list != NULL) {  // if templist has anything
     ll_delete(temp_list, __paramlist_del_fn__);
     free(temp_list);
   }
 }
 
+/*
+ * Add Function definition Parameter
+ *
+ * Params :
+ * m : modifier of Param
+ * t : type of Param
+ * param_name : name of params, is duplicated inside so can be freed outside
+ *
+ * Returns : void
+ */
 void add_param(modifier m, type t, char* param_name) {
+  // in case this is the first parameter of the function, temp_list will be null
+  // so allocate memory and make the LL
   if (temp_list == NULL) {
     temp_list = calloc(1, sizeof(Linked_list));
     *temp_list = make_linkedlist();
@@ -77,79 +90,88 @@ void add_param(modifier m, type t, char* param_name) {
   return;
 }
 
-void verify_previous_calls(char* fnname, Function* f) {
-  Linked_list* call_list = (Linked_list*)hm_get(&callmap, fnname);
-  if (call_list == NULL) return;
-  ll_link* call_list_itr = call_list->start;
-  ll_link* fn_params_itr;
-  int num_params = f->param_list->size;
-  int argnum;
-  while (call_list_itr != NULL) {
-    Fncall* call = (Fncall*)call_list_itr->data;
-    if (call->arglist->size != num_params) {
-      yyerror(fncall_incorrect_arg_num_msg, fnname, call->declaration,
-              num_params, f->declaration, call->arglist->size);
-      call_list_itr = call_list_itr->next;
-      continue;
-    }
-    argnum = 1;
-    fn_params_itr = f->param_list->start;
-    ll_link* arglist_itr = call->arglist->start;
-    while (arglist_itr != NULL) {
-      Variable* arg = (Variable*)arglist_itr->data;
-      Param* p = (Param*)fn_params_itr->data;
-      if (p->t != arg->t) {
-        yyerror(fncall_incorrect_arg_type_msg, call->declaration, argnum,
-                type_arr[p->t], f->declaration, type_arr[arg->t]);
-      }
-      fn_params_itr = fn_params_itr->next;
-      arglist_itr = arglist_itr->next;
-      ++argnum;
-    }
-    call_list_itr = call_list_itr->next;
-  }
-  hashpair hp = hm_delete_key(&callmap, fnname);
-  __callmap_del_fn__(hp.key, hp.value);
-}
-
+/*
+ * Function to add a function structure in fnmap
+ *
+ * calls yyerror if function is already declared
+ *
+ * Params :
+ * m : function return modifer eg static in static int a(){}
+ * t : function return type  eg int in static int a(){}
+ *
+ * fnname : name to map the function structure, duplicated in function so can be
+ *          freed outside
+ * printname : name of function that is to be actually printed in generated
+ *             code, duplicated in function so can be freed outside
+ *  lineno : line on which
+ * the function is defined
+ *
+ * Returns : void
+ */
 void add_function(modifier m, type t, char* fnname, char* printname,
                   int lineno) {
-  void* _t = hm_get(&fnmap, fnname);
-  if (_t != NULL) {
+  void* fn = hm_get(&fnmap, fnname);
+  if (fn != NULL) {  // if function is already declared
     yyerror(
         "Redefination of function %s on line %d : previously defined on line "
         "%d",
-        printname, yylineno, ((Function*)_t)->declaration);
+        printname, yylineno, ((Function*)fn)->declaration);
     return;
   }
   Function* f = calloc(1, sizeof(Function));
   f->declaration = lineno;
+  // set param_list pointer to memory allocated to templist
   f->param_list = temp_list;
-  temp_list = NULL;
+  temp_list = NULL;  // clear the templist itself to NULL
   f->print_name = strdup(printname);
   f->ret_t = t;
   f->ret_m = m;
   hm_add(&fnmap, strdup(fnname), f);
 }
 
-static void print_param(Param* p) {
+// Helper function to print a single Param in function declaration
+static inline void print_param(Param* p) {
   printcode("%s %s %s ", mod_arr[p->m], type_arr[p->t], p->name);
 }
 
-static void print_params(Linked_list* ll) {
-  if (ll == NULL) return;
-  ll_link* _l = ll->start;
-  print_param((Param*)_l->data);
-  if (_l->next == NULL) return;
-  _l = _l->next;
-  while (_l != NULL) {
+/*
+ * Helper function to print parameters of the function in function declarations
+ *
+ */
+static void print_params(Linked_list* paramlist) {
+  // if function does not take any Param paramlist will be empty
+  if (paramlist == NULL) return;
+
+  ll_link* iter = paramlist->start;
+
+  // print first param, this is done outside the loop as after this each param
+  // must be preceeded with a ','
+  print_param((Param*)iter->data);
+  // if function has only one param
+  if (iter->next == NULL) return;
+  iter = iter->next;
+  // print rest of the prams
+  while (iter != NULL) {
     printcode(",");
-    print_param((Param*)_l->data);
-    _l = _l->next;
+    print_param((Param*)iter->data);
+    iter = iter->next;
   }
   return;
 }
 
+/*
+ * A function to print the stating of function definition including the params
+ * eg for function 'int a(int k){...}' this will print 'int a(int k){\n'
+ * The '{' must be closed from the calling code after printing the statements in
+ *the function
+ *
+ *The function must be already added in fnmap by using add_function
+ *
+ * Params :
+ * name : name of the function to be printed
+ *
+ * Returns : void
+ */
 void print_fn_delc(char* name) {
   Function* f = (Function*)hm_get(&fnmap, name);
   if (f == NULL) {
@@ -159,62 +181,122 @@ void print_fn_delc(char* name) {
         name);
     return;
   }
+  // start by printing return modifier, return type , function name and '('
   printcode("%s %s %s ( ", mod_arr[f->ret_m], type_arr[f->ret_t],
             f->print_name);
+  // print param list
   print_params(f->param_list);
+  // close the '(' bracket and open '{' this must be closed after printing
+  // statements in the function from the calling code
   printcode(" ) {\n");
   return;
 }
 
+/*
+ * Function to find Function Structure corrusponding to  given function name
+ *
+ * Params :
+ * fnname : name of function to find
+ *
+ * Returns : Function pointer corresponding to the given name in fnmap
+ */
 Function* find_fn(char* fnname) { return (Function*)hm_get(&fnmap, fnname); }
 
-char* get_fncall_str(char* fnname) {
-  ll_link* _t = arglist->start;
-  Variable* _var;
-  int len = strlen(fnname) + 2;
-  while (_t != NULL) {
-    _var = (Variable*)_t->data;
-    len += strlen(_var->name) + 1;
-    _t = _t->next;
-  }
-  void* ret = calloc(1, len + 1);
-  strcat(ret, fnname);
-  strcat(ret, "(");
-  _t = arglist->start;
-  while (_t != NULL) {
-    _var = (Variable*)_t->data;
-    strcat(ret, _var->name);
-    if (_t->next != NULL) {
-      strcat(ret, ",");
-    }
-    _t = _t->next;
-  }
-  strcat(ret, ")");
-  return ret;
-}
-
+/*
+ * Function to verify types of argument with function definition.
+ * The function must be already created with add_function
+ *
+ * calls yyerror if number of params is any param type is
+ * incorrect
+ *
+ * Params :
+ * fnname : name of the function to verify
+ * fn : Function structure pointer corresponding to the function
+ * lineno : line on which the functioncall is done
+ *
+ * Returns : 0 if all argument types match
+ *           1 : if there is any error in argument type
+ */
 int verify_call(char* fnname, Function* fn, int lineno) {
-  int params = fn->param_list == NULL ? 0 : fn->param_list->size;
+  int params =
+      fn->param_list == NULL
+          ? 0
+          : fn->param_list->size;  // if no param_list , no arg is needed
+
+  // different number of arguments means incorrect call
   if (arglist->size != params) {
     yyerror(fncall_incorrect_arg_num_msg, fnname, lineno, params,
             fn->declaration, arglist->size);
     return 1;
   }
+  // if no param the the call is correct
   if (arglist->size == 0) return 0;
+  // check type of each argument
   int argnum = 1;
+
   ll_link* fn_params_itr = fn->param_list->start;
   ll_link* arglist_itr = arglist->start;
+
   while (arglist_itr != NULL) {
     Variable* arg = (Variable*)arglist_itr->data;
     Param* p = (Param*)fn_params_itr->data;
+
+    // if types are different incorrect call but check for rest of arg types
+    // anyway
     if (p->t != arg->t) {
       yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, type_arr[p->t],
               fn->declaration, type_arr[arg->t]);
     }
+
     fn_params_itr = fn_params_itr->next;
     arglist_itr = arglist_itr->next;
+
     ++argnum;
   }
-
+  // correct fncall
   return 0;
+}
+
+/*
+ * A function that return string of the function call with all the arguments etc
+ * in it. This is used to get the string to be printed without semicolon
+ * Does not clear the arglist
+ * Does not check if the function is declared or not as the function called may
+ * as well be C function like printf etc.
+ *
+ * Params : fnname : name of function to be
+ * printed
+ *
+ * Returns : string , memory allocated of the complete function call.
+ *
+ */
+char* get_fncall_str(char* fnname) {
+  ll_link* iter = arglist->start;
+  Variable* var;
+  int len = strlen(fnname) + 2;  // one for '(' and one for end of string
+  // We initially calculate the space required for arr arguments so we can get
+  // it in a single calloc call
+  while (iter != NULL) {
+    var = (Variable*)iter->data;
+    len += strlen(var->name) + 1;  // one extra for possible ','
+    iter = iter->next;
+  }
+  void* ret =
+      calloc(1, len + 2);  // one extra for end of string and one for ')'
+
+  strcat(ret, fnname);
+  strcat(ret, "(");
+
+  iter = arglist->start;
+  // Actually copy the argument string to call string
+  while (iter != NULL) {
+    var = (Variable*)iter->data;
+    strcat(ret, var->name);
+    if (iter->next != NULL) {  // if there is another arg, put a ','
+      strcat(ret, ",");
+    }
+    iter = iter->next;
+  }
+  strcat(ret, ")");  // put the closing ')'
+  return ret;
 }
