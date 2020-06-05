@@ -67,6 +67,7 @@ void create_var(modifier m, type t, char* ident, int line) {
   v->t = t;
   v->declaration = line;
   v->is_raw = false;
+  v->is_arr = false;
   // If there is no current scope, variable is global so store in varamp, else
   // store it in the current scope
   Hashmap* hm = scopelist.top == NULL ? &varmap : (Hashmap*)scopelist.top->data;
@@ -91,6 +92,32 @@ void add_var(modifier m, type t, char* ident, int line) {
   Variable* look = hm_get(hm, ident);
   if (look == NULL) {
     create_var(m, t, ident, line);
+  } else {
+    yyerror("Variable %s already delcared on line %d", ident,
+            look->declaration);
+  }
+}
+
+/*
+ * Creates the variable of array type if not previously declared  in same scope,
+ * otherwise yyerror the error message Does not print the variable
+ *
+ * Params :
+ * m : modifier of variable to be created
+ * t : type of variable to be created
+ * ident : name of the variable, duplicated inside,so can be deleted outside
+ *        later
+ * line : line on which variable is defined
+ *
+ * Returns : void
+ */
+void add_array(modifier m, type t, char* ident, int line) {
+  Hashmap* hm = scopelist.top == NULL ? &varmap : (Hashmap*)scopelist.top->data;
+  Variable* look = hm_get(hm, ident);
+  if (look == NULL) {
+    create_var(m, t, ident, line);
+    look = hm_get(hm, ident);
+    look->is_arr = true;
   } else {
     yyerror("Variable %s already delcared on line %d", ident,
             look->declaration);

@@ -16,7 +16,7 @@
                         /* GENERAL SYMBOL LIST */
 \{|\}|!|=|"+"|"-"|"*"|"/"|;                   {return yytext[0];}
 
-"("|")"|","                                {return yytext[0];}
+"("|")"|","|"["|"]"                               {return yytext[0];}
 
                                 /* RULES FOR RAW input*/
                                 /* In code, this expects Syntax RAW <{...}>

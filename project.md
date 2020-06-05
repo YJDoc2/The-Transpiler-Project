@@ -27,12 +27,30 @@ Add expressions (without fncall) and type varification, but more testing is requ
 \# test5.c transpiled from test5.tpp for testing expressions without fncall (more testing is required)<br />
 use stack to parser nested fncall, revamp the expression and remove unneccessary fns <br />
 
-setup and use Valgrind to check and remove memory leaks;
-Commment Document and refactor code
-Parse Function...all kind...(?)(What did I meant by this ???)(I guess includeing built in and inbuilt C functions...)<br/>
+\# test6.c transpiled from test6.tpp for testing expressions with fncall<br />
 
-make header file generating function , gnerate header file after successful code compiling.(Should move this to stage 4?)<br />
+setup and use Valgrind to check and remove memory leaks; <br />
+Commment Document and refactor code <br />
+Added typecasting <br />
+
+(I am going to just remove this)Parse Function...all kind...(?)(What did I meant by this ???)(I guess includeing built in and inbuilt C functions...)<br/>
 
 ## Stage 4
 
-Add Array support, add conditions add if statement.
+Added Basic Arrays, array declaration and assignment <br />
+Added Using Array values as value <br />
+\# test7.c transpiled from test7.tpp for testing Basic array assignment, and value access<br />
+
+Add Array support : No nested arrays , maybe can keep array of strings to a later stage <br />
+Assignment to arrays at declaration stage<br />
+also make sure one cannot assign to array-type vars <br />
+Support String Arrays ?<br />
+Support individual character assignment in Strings ?<br />
+All kind of array requirements : functions with array return types ? Array params ? also access of array elements ? <br />
+Add Assignment statement <br />
+
+## Stage 5
+
+Add comments
+add conditions add if statement.
+make header file generating function , generate header file after successful code compiling.(Maybe keep this for the very last stage after everything else is done...?)<br />

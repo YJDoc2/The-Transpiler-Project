@@ -18,6 +18,7 @@
     type fn_type = VOID_TYPE;
     type arg_type;
     type expr_type = VOID_TYPE;
+    type arr_type = VOID_TYPE;
 
 %}
 
@@ -116,7 +117,7 @@ paramlist : /* nothing */
 param : modifier type IDENTIFIER    {add_param($1,$2,$3);create_var($1,$2,$3,yylineno); free($3);}
 
 stmtlist :/* nothing */
-    | stmtlist error ';' {expr_type = VOID_TYPE;}
+    | stmtlist error ';' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
     | stmtlist stmt ';' {expr_type= VOID_TYPE;}
     | stmtlist stmt {yyerror("missing ;");expr_type =  VOID_TYPE;}
 ;
@@ -128,7 +129,7 @@ stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
 ;
 
 vardeclaration : DECL modifier type decllist
-    | modifier type { printcode("%s %s ",mod_arr[$1],type_arr[$2]);} varlist {printcode(" ;\n");}
+    | modifier type { printcode("%s %s ",mod_arr[$1],type_arr[$2]); arr_type = $2;} varlist {printcode(" ;\n");arr_type=VOID_TYPE;}
 ;
 
 decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
@@ -143,6 +144,7 @@ varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno);
                                 add_var($<m>-2,$<t>-1,$1,yylineno);
                                 printcode("%s = %s",$1,$3);
                                 free($1);free($3);}
+    |IDENTIFIER {add_array($<m>-2,  $<t>-1, $1, yylineno);} arraydecl {free($1);}
     | varlist ',' IDENTIFIER {add_var($<m>-2,$<t>-1,$3,yylineno); 
                                 printcode(",%s ",$3);
                                 free($3);}
@@ -151,10 +153,32 @@ varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno);
                                         add_var($<m>-2,$<t>-1,$3,yylineno);
                                         printcode(",%s = %s",$3,$5);
                                         free($3);free($5);}
+    | varlist ',' IDENTIFIER {add_array($<m>-2,  $<t>-1, $3, yylineno);} arraydecl {free($3);}
 ;
+
+arraydecl: '[' expr ']'      {if(expr_type != INT_TYPE){yyerror("Array size must be an int type got %s.",type_arr[expr_type]);
+                                            }else{
+                                                printcode("%s[%s]",$<s>-1,$2);
+                                            }
+                                            free($2);
+                                            }
+    |  '[' ']'        {yyerror("Array size missing");}
+    |  '[' ']' '=' '{' {printcode("%s[] = { ",$<s>-1);} arrayvallist '}' {printcode(" };");}
+;
+
+arrayvallist : expr { if(verify_types(arr_type,expr_type)){yyerror("Invalid assignment : %s type cannot be stored in array of type %s",type_arr[expr_type],type_arr[arr_type]);}
+                        expr_type = VOID_TYPE;
+                        printcode("%s ",$1);
+                        free($1);
+                        }
+    | arrayvallist ',' expr { if(verify_types(arr_type,expr_type)){yyerror("Invalid assignment : %s type cannot be stored in array of type %s",type_arr[expr_type],type_arr[arr_type]);}
+                        expr_type = VOID_TYPE;
+                        printcode(", %s",$3);
+                        free($3);}
 
 fncall : IDENTIFIER '(' {push_expr_and_args();} arglist ')' {if(!is_in_fn){
                                         yyerror("Function call is not allowed outside a function.");
+                                        $$ = strdup("");
                                     }else if(find_action($1)){
                                         perform_action($1);
                                         $$ = strdup("");
@@ -219,6 +243,15 @@ expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3);}
     | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3);}
     | expr '/' expr  {$$=join($1,"/",$3); free($1);free($3);}
     | expr MOD expr  {$$=join($1,"%",$3); free($1);free($3);}
+    | '(' type ')' expr  %prec UMINUS    {void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
+                                sprintf(v,"(%s) ",type_arr[$2]);
+                                char * t = join("(",$4,")");
+                                $$ = join(v,"",t);
+                                free(v);
+                                free(t);
+                                free($4);
+                                expr_type = $2;
+                            }
     | '(' expr ')'   {$$=join("( ",$2," )"); free($2);}
     | '-' expr %prec UMINUS {$$=join("-","",$2); free($2);}
     | value
@@ -241,6 +274,8 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
     | IDENTIFIER { Variable *_t = lookup_var($$);
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$$);
+                    }else if(_t->is_arr){
+                        yyerror("cannot combine arrray without subscript.");
                     }else if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[_t->t],type_arr[expr_type]);;
                     }else if(_t->t ==COMPLEX_TYPE){
@@ -257,6 +292,29 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                 }}
     | STRINGVAL {if(expr_type != VOID_TYPE){asm("int3");yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
     | fncall    
+    | IDENTIFIER '[' {push_expr_and_args();} expr ']' { Variable *v = lookup_var($1);
+                                                        if(v == NULL){
+                                                            yyerror("Undefined variable %s",$$);
+                                                        }else if(!v->is_arr && v->t != STRING_TYPE){
+                                                            yyerror("Subscripted object must be of array or string type. got %s type",type_arr[v->t]);
+                                                        }else if(expr_type != INT_TYPE){
+                                                            yyerror("Subscript must be of int type got %s type",type_arr[expr_type]);
+                                                        }
+                                                        char *t = join($1,"[",$4);
+                                                        $$ = join(t,"]","");
+                                                        pop_expr_and_args();
+                                                        if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+                                                            yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[v->t],type_arr[expr_type]);;
+                                                        }else if(v->t ==COMPLEX_TYPE){
+                                                            expr_type = COMPLEX_TYPE;
+                                                        }else if(v->t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
+                                                            expr_type = FLOAT_TYPE;
+                                                        }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
+                                                            expr_type = v->t;
+                                                        }
+                                                        free(t);
+                                                        free($1);free($4);
+                                                        }
 ;
 
 cmplxnum : '(' expr ',' expr ')' {void* _t = calloc(1, strlen($2) + strlen($4) + 1+2+2);/*1 for the + symbol,

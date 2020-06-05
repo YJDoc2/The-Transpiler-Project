@@ -30,6 +30,7 @@ typedef struct {
   char *name;
   type t;
   modifier m;
+  bool is_arr;
   int declaration;
 } Variable;
 
@@ -76,6 +77,21 @@ void create_var(modifier m, type t, char *ident, int line);
  * Returns : void
  */
 void add_var(modifier m, type t, char *ident, int line);
+
+/*
+ * Creates the variable of array type if not previously declared  in same scope,
+ * otherwise yyerror the error message Does not print the variable
+ *
+ * Params :
+ * m : modifier of variable to be created
+ * t : type of variable to be created
+ * ident : name of the variable, duplicated inside,so can be deleted outside
+ *        later
+ * line : line on which variable is defined
+ *
+ * Returns : void
+ */
+void add_array(modifier m, type t, char *ident, int line);
 
 /*
  * Searches for the given variable name starting from the topmost ( current )
