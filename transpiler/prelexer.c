@@ -2271,7 +2271,9 @@ void yyfree (void * ptr )
 int preerror(char *s){
     ++errs;
     if(s == NULL)return 0;
-    printf("%s on line %d\n",s,prelineno);
+    if(in_fn){
+        fprintf(stderr,"Syntax error on line %d",prelineno);
+    }
     return 0;
 
 }

@@ -11,7 +11,7 @@
     #include "scope.h"
     #include "expressions.h"
 
-    void preparse();
+    void preparse(); // as preparse is a macro from preparser.l must be given here
     extern char *type_arr[],*mod_arr[];
     bool is_in_fn = false;
     bool has_returned = false;
@@ -85,9 +85,9 @@ topstmtlist :  /* nothin */
 
 
 topstmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
-    | vardeclaration ';'
-    | vardeclaration {yyerror("missing ;");}
-    | fndeclaration
+    | vardeclaration ';' {expr_type =VOID_TYPE;}
+    | vardeclaration {yyerror("missing ;");expr_type =VOID_TYPE;}
+    | fndeclaration {expr_type =VOID_TYPE;}
 
 rawlist : /* nothing */
     | rawlist RAWLINE   {printcode("%s",$2); free($2);}
@@ -255,7 +255,7 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                 }else if(expr_type != BOOL_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
                 }}
-    | STRINGVAL {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
+    | STRINGVAL {if(expr_type != VOID_TYPE){asm("int3");yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
     | fncall    
 ;
 
