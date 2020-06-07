@@ -162,6 +162,10 @@ static void __input_var__(void* v) {
                 _tempname);  // add the img part after multiplying by I
       free(_tempname);       // delete temp var from our memory
       break;
+    case STRING_TYPE:
+      // No need for '&' as string is basically char *
+      printcode("scanf(\"%s\",%s);\n", type_str_arr[var->t], var->name);
+      break;
     default:
       // for other variables just normal scanf
       printcode("scanf(\"%s\",&%s);\n", type_str_arr[var->t], var->name);

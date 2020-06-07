@@ -62,29 +62,30 @@ extern int yydebug;
     VOID = 268,
     INT = 269,
     STRING = 270,
-    BREAK = 271,
-    CONTINUE = 272,
-    ELSE = 273,
-    FOR = 274,
-    IF = 275,
-    RETURN = 276,
-    WHILE = 277,
-    I = 278,
-    IN = 279,
-    NOT = 280,
-    RAW = 281,
-    USE = 282,
-    DECL = 283,
-    IDENTIFIER = 284,
-    BOOLVAL = 285,
-    STRINGVAL = 286,
-    FNDECL = 287,
-    RETTYPE = 288,
-    INTNUM = 289,
-    FLOATNUM = 290,
-    RAWSTART = 291,
-    RAWEND = 292,
-    RAWLINE = 293
+    CHARBUF = 271,
+    BREAK = 272,
+    CONTINUE = 273,
+    ELSE = 274,
+    FOR = 275,
+    IF = 276,
+    RETURN = 277,
+    WHILE = 278,
+    I = 279,
+    IN = 280,
+    NOT = 281,
+    RAW = 282,
+    USE = 283,
+    DECL = 284,
+    IDENTIFIER = 285,
+    BOOLVAL = 286,
+    STRINGVAL = 287,
+    FNDECL = 288,
+    RETTYPE = 289,
+    INTNUM = 290,
+    FLOATNUM = 291,
+    RAWSTART = 292,
+    RAWEND = 293,
+    RAWLINE = 294
   };
 #endif
 
@@ -92,13 +93,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 25 "parser.y"
+#line 27 "parser.y"
 
     char *s;
     type t;
     modifier m;
 
-#line 102 "parser.tab.h"
+#line 103 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

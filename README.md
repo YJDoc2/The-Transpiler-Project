@@ -15,3 +15,7 @@ Does Not Support bitwise operators & | ~ ^ <br />
 
 For using Valgrind for leack checks : if normal installation gives error because of strlen bug, try uninstalling then either : making from latest source or installing from apt-get/ respective package manages instead of snaps, also install libc6-dbg:i386 using package manager.
 The snap of valgrind didn't work because of strlen error.<br />
+
+Only 1D arrays supported other than charbuf : read below <br/>
+
+for input-able strings, charbuf is introduced. it translates to char [ ][ ],and can be declared with [expr], [expr] = {...},[] = {...}, [expr][expr], [expr][expr] = {...}, [][expr] = {...}. these essentially creates char double array, where one can take in input.As C itself allows to take input in statically allocated strings, eg : char c[] = "...", ttp allows that as well by taking input in strings, but this will cause a seg fault at runtime, so it is best to create a charbuf [] to take string input, and charbuf[][] to make an array of input-able strings. <br />

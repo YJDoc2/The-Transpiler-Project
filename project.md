@@ -41,13 +41,17 @@ Added Basic Arrays, array declaration and assignment <br />
 Added Using Array values as value <br />
 \# test7.c transpiled from test7.tpp for testing Basic array assignment, and value access<br />
 
-Add Array support : No nested arrays , maybe can keep array of strings to a later stage <br />
+Add Array support : No nested array <br />
 Assignment to arrays at declaration stage<br />
-also make sure one cannot assign to array-type vars <br />
-Support String Arrays ?<br />
-Support individual character assignment in Strings ?<br />
+Support String Arrays<br />
+
+Add charbuf to support input-able buffers for string<br>
+
+Support individual character assignment in Strings ? NO , only array of strings.<br />
+
 All kind of array requirements : functions with array return types ? Array params ? also access of array elements ? <br />
 Add Assignment statement <br />
+also make sure one cannot assign to array-type vars (done, as one cannot access arary-types without subscript ?)<br />
 
 ## Stage 5
 

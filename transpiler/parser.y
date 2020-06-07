@@ -19,6 +19,8 @@
     type arg_type;
     type expr_type = VOID_TYPE;
     type arr_type = VOID_TYPE;
+    modifier char_buf_mod = NONE_TYPE;
+    bool is_val_arr = false;
 
 %}
 
@@ -38,6 +40,7 @@
 %token <m> CONST STATIC
 %token <t> DOUBLE FLOAT LONG SHORT VOID INT
 %token <t> STRING
+%token CHARBUF
 
 %token BREAK CONTINUE ELSE FOR IF
 %token RETURN WHILE
@@ -130,6 +133,7 @@ stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
 
 vardeclaration : DECL modifier type decllist
     | modifier type { printcode("%s %s ",mod_arr[$1],type_arr[$2]); arr_type = $2;} varlist {printcode(" ;\n");arr_type=VOID_TYPE;}
+    | modifier CHARBUF {printcode("%s char ",mod_arr[$1]); char_buf_mod = $1;} chararrdecllist {printcode(" ;\n");char_buf_mod = NONE_TYPE;}
 ;
 
 decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
@@ -163,8 +167,33 @@ arraydecl: '[' expr ']'      {if(expr_type != INT_TYPE){yyerror("Array size must
                                             free($2);
                                             }
     |  '[' ']'        {yyerror("Array size missing");}
-    |  '[' ']' '=' '{' {printcode("%s[] = { ",$<s>-1);} arrayvallist '}' {printcode(" };");}
+    |  '[' ']' '=' '{' {printcode("%s[] = { ",$<s>-1);} arrayvallist '}' {printcode(" }");}
+    | '[' expr ']' '=' '{' arraydecldummy {printcode("%s[%s] = { ",$<s>-1,$2);free($2);} arrayvallist '}' {printcode(" }");}
+
 ;
+
+arraydecldummy : /*nothing*/ {if(expr_type != INT_TYPE){yyerror("Array size must be an int type got %s.",type_arr[expr_type]);}expr_type = VOID_TYPE;}
+
+chararrdecllist: IDENTIFIER {printcode("%s",$1);}strdecl {free($1);expr_type = VOID_TYPE;}
+    | chararrdecllist ',' IDENTIFIER {printcode(" ,%s",$3);} strdecl {free($3);expr_type = VOID_TYPE;}
+
+
+strdecl :'[' expr ']'  arraydecldummy {printcode("[%s]",$2);add_var(char_buf_mod,STRING_TYPE,$<s>-1,yylineno);free($2);}
+    | '[' expr ']' arraydecldummy '=' expr {if(expr_type != STRING_TYPE){yyerror("cannot assign any type other than string to charbuf, got %s.",type_arr[expr_type]);
+                                    }else{printcode("[%s] = %s",$2,$6);add_var(char_buf_mod,STRING_TYPE,$<s>-1,yylineno);}free($2);free($6);}
+    | '[' ']' '=' expr {if(expr_type != STRING_TYPE){yyerror("cannot assign any type other than string to charbuf, got %s.",type_arr[expr_type]);
+                        }else{printcode("[] = %s",$4);add_var(char_buf_mod,STRING_TYPE,$<s>-1,yylineno);}free($4);}
+    | '['expr ']'arraydecldummy '[' expr ']' arraydecldummy '=' '{' {printcode("[%s][%s] = {",$2,$6);arr_type = STRING_TYPE;} arrayvallist '}' {printcode("}");arr_type = VOID_TYPE;
+                                                                                                                add_array(char_buf_mod,  STRING_TYPE, $<s>-1, yylineno);
+                                                                                                                free($2);free($6);}
+    | '[' ']' '[' expr ']' arraydecldummy '=' '{' {printcode("[][%s] = { ",$4);arr_type = STRING_TYPE;} arrayvallist '}' {printcode("}");arr_type = VOID_TYPE;
+                                                                                                add_array(char_buf_mod,  STRING_TYPE, $<s>-1, yylineno);
+                                                                                                free($4);}
+    | '['expr ']'arraydecldummy '[' expr ']' arraydecldummy {printcode("[%s][%s]",$2,$6);add_array(char_buf_mod,  STRING_TYPE, $<s>-1, yylineno);}
+
+    | '[' ']' '[' ']' {yyerror("Both sizes cannot be empty in a charbuf array");}
+;
+
 
 arrayvallist : expr { if(verify_types(arr_type,expr_type)){yyerror("Invalid assignment : %s type cannot be stored in array of type %s",type_arr[expr_type],type_arr[arr_type]);}
                         expr_type = VOID_TYPE;
@@ -220,7 +249,8 @@ arg : expr  { void *v = lookup_var($1);
                 if(v == NULL){
                     v = add_literal(NONE_TYPE,expr_type,$1);
                 }
-                ll_add(arglist,v);free($1);expr_type = VOID_TYPE;}
+                if(is_val_arr){((Variable *)v)->is_raw = false;}
+                ll_add(arglist,v);free($1);expr_type = VOID_TYPE;is_val_arr = false;}
 ;
 
 returnstmt : RETURN expr { if(expr_type != fn_type){
@@ -238,22 +268,23 @@ returnstmt : RETURN expr { if(expr_type != fn_type){
                         }}
 ;
 
-expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3);}
-    | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3);}
-    | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3);}
-    | expr '/' expr  {$$=join($1,"/",$3); free($1);free($3);}
-    | expr MOD expr  {$$=join($1,"%",$3); free($1);free($3);}
+expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_val_arr =false;}
+    | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3); is_val_arr =false;}
+    | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3); is_val_arr =false;}
+    | expr '/' expr  {$$=join($1,"/",$3); free($1);free($3); is_val_arr =false;}
+    | expr MOD expr  {$$=join($1,"%",$3); free($1);free($3); is_val_arr =false;}
     | '(' type ')' expr  %prec UMINUS    {void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
                                 sprintf(v,"(%s) ",type_arr[$2]);
                                 char * t = join("(",$4,")");
                                 $$ = join(v,"",t);
+                                 is_val_arr =false;
                                 free(v);
                                 free(t);
                                 free($4);
                                 expr_type = $2;
                             }
-    | '(' expr ')'   {$$=join("( ",$2," )"); free($2);}
-    | '-' expr %prec UMINUS {$$=join("-","",$2); free($2);}
+    | '(' expr ')'   {$$=join("( ",$2," )"); free($2); is_val_arr =false;}
+    | '-' expr %prec UMINUS {$$=join("-","",$2); free($2); is_val_arr =false;}
     | value
 
 value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
@@ -275,7 +306,7 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$$);
                     }else if(_t->is_arr){
-                        yyerror("cannot combine arrray without subscript.");
+                        yyerror("cannot use arrray without subscript.");
                     }else if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[_t->t],type_arr[expr_type]);;
                     }else if(_t->t ==COMPLEX_TYPE){
@@ -301,7 +332,9 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                                                             yyerror("Subscript must be of int type got %s type",type_arr[expr_type]);
                                                         }
                                                         char *t = join($1,"[",$4);
+                                                        
                                                         $$ = join(t,"]","");
+                                                        is_val_arr = true;
                                                         pop_expr_and_args();
                                                         if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                                                             yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[v->t],type_arr[expr_type]);;

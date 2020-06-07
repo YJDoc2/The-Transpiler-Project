@@ -61,6 +61,7 @@ long                                { yylval.t = LONG_TYPE;return LONG; }
 short                               { yylval.t = SHORT_TYPE;return SHORT; }
 void                                { yylval.t = VOID_TYPE;return VOID; }
 string                              { yylval.t = STRING_TYPE; return STRING; }
+charbuf                             {return CHARBUF;}
 
 const                               { yylval.m = CONST_TYPE; return CONST; }
 static                              { yylval.m = STATIC_TYPE; return STATIC; }
