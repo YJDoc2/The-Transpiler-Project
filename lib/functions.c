@@ -15,11 +15,11 @@ char* fncall_incorrect_arg_num_msg =
 
 char* fncall_incorrect_arg_type_msg =
     "incorrect argument type in function call on line %d :\n\tfor "
-    "argument %d expected tpe %s as per declaration on line %d, got %s";
-
-char* fncall_incorrect_ret_tpe_msg =
-    "incorrect return type in function call on line %d :\n\texpected %s but "
-    "found %s as per declaration on line %d";
+    "argument %d expected type %s as per declaration on line %d, got %s";
+char* fncall_incorrect_arr_msg =
+    "incorrect argument type in function call on line %d :\n\tfor "
+    "argument %d expected type %s %s as per declaration on line %d, got %s "
+    "%s";
 
 /*
  * A helper function to delete the paramlist in each Function struct
@@ -71,11 +71,12 @@ void __cleanup_functions__() {
  * Params :
  * m : modifier of Param
  * t : type of Param
+ * is_arr : is the param of array type
  * param_name : name of params, is duplicated inside so can be freed outside
  *
  * Returns : void
  */
-void add_param(modifier m, type t, char* param_name) {
+void add_param(modifier m, type t, bool is_arr, char* param_name) {
   // in case this is the first parameter of the function, temp_list will be null
   // so allocate memory and make the LL
   if (temp_list == NULL) {
@@ -86,6 +87,7 @@ void add_param(modifier m, type t, char* param_name) {
   p->m = m;
   p->t = t;
   p->name = strdup(param_name);
+  p->is_arr = is_arr;
   ll_add(temp_list, p);
   return;
 }
@@ -131,7 +133,12 @@ void add_function(modifier m, type t, char* fnname, char* printname,
 
 // Helper function to print a single Param in function declaration
 static inline void print_param(Param* p) {
-  printcode("%s %s %s ", mod_arr[p->m], type_arr[p->t], p->name);
+  printcode("%s %s %s", mod_arr[p->m], type_arr[p->t], p->name);
+  if (p->is_arr) {
+    printcode("[] ");
+  } else {
+    printcode(" ");
+  }
 }
 
 /*
@@ -246,6 +253,11 @@ int verify_call(char* fnname, Function* fn, int lineno) {
     if (p->t != arg->t) {
       yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, type_arr[p->t],
               fn->declaration, type_arr[arg->t]);
+    }
+    if (p->is_arr != arg->is_arr) {
+      yyerror(fncall_incorrect_arr_msg, lineno, argnum, type_arr[p->t],
+              p->is_arr ? "array" : "", fn->declaration, type_arr[arg->t],
+              arg->is_arr ? "array" : "");
     }
 
     fn_params_itr = fn_params_itr->next;

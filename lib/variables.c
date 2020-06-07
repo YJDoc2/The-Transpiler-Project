@@ -116,7 +116,7 @@ void add_array(modifier m, type t, char* ident, int line) {
   Variable* look = hm_get(hm, ident);
   if (look == NULL) {
     create_var(m, t, ident, line);
-    look = hm_get(hm, ident);
+    look = (Variable*)hm_get(hm, ident);
     look->is_arr = true;
   } else {
     yyerror("Variable %s already delcared on line %d", ident,

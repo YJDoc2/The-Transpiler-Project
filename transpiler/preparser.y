@@ -12,6 +12,7 @@
     #include "expressions.h"
     bool in_fn = false;
     extern int prelineno;
+    int fnlineno = 0;
 %}
 
 %union{
@@ -40,14 +41,15 @@ fndecllist :/*nothing*/
     | fndecllist fndeclaration
     | fndecllist error
 
-fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type '{'{in_fn = true;}'}' {add_function($7,$8,$2,$2,prelineno);free($2);in_fn=false;}
+fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type {fnlineno=prelineno;}'{'{in_fn = true;}'}' {add_function($7,$8,$2,$2,fnlineno);free($2);in_fn=false;}
 
 
 paramlist : /* nothing */
     | paramlist param
     | paramlist ','  param
 
-param : modifier type IDENTIFIER    {add_param($1,$2,$3); free($3);}                  
+param : modifier type IDENTIFIER    {add_param($1,$2,false,$3); free($3);}      
+    | modifier type IDENTIFIER '[' ']' {add_param($1,$2,true,$3);free($3);}            
 
 
 type : INT

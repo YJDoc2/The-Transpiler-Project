@@ -42,8 +42,7 @@ static void __print_var__(void* v) {
   }
   switch (var->t) {
     case VOID_TYPE:  // Should never be reached, but for safety
-      yyerror("error : cannot print value of variable of type void : %s",
-              var->name);
+      yyerror("cannot print value of variable of type void : %s", var->name);
       break;
     default:  // print the format specifyer corrsponding to the varable type
       printcode("%s ", type_str_arr[var->t]);
@@ -107,7 +106,7 @@ static void __input_var__(void* v) {
   Variable* var = (Variable*)v;
   char* _tempname;  // save place on stack in case a temp var is required
   if (var->m == CONST_TYPE) {
-    yyerror("error : cannot change value of constant variable %s", var->name);
+    yyerror("cannot change value of constant variable %s", var->name);
     return;
   }
   // print the value if its raw ,i.e an expression
@@ -134,8 +133,7 @@ static void __input_var__(void* v) {
   switch (var->t) {
     //! TODO we have to implement for string input
     case VOID_TYPE:
-      yyerror("error : cannot scan value of variable of type void : %s",
-              var->name);
+      yyerror("cannot scan value of variable of type void : %s", var->name);
       break;
     case BOOL_TYPE:
       _tempname = get_temp_var();  // create a temporary var, short is used as

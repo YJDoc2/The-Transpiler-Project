@@ -21,6 +21,7 @@
     type arr_type = VOID_TYPE;
     modifier char_buf_mod = NONE_TYPE;
     bool is_val_arr = false;
+    bool is_in_fncall = false;
 
 %}
 
@@ -117,7 +118,8 @@ paramlist : /* nothing */
     | paramlist param
     | paramlist ','  param
 
-param : modifier type IDENTIFIER    {add_param($1,$2,$3);create_var($1,$2,$3,yylineno); free($3);}
+param : modifier type IDENTIFIER    {add_param($1,$2,false,$3);create_var($1,$2,$3,yylineno); free($3);}
+    | modifier type IDENTIFIER '[' ']' {add_param($1,$2,true,$3);add_array($1,$2,$3,yylineno); free($3);}
 
 stmtlist :/* nothing */
     | stmtlist error ';' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
@@ -205,7 +207,7 @@ arrayvallist : expr { if(verify_types(arr_type,expr_type)){yyerror("Invalid assi
                         printcode(", %s",$3);
                         free($3);}
 
-fncall : IDENTIFIER '(' {push_expr_and_args();} arglist ')' {if(!is_in_fn){
+fncall : IDENTIFIER '(' {push_expr_and_args();if(!find_action($1))is_in_fncall=true;} arglist ')' {if(!is_in_fn){
                                         yyerror("Function call is not allowed outside a function.");
                                         $$ = strdup("");
                                     }else if(find_action($1)){
@@ -237,6 +239,7 @@ fncall : IDENTIFIER '(' {push_expr_and_args();} arglist ')' {if(!is_in_fn){
                                             }
                                         }
                                     }
+                                    is_in_fncall = false;
                                     free($1);}
 ;
 
@@ -302,10 +305,10 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                 }else if(expr_type != COMPLEX_TYPE){
                     expr_type = FLOAT_TYPE;
                 }}
-    | IDENTIFIER { Variable *_t = lookup_var($$);
+    | IDENTIFIER { Variable *_t = lookup_var($1);
                     if(_t == NULL){
-                        yyerror("Undefined variable %s",$$);
-                    }else if(_t->is_arr){
+                        yyerror("Undefined variable %s",$1);
+                    }else if(_t->is_arr && !is_in_fncall){
                         yyerror("cannot use arrray without subscript.");
                     }else if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[_t->t],type_arr[expr_type]);;
@@ -336,16 +339,18 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                                                         $$ = join(t,"]","");
                                                         is_val_arr = true;
                                                         pop_expr_and_args();
-                                                        if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
-                                                            yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[v->t],type_arr[expr_type]);;
-                                                        }else if(v->t ==COMPLEX_TYPE){
-                                                            expr_type = COMPLEX_TYPE;
-                                                        }else if(v->t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
-                                                            expr_type = FLOAT_TYPE;
-                                                        }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
-                                                            expr_type = v->t;
-                                                        }
                                                         free(t);
+                                                        if(v != NULL){
+                                                            if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+                                                                yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[v->t],type_arr[expr_type]);;
+                                                            }else if(v->t ==COMPLEX_TYPE){
+                                                                expr_type = COMPLEX_TYPE;
+                                                            }else if(v->t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
+                                                                expr_type = FLOAT_TYPE;
+                                                            }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
+                                                                expr_type = v->t;
+                                                            }
+                                                        }
                                                         free($1);free($4);
                                                         }
 ;

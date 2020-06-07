@@ -19,7 +19,7 @@
 
 \{                   {if(!in_fn)return pretext[0]; ++nbrack;}
 \}                   {if(nbrack ==0)return pretext[0]; --nbrack;}
-"("|")"|","                                {if(!in_fn)return pretext[0];}
+"("|")"|","|"["|"]"                               {if(!in_fn)return pretext[0];}
 
 
 RAW                               { } 

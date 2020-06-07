@@ -48,10 +48,15 @@ Support String Arrays<br />
 Add charbuf to support input-able buffers for string<br>
 
 Support individual character assignment in Strings ? NO , only array of strings.<br />
+Added Array Params, Access to Array elements.<br />
+The return type does not need array type, as we cannot assign array base once declared, and there is no support for pointers.
+So only sensible return type that can be array is char \*, which is already used as string type.<br />
 
-All kind of array requirements : functions with array return types ? Array params ? also access of array elements ? <br />
+All kind of array requirements : functions with array return types ? NO. <br />
+
+\# test8.c transpiled from test8.tpp for testing array params in functions<br />
+
 Add Assignment statement <br />
-also make sure one cannot assign to array-type vars (done, as one cannot access arary-types without subscript ?)<br />
 
 ## Stage 5
 

@@ -17,6 +17,7 @@ typedef struct {
   modifier m;
   type t;
   char* name;
+  bool is_arr;
 } Param;
 
 // Structure to store information about the function such as function name, its
@@ -48,11 +49,12 @@ void __cleanup_functions__();
  * Params :
  * m : modifier of Param
  * t : type of Param
+ * is_arr : is the param of array type
  * param_name : name of param, is duplicated inside so can be freed outside
  *
  * Returns : void
  */
-void add_param(modifier m, type t, char* param_name);
+void add_param(modifier m, type t, bool is_arr, char* param_name);
 
 /*
  * Function to add a function structure in fnmap
