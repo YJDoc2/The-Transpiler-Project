@@ -63,7 +63,7 @@
 
 %type <t> type
 %type <m> modifier
-
+%type <s> assgtype
 %type <s> value cmplxnum expr fncall
 
 %%
@@ -284,19 +284,24 @@ arg : expr  { void *v = lookup_var($1);
                 ll_add(arglist,v);free($1);expr_type = VOID_TYPE;is_val_arr = false;}
 ;
 
-assignstmt : IDENTIFIER '=' expr {Variable *var = lookup_var($1);
+assignstmt : IDENTIFIER assgtype expr {Variable *var = lookup_var($1);
                                     if(var == NULL){
                                         yyerror("Undeclared variable %s.",$1);
+                                    }else if(var->is_arr){
+                                        yyerror("Cannot subscript a non-array type variable");
                                     }else if(var->m == CONST_TYPE){
                                         yyerror("Cannot assign to constant variable.");
                                     }else if(verify_types(var->t,expr_type)){
                                         yyerror("cannot assign type %s to variable of type %s",type_arr[var->t],type_arr[expr_type]);
+                                    }else if(var->t == COMPLEX_TYPE && strcmp($2,"%=")==0){
+                                        yyerror("Cannot use mod on complex type");
                                     }else{
-                                        printcode("%s = %s;",$1,$3);
+                                        printcode("%s %s %s;",$1,$2,$3);
                                     }
+                                    // No need to free $2, its const char *
                                     free($1);free($3);
                                     }
-            | IDENTIFIER '[' expr arraydecldummy']' '=' expr {Variable *var = lookup_var($1);
+            | IDENTIFIER '[' expr arraydecldummy']' assgtype expr {Variable *var = lookup_var($1);
                                     if(var == NULL){
                                         yyerror("Undeclared variable %s.",$1);
                                     }else if(!var->is_arr){
@@ -305,17 +310,29 @@ assignstmt : IDENTIFIER '=' expr {Variable *var = lookup_var($1);
                                         yyerror("Cannot assign to constant variable.");
                                     }else if(verify_types(var->t,expr_type)){
                                         yyerror("cannot assign type %s to variable of type %s",type_arr[var->t],type_arr[expr_type]);
+                                    }else if(var->t == COMPLEX_TYPE && strcmp($6,"%=")==0){
+                                        yyerror("Cannot use mod on complex type");
                                     }else{
-                                        printcode("%s[%s] = %s;",$1,$3,$7);
+                                        printcode("%s[%s] %s %s;",$1,$3,$6,$7);
                                     }
+                                    // No need to free $2, its const char *
                                     free($1);free($3);free($7);}
+
+;
+assgtype : '='  {$$ = "=";}
+    | '+' '=' {$$ = "+=";}
+    | '-' '=' {$$ = "-=";}
+    | '*' '=' {$$ = "*=";}
+    | '/' '=' {$$ = "/=";}
+    | MOD '=' {$$ = "%=";}
+    
 
 
 expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_val_arr =false;}
     | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3); is_val_arr =false;}
     | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3); is_val_arr =false;}
     | expr '/' expr  {$$=join($1,"/",$3); free($1);free($3); is_val_arr =false;}
-    | expr MOD expr  {$$=join($1,"%",$3); free($1);free($3); is_val_arr =false;}
+    | expr MOD expr  {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use mod on complex");}$$=join($1,"%",$3); free($1);free($3); is_val_arr =false;}
     | '(' type ')' expr  %prec UMINUS    {void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
                                 sprintf(v,"(%s) ",type_arr[$2]);
                                 char * t = join("(",$4,")");
