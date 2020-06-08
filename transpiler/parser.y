@@ -58,6 +58,9 @@
 %token <s> RAWEND "}>"
 %token <s> RAWLINE
 
+%token BEGINCOMMENT ENDCOMMENT 
+%token <s> COMMENTLINE
+
 %type <t> type
 %type <m> modifier
 
@@ -89,16 +92,17 @@ topstmtlist :  /* nothin */
     | topstmtlist topstmt
 
 
-topstmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
+topstmt : RAW "<{" rawlist "}>" {printcode("%s",$4);}
     | vardeclaration ';' {expr_type =VOID_TYPE;}
     | vardeclaration {yyerror("missing ;");expr_type =VOID_TYPE;}
     | fndeclaration {expr_type =VOID_TYPE;}
+    | comment
 
 rawlist : /* nothing */
     | rawlist RAWLINE   {printcode("%s",$2); free($2);}
 ;
 
-fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type fndecldummy'{' stmtlist'}' {printcode("}\n");
+fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type fndecldummy'{' stmtlist'}' {printcode("}");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",$2,type_arr[fn_type]);
                                                                                                     }
@@ -125,17 +129,41 @@ stmtlist :/* nothing */
     | stmtlist error ';' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
     | stmtlist stmt ';' {expr_type= VOID_TYPE;}
     | stmtlist stmt {yyerror("missing ;");expr_type =  VOID_TYPE;}
+    | stmtlist comment
 ;
 
-stmt : RAW "<{" rawlist "}>" {printcode("%s\n",$4);}
+stmt : RAW "<{" rawlist "}>" {printcode("%s",$4);}
     | vardeclaration
-    | fncall {printcode($1);if(strcmp($1,"")!=0)printcode(";\n");free($1);}
+    | fncall {printcode($1);if(strcmp($1,"")!=0)printcode(";");free($1);}
     | returnstmt
+    | assignstmt
+;
+
+comment : BEGINCOMMENT {printcode("/*");} commentlist ENDCOMMENT {printcode("*/");}
+    | COMMENTLINE   {printcode("%s",$1);free($1);}
+
+commentlist : /*nothing*/
+    | commentlist COMMENTLINE {printcode("%s",$2);free($2);}
+
+returnstmt : RETURN expr { if(expr_type != fn_type){
+                                yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[expr_type]);
+                            }else{
+                                printcode("return %s;",$2);
+                                has_returned = true;
+                            }
+                            free($2);}
+            | RETURN    {if(fn_type != VOID_TYPE){
+                            yyerror("return statement without value is not allowed for function type other than void.");
+                        }else{
+                            printcode("return;");
+                            has_returned = true;
+                        }}
+            | DECL RETURN {has_returned = true;}
 ;
 
 vardeclaration : DECL modifier type decllist
-    | modifier type { printcode("%s %s ",mod_arr[$1],type_arr[$2]); arr_type = $2;} varlist {printcode(" ;\n");arr_type=VOID_TYPE;}
-    | modifier CHARBUF {printcode("%s char ",mod_arr[$1]); char_buf_mod = $1;} chararrdecllist {printcode(" ;\n");char_buf_mod = NONE_TYPE;}
+    | modifier type { printcode("%s %s ",mod_arr[$1],type_arr[$2]); arr_type = $2;} varlist {printcode(" ;");arr_type=VOID_TYPE;}
+    | modifier CHARBUF {printcode("%s char ",mod_arr[$1]); char_buf_mod = $1;} chararrdecllist {printcode(" ;");char_buf_mod = NONE_TYPE;}
 ;
 
 decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
@@ -207,7 +235,7 @@ arrayvallist : expr { if(verify_types(arr_type,expr_type)){yyerror("Invalid assi
                         printcode(", %s",$3);
                         free($3);}
 
-fncall : IDENTIFIER '(' {push_expr_and_args();if(!find_action($1))is_in_fncall=true;} arglist ')' {if(!is_in_fn){
+fncall : IDENTIFIER '(' {push_expr_and_args();if(find_action($1)==0)is_in_fncall=true;} arglist ')' {if(!is_in_fn){
                                         yyerror("Function call is not allowed outside a function.");
                                         $$ = strdup("");
                                     }else if(find_action($1)){
@@ -256,20 +284,32 @@ arg : expr  { void *v = lookup_var($1);
                 ll_add(arglist,v);free($1);expr_type = VOID_TYPE;is_val_arr = false;}
 ;
 
-returnstmt : RETURN expr { if(expr_type != fn_type){
-                                yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[expr_type]);
-                            }else{
-                                printcode("return %s;\n",$2);
-                                has_returned = true;
-                            }
-                            free($2);}
-            | RETURN    {if(fn_type != VOID_TYPE){
-                            yyerror("return statement without value is not allowed for function type other than void.");
-                        }else{
-                            printcode("return;\n");
-                            has_returned = true;
-                        }}
-;
+assignstmt : IDENTIFIER '=' expr {Variable *var = lookup_var($1);
+                                    if(var == NULL){
+                                        yyerror("Undeclared variable %s.",$1);
+                                    }else if(var->m == CONST_TYPE){
+                                        yyerror("Cannot assign to constant variable.");
+                                    }else if(verify_types(var->t,expr_type)){
+                                        yyerror("cannot assign type %s to variable of type %s",type_arr[var->t],type_arr[expr_type]);
+                                    }else{
+                                        printcode("%s = %s;",$1,$3);
+                                    }
+                                    free($1);free($3);
+                                    }
+            | IDENTIFIER '[' expr arraydecldummy']' '=' expr {Variable *var = lookup_var($1);
+                                    if(var == NULL){
+                                        yyerror("Undeclared variable %s.",$1);
+                                    }else if(!var->is_arr){
+                                        yyerror("Cannot subscript a non-array type variable");
+                                    }else if(var->m == CONST_TYPE){
+                                        yyerror("Cannot assign to constant variable.");
+                                    }else if(verify_types(var->t,expr_type)){
+                                        yyerror("cannot assign type %s to variable of type %s",type_arr[var->t],type_arr[expr_type]);
+                                    }else{
+                                        printcode("%s[%s] = %s;",$1,$3,$7);
+                                    }
+                                    free($1);free($3);free($7);}
+
 
 expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_val_arr =false;}
     | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3); is_val_arr =false;}

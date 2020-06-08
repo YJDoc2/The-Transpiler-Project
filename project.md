@@ -52,14 +52,13 @@ Added Array Params, Access to Array elements.<br />
 The return type does not need array type, as we cannot assign array base once declared, and there is no support for pointers.
 So only sensible return type that can be array is char \*, which is already used as string type.<br />
 
-All kind of array requirements : functions with array return types ? NO. <br />
-
 \# test8.c transpiled from test8.tpp for testing array params in functions<br />
-
+Added @decl return to support raw return types <br />
 Add Assignment statement <br />
+Add comment parsing
+\# test9.c transpiled from test9.tpp for testing assignment and comments<br />
 
 ## Stage 5
 
-Add comments
 add conditions add if statement.
 make header file generating function , generate header file after successful code compiling.(Maybe keep this for the very last stage after everything else is done...?)<br />

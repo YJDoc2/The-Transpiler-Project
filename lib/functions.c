@@ -21,6 +21,11 @@ char* fncall_incorrect_arr_msg =
     "argument %d expected type %s %s as per declaration on line %d, got %s "
     "%s";
 
+char* fncall_incorrect_const_type_msg =
+    "incorrect argument type in function call on line %d :\n\tfor "
+    "argument %d expected non-const argument as per declaration on line %d, "
+    "got const.";
+
 /*
  * A helper function to delete the paramlist in each Function struct
  */
@@ -195,7 +200,7 @@ void print_fn_delc(char* name) {
   print_params(f->param_list);
   // close the '(' bracket and open '{' this must be closed after printing
   // statements in the function from the calling code
-  printcode(" ) {\n");
+  printcode(" ) {");
   return;
 }
 
@@ -258,6 +263,9 @@ int verify_call(char* fnname, Function* fn, int lineno) {
       yyerror(fncall_incorrect_arr_msg, lineno, argnum, type_arr[p->t],
               p->is_arr ? "array" : "", fn->declaration, type_arr[arg->t],
               arg->is_arr ? "array" : "");
+    }
+    if (arg->t == CONST_TYPE && p->t != CONST_TYPE) {
+      yyerror(fncall_incorrect_const_type_msg, lineno, argnum, fn->declaration);
     }
 
     fn_params_itr = fn_params_itr->next;

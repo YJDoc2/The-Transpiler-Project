@@ -5,12 +5,14 @@
     #include "parser.h"
     int lastState = 0;
     extern int yyerror(char *,...);
+    extern void printcode(char *,...);
     extern bool is_in_fn;
 %}
 
 %option noyywrap nodefault yylineno
 
 %x RAWSTATE
+%x COMMENT
 
 %%
                         /* GENERAL SYMBOL LIST */
@@ -43,8 +45,16 @@ RAW                               { return RAW; } /* Start of the RAW direction,
                                                                                                 */                                                                                                
 <RAWSTATE>[^}]*       	            { yylval.s = strdup(yytext); return RAWLINE; } /* Match All pattern for the internal text of RAW syntax.
                                                                                         except }, used to match the content inside the <{...}>*/
+"/*"                                {lastState = YY_START; BEGIN COMMENT;return BEGINCOMMENT;}
+<COMMENT>"*/"                       {BEGIN lastState; return ENDCOMMENT;}
+<COMMENT>([^*]|\n)+|.              {yylval.s = strdup(yytext);return COMMENTLINE;}
+<COMMENT><<EOF>>                    {yyerror("Unterminated multiline comment.");return 0;}
 
-[ \t\n]*                              {}
+"//".*\n                         {yylval.s = strdup(yytext);return COMMENTLINE;}
+
+
+[ \t]*                              {}
+[\n]*                               {printcode("\n");}
                         /* Rules of declarations */
 @decl                               {return DECL;} /* Explicit declaration , used to declare the variables that are declared in RAW code*/
 

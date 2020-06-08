@@ -85,7 +85,10 @@ extern int yydebug;
     FLOATNUM = 291,
     RAWSTART = 292,
     RAWEND = 293,
-    RAWLINE = 294
+    RAWLINE = 294,
+    BEGINCOMMENT = 295,
+    ENDCOMMENT = 296,
+    COMMENTLINE = 297
   };
 #endif
 
@@ -99,7 +102,7 @@ union YYSTYPE
     type t;
     modifier m;
 
-#line 103 "parser.tab.h"
+#line 106 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
