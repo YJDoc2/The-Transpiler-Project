@@ -588,9 +588,9 @@ static const yytype_int16 yyrline[] =
      223,   223,   226,   226,   229,   231,   235,   240,   245,   245,
      281,   282,   283,   286,   294,   311,   329,   330,   331,   332,
      333,   334,   337,   338,   339,   339,   342,   346,   350,   351,
-     352,   353,   354,   357,   358,   359,   360,   361,   362,   365,
-     366,   367,   368,   369,   370,   380,   381,   382,   384,   389,
-     394,   399,   413,   418,   419,   420,   420,   449
+     352,   354,   355,   358,   359,   360,   361,   362,   363,   366,
+     367,   368,   369,   370,   371,   381,   382,   383,   385,   390,
+     395,   400,   414,   419,   420,   421,   421,   450
 };
 #endif
 
@@ -2186,84 +2186,85 @@ yyreduce:
 
   case 110:
 #line 352 "parser.y"
-                        {(yyval.s)=join("!",(yyvsp[0].s),"");free((yyvsp[0].s));}
-#line 2191 "parser.tab.c"
+                        {char * t =join("(",(yyvsp[0].s),")");
+                            (yyval.s) = join("!",t,"");free(t);free((yyvsp[0].s));}
+#line 2192 "parser.tab.c"
     break;
 
   case 111:
-#line 353 "parser.y"
+#line 354 "parser.y"
                         {(yyval.s)= join("( ",(yyvsp[-1].s)," )");free((yyvsp[-1].s));}
-#line 2197 "parser.tab.c"
+#line 2198 "parser.tab.c"
     break;
 
   case 113:
-#line 357 "parser.y"
+#line 358 "parser.y"
                                 {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use < with complex type");}(yyval.s)= join((yyvsp[-2].s),"<",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 2203 "parser.tab.c"
+#line 2204 "parser.tab.c"
     break;
 
   case 114:
-#line 358 "parser.y"
+#line 359 "parser.y"
                                 {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use > with complex type");}(yyval.s)= join((yyvsp[-2].s),">",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 2209 "parser.tab.c"
+#line 2210 "parser.tab.c"
     break;
 
   case 115:
-#line 359 "parser.y"
+#line 360 "parser.y"
                                 {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use <= with complex type");}(yyval.s)= join((yyvsp[-3].s),"<=",(yyvsp[0].s));free((yyvsp[-3].s));free((yyvsp[0].s));}
-#line 2215 "parser.tab.c"
+#line 2216 "parser.tab.c"
     break;
 
   case 116:
-#line 360 "parser.y"
+#line 361 "parser.y"
                                 {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use >= with complex type");}(yyval.s)= join((yyvsp[-3].s),">=",(yyvsp[0].s));free((yyvsp[-3].s));free((yyvsp[0].s));}
-#line 2221 "parser.tab.c"
+#line 2222 "parser.tab.c"
     break;
 
   case 117:
-#line 361 "parser.y"
+#line 362 "parser.y"
                                 {(yyval.s)= join((yyvsp[-2].s),"==",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 2227 "parser.tab.c"
+#line 2228 "parser.tab.c"
     break;
 
   case 118:
-#line 362 "parser.y"
+#line 363 "parser.y"
                                 {(yyval.s)= join((yyvsp[-3].s),"!=",(yyvsp[0].s));free((yyvsp[-3].s));free((yyvsp[0].s));}
-#line 2233 "parser.tab.c"
+#line 2234 "parser.tab.c"
     break;
 
   case 119:
-#line 365 "parser.y"
+#line 366 "parser.y"
                      {(yyval.s)=join((yyvsp[-2].s),"+",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s)); is_val_arr =false;}
-#line 2239 "parser.tab.c"
+#line 2240 "parser.tab.c"
     break;
 
   case 120:
-#line 366 "parser.y"
+#line 367 "parser.y"
                      {(yyval.s)=join((yyvsp[-2].s),"-",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s)); is_val_arr =false;}
-#line 2245 "parser.tab.c"
+#line 2246 "parser.tab.c"
     break;
 
   case 121:
-#line 367 "parser.y"
+#line 368 "parser.y"
                      {(yyval.s)=join((yyvsp[-2].s),"*",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s)); is_val_arr =false;}
-#line 2251 "parser.tab.c"
+#line 2252 "parser.tab.c"
     break;
 
   case 122:
-#line 368 "parser.y"
+#line 369 "parser.y"
                      {(yyval.s)=join((yyvsp[-2].s),"/",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s)); is_val_arr =false;}
-#line 2257 "parser.tab.c"
+#line 2258 "parser.tab.c"
     break;
 
   case 123:
-#line 369 "parser.y"
+#line 370 "parser.y"
                      {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use mod on complex");}(yyval.s)=join((yyvsp[-2].s),"%",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s)); is_val_arr =false;}
-#line 2263 "parser.tab.c"
+#line 2264 "parser.tab.c"
     break;
 
   case 124:
-#line 370 "parser.y"
+#line 371 "parser.y"
                                          {void * v = calloc(1,3+strlen(type_arr[(yyvsp[-2].t)])); // 2 for '()' one for end-of-string 0
                                 sprintf(v,"(%s) ",type_arr[(yyvsp[-2].t)]);
                                 char * t = join("(",(yyvsp[0].s),")");
@@ -2274,53 +2275,53 @@ yyreduce:
                                 free((yyvsp[0].s));
                                 expr_type = (yyvsp[-2].t);
                             }
-#line 2278 "parser.tab.c"
+#line 2279 "parser.tab.c"
     break;
 
   case 125:
-#line 380 "parser.y"
+#line 381 "parser.y"
                      {(yyval.s)=join("( ",(yyvsp[-1].s)," )"); free((yyvsp[-1].s)); is_val_arr =false;}
-#line 2284 "parser.tab.c"
+#line 2285 "parser.tab.c"
     break;
 
   case 126:
-#line 381 "parser.y"
+#line 382 "parser.y"
                             {(yyval.s)=join("-","",(yyvsp[0].s)); free((yyvsp[0].s)); is_val_arr =false;}
-#line 2290 "parser.tab.c"
+#line 2291 "parser.tab.c"
     break;
 
   case 128:
-#line 384 "parser.y"
+#line 385 "parser.y"
                  {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);;
                 }else{
                     expr_type = COMPLEX_TYPE;
                 }}
-#line 2300 "parser.tab.c"
+#line 2301 "parser.tab.c"
     break;
 
   case 129:
-#line 389 "parser.y"
+#line 390 "parser.y"
              {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[INT_TYPE],type_arr[expr_type]);;
                 }else if(!(expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == COMPLEX_TYPE)){
                     expr_type = INT_TYPE;
                 }}
-#line 2310 "parser.tab.c"
+#line 2311 "parser.tab.c"
     break;
 
   case 130:
-#line 394 "parser.y"
+#line 395 "parser.y"
                { if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);;
                 }else if(expr_type != COMPLEX_TYPE){
                     expr_type = FLOAT_TYPE;
                 }}
-#line 2320 "parser.tab.c"
+#line 2321 "parser.tab.c"
     break;
 
   case 131:
-#line 399 "parser.y"
+#line 400 "parser.y"
                  { Variable *_t = lookup_var((yyvsp[0].s));
                     if(_t == NULL){
                         yyerror("Undefined variable %s",(yyvsp[0].s));
@@ -2335,33 +2336,33 @@ yyreduce:
                     }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
                         expr_type = _t->t;
                     }}
-#line 2339 "parser.tab.c"
+#line 2340 "parser.tab.c"
     break;
 
   case 132:
-#line 413 "parser.y"
+#line 414 "parser.y"
                 {if(expr_type == VOID_TYPE){
                     expr_type = BOOL_TYPE;
                 }else if(expr_type != BOOL_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
                 }}
-#line 2349 "parser.tab.c"
+#line 2350 "parser.tab.c"
     break;
 
   case 133:
-#line 418 "parser.y"
+#line 419 "parser.y"
                 {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
-#line 2355 "parser.tab.c"
+#line 2356 "parser.tab.c"
     break;
 
   case 135:
-#line 420 "parser.y"
+#line 421 "parser.y"
                      {push_expr_and_args();}
-#line 2361 "parser.tab.c"
+#line 2362 "parser.tab.c"
     break;
 
   case 136:
-#line 420 "parser.y"
+#line 421 "parser.y"
                                                       { Variable *v = lookup_var((yyvsp[-4].s));
                                                         if(v == NULL){
                                                             yyerror("Undefined variable %s",(yyval.s));
@@ -2389,11 +2390,11 @@ yyreduce:
                                                         }
                                                         free((yyvsp[-4].s));free((yyvsp[-1].s));
                                                         }
-#line 2393 "parser.tab.c"
+#line 2394 "parser.tab.c"
     break;
 
   case 137:
-#line 449 "parser.y"
+#line 450 "parser.y"
                                  {void* _t = calloc(1, strlen((yyvsp[-3].s)) + strlen((yyvsp[-1].s)) + 1+2+2);/*1 for the + symbol,
                                                                                         2 for the perenthesis around the img part
                                                                                         2 for the parenthesis around the whole*/
@@ -2401,11 +2402,11 @@ yyreduce:
                                         strcat(_t,"(");strcat(_t, (yyvsp[-1].s));strcat(_t,")");
                                         strcat(_t, "*I");strcat(_t,")");
                                             (yyval.s) = (char*)_t;free((yyvsp[-3].s));free((yyvsp[-1].s));}
-#line 2405 "parser.tab.c"
+#line 2406 "parser.tab.c"
     break;
 
 
-#line 2409 "parser.tab.c"
+#line 2410 "parser.tab.c"
 
       default: break;
     }
@@ -2637,7 +2638,7 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 457 "parser.y"
+#line 458 "parser.y"
 
 
 void main(int argc , char **argv){

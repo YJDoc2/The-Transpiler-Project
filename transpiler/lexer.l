@@ -83,6 +83,7 @@ mod                                  { return MOD;}
 eql                                   {return EQL;}
 and                                     {return AND;}
 or                                      {return OR;}
+not                                     {return NOT;}
 
 if                                   {return IF;}
 else                                 {return ELSE;}

@@ -349,7 +349,8 @@ elsedummy : /* nothing */   {popscope();pushscope();printcode("}else{");}
 
 condition: condition AND condition {$$= join($1," && ",$3);free($1);free($3);}
     | condition OR condition    {$$= join($1," || ",$3);free($1);free($3);}
-    | NOT condition     {$$=join("!",$2,"");free($2);}
+    | NOT condition     {char * t =join("(",$2,")");
+                            $$ = join("!",t,"");free(t);free($2);}
     | '(' condition ')' {$$= join("( ",$2," )");free($2);}
     | basecondition 
 
