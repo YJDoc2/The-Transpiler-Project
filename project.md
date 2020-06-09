@@ -62,4 +62,10 @@ Add comment parsing <br />
 
 Added Conditions and if statements : if.. , if..else... , if..else if..
 \# test10.c transpiled from test10.tpp for testing if..else if.. and nested if<br />
+
+Added while loop <br />
+\# test11.c transpiled from test11.tpp for testing while loop<br />
+
+Add for loop <br />
+
 make header file generating function , generate header file after successful code compiling.(Maybe keep this for the very last stage after everything else is done...?)<br />

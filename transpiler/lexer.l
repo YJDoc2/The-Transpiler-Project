@@ -88,6 +88,7 @@ not                                     {return NOT;}
 if                                   {return IF;}
 else                                 {return ELSE;}
 
+while                               {return WHILE;}
 
 true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
 

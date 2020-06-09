@@ -133,15 +133,17 @@ param : modifier type IDENTIFIER    {add_param($1,$2,false,$3);create_var($1,$2,
 
 stmtlist :/* nothing */
     | stmtlist error ';' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
+    | stmtlist error '}' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
     | stmtlist stmt ';' {expr_type= VOID_TYPE;}
     | stmtlist stmt {yyerror("missing ;");expr_type =  VOID_TYPE;}
     | stmtlist comment
     | stmtlist ifstmt
+    | stmtlist whilestmt
 ;
 
 stmt : RAW "<{" rawlist "}>" {printcode("%s",$4);}
     | vardeclaration
-    | fncall {printcode($1);if(strcmp($1,"")!=0)printcode(";");free($1);}
+    | fncall {printcode("%s",$1);if(strcmp($1,"")!=0)printcode(";");free($1);}
     | returnstmt
     | assignstmt
 ;
@@ -347,6 +349,8 @@ elsedummy : /* nothing */   {popscope();pushscope();printcode("}else{");}
 
 ;
 
+whilestmt : WHILE condition '{' {printcode("while (%s) {",$2);free($2);} stmtlist '}' {printcode(" }");}
+
 condition: condition AND condition {$$= join($1," && ",$3);free($1);free($3);}
     | condition OR condition    {$$= join($1," || ",$3);free($1);free($3);}
     | NOT condition     {char * t =join("(",$2,")");
@@ -361,6 +365,7 @@ basecondition : expr '<' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot u
     | expr '>''=' expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use >= with complex type");}$$= join($1,">=",$4);free($1);free($4);}
     | expr EQL expr             {$$= join($1,"==",$3);free($1);free($3);}
     | expr NOT EQL expr         {$$= join($1,"!=",$4);free($1);free($4);}
+    | BOOLVAL
 
 
 expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_val_arr =false;}

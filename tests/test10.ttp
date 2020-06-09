@@ -11,6 +11,9 @@ fn main() -> void{
     string g = "hello you!"; 
     int j;
     input(j);
+    if true {
+
+    }
     if j < 5 {
         int k = 9;
         print(j,"is less than 5");
@@ -18,11 +21,11 @@ fn main() -> void{
         print("Your input is exactly 10");
     }else if 5<=j and j<10 {
         int mu = 9;
-        if j<8 {
-            print(mu);
-            print(j,"is between 5 to 8");
+        if not j<8 {
+            print(mu,"\n");
+            print(j,"is between 8 to 10");
         }else{
-            print(j,"is between 8 and 10");
+            print(j,"is between 5 and 8");
         }
     }    
 }
