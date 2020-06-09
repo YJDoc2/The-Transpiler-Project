@@ -32,6 +32,9 @@
 }
 
 
+
+%left AND OR
+%left NOT
 %left '+' '-'
     /* I'm not sure of MOD yet...*/
 %left '*' '/' MOD
@@ -43,11 +46,13 @@
 %token <t> STRING
 %token CHARBUF
 
-%token BREAK CONTINUE ELSE FOR IF
+%token EQL
+
+%token BREAK CONTINUE FOR IF ELSE
 %token RETURN WHILE
 
 %token I MOD
-%token IN NOT RAW USE
+%token IN RAW USE
 %token DECL 
 %token <s> IDENTIFIER BOOLVAL STRINGVAL
 %token FNDECL 
@@ -65,6 +70,7 @@
 %type <m> modifier
 %type <s> assgtype
 %type <s> value cmplxnum expr fncall
+%type <s> condition basecondition
 
 %%
 program : topstmtlist
@@ -130,6 +136,7 @@ stmtlist :/* nothing */
     | stmtlist stmt ';' {expr_type= VOID_TYPE;}
     | stmtlist stmt {yyerror("missing ;");expr_type =  VOID_TYPE;}
     | stmtlist comment
+    | stmtlist ifstmt
 ;
 
 stmt : RAW "<{" rawlist "}>" {printcode("%s",$4);}
@@ -325,7 +332,34 @@ assgtype : '='  {$$ = "=";}
     | '*' '=' {$$ = "*=";}
     | '/' '=' {$$ = "/=";}
     | MOD '=' {$$ = "%=";}
-    
+;
+
+ifstmt: IF condition '{' ifdummy stmtlist '}' {popscope();printcode("}\n");}
+    | IF condition '{' ifdummy stmtlist '}' ELSE '{' elsedummy stmtlist '}' {printcode("}\n");}
+    | IF condition '{' ifdummy stmtlist '}' ELSE {popscope();printcode("}else ");} ifstmt
+;
+
+ifdummy :/* nothing */  {pushscope();printcode("if(%s){",$<s>-1);free($<s>-1);}
+
+;
+
+elsedummy : /* nothing */   {popscope();pushscope();printcode("}else{");}
+
+;
+
+condition: condition AND condition {$$= join($1," && ",$3);free($1);free($3);}
+    | condition OR condition    {$$= join($1," || ",$3);free($1);free($3);}
+    | NOT condition     {$$=join("!",$2,"");free($2);}
+    | '(' condition ')' {$$= join("( ",$2," )");free($2);}
+    | basecondition 
+
+;
+basecondition : expr '<' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use < with complex type");}$$= join($1,"<",$3);free($1);free($3);}
+    | expr '>' expr             {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use > with complex type");}$$= join($1,">",$3);free($1);free($3);}
+    | expr '<''=' expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use <= with complex type");}$$= join($1,"<=",$4);free($1);free($4);}
+    | expr '>''=' expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use >= with complex type");}$$= join($1,">=",$4);free($1);free($4);}
+    | expr EQL expr             {$$= join($1,"==",$3);free($1);free($3);}
+    | expr NOT EQL expr         {$$= join($1,"!=",$4);free($1);free($4);}
 
 
 expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_val_arr =false;}
@@ -381,7 +415,7 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                 }else if(expr_type != BOOL_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
                 }}
-    | STRINGVAL {if(expr_type != VOID_TYPE){asm("int3");yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
+    | STRINGVAL {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
     | fncall    
     | IDENTIFIER '[' {push_expr_and_args();} expr ']' { Variable *v = lookup_var($1);
                                                         if(v == NULL){
@@ -418,7 +452,7 @@ cmplxnum : '(' expr ',' expr ')' {void* _t = calloc(1, strlen($2) + strlen($4) +
                                         strcat(_t,"(");strcat(_t, $2);strcat(_t,"+");
                                         strcat(_t,"(");strcat(_t, $4);strcat(_t,")");
                                         strcat(_t, "*I");strcat(_t,")");
-                                            $$ = (char*)_t;}
+                                            $$ = (char*)_t;free($2);free($4);}
 ;
 %%
 

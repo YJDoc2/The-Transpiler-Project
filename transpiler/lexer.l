@@ -19,6 +19,7 @@
 \{|\}|!|=|"+"|"-"|"*"|"/"|;                   {return yytext[0];}
 
 "("|")"|","|"["|"]"                               {return yytext[0];}
+"<"|">"                                         {return yytext[0];}
 
                                 /* RULES FOR RAW input*/
                                 /* In code, this expects Syntax RAW <{...}>
@@ -78,6 +79,14 @@ static                              { yylval.m = STATIC_TYPE; return STATIC; }
 
 I                                    {return I;}
 mod                                  { return MOD;}
+
+eql                                   {return EQL;}
+and                                     {return AND;}
+or                                      {return OR;}
+
+if                                   {return IF;}
+else                                 {return ELSE;}
+
 
 true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
 

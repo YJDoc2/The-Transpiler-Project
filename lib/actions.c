@@ -85,7 +85,7 @@ static void action_print() {
     _t = _t->next;
   }
 
-  printcode(");\n");  // complete printf bracket
+  printcode(");");    // complete printf bracket
   ll_clear(arglist);  // just clear arglist, as data in arglist are just
                       // pointers to structs in variables/literals which will be
                       // taken care of by respective cleanup functions

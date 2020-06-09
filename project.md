@@ -55,10 +55,11 @@ So only sensible return type that can be array is char \*, which is already used
 \# test8.c transpiled from test8.tpp for testing array params in functions<br />
 Added @decl return to support raw return types <br />
 Add Assignment statement <br />
-Add comment parsing
+Add comment parsing <br />
 \# test9.c transpiled from test9.tpp for testing assignment and comments<br />
 
 ## Stage 5
 
-add conditions add if statement.
+Added Conditions and if statements : if.. , if..else... , if..else if..
+\# test10.c transpiled from test10.tpp for testing if..else if.. and nested if<br />
 make header file generating function , generate header file after successful code compiling.(Maybe keep this for the very last stage after everything else is done...?)<br />
