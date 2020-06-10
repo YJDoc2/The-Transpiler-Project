@@ -66,6 +66,10 @@ Added Conditions and if statements : if.. , if..else... , if..else if..
 Added while loop <br />
 \# test11.c transpiled from test11.tpp for testing while loop<br />
 
+Added better condition support : now conditions are expressions as well, which in downside allows expressions to to be used in place of conditions, like C does, but also allows assignment to bool vars directly with conditions , i.e. bool b = a < b .<br />
+This was done so that in same amount of conflicts as before, one can use assignments to bool, as well as return statements with conditions etc.<br />
+But this still does not allow for multiple assignments (a =b= 6) and assignments instead conditions,so not too bad...?
+\# test12.c transpiled from test12.tpp for testing the updated conditions in expressions<br />
 Add for loop <br />
 
-make header file generating function , generate header file after successful code compiling.(Maybe keep this for the very last stage after everything else is done...?)<br />
+make header file generating function , generate header file after successful code compiling.<br />

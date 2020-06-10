@@ -32,21 +32,20 @@
 }
 
 
-
+%nonassoc LEAST
+%left EQL
 %left AND OR
-%left NOT
+%left LTE GTE '<' '>'
 %left '+' '-'
     /* I'm not sure of MOD yet...*/
 %left '*' '/' MOD
-%nonassoc UMINUS
+%nonassoc UMINUS NOT
 
 %token <t> BOOL COMPLEX
 %token <m> CONST STATIC
 %token <t> DOUBLE FLOAT LONG SHORT VOID INT
 %token <t> STRING
 %token CHARBUF
-
-%token EQL
 
 %token BREAK CONTINUE FOR IF ELSE
 %token RETURN WHILE
@@ -70,7 +69,6 @@
 %type <m> modifier
 %type <s> assgtype
 %type <s> value cmplxnum expr fncall
-%type <s> condition basecondition
 
 %%
 program : topstmtlist
@@ -134,6 +132,7 @@ param : modifier type IDENTIFIER    {add_param($1,$2,false,$3);create_var($1,$2,
 stmtlist :/* nothing */
     | stmtlist error ';' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
     | stmtlist error '}' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
+    | stmtlist error '{' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
     | stmtlist stmt ';' {expr_type= VOID_TYPE;}
     | stmtlist stmt {yyerror("missing ;");expr_type =  VOID_TYPE;}
     | stmtlist comment
@@ -161,12 +160,13 @@ returnstmt : RETURN expr { if(expr_type != fn_type){
                                 has_returned = true;
                             }
                             free($2);}
-            | RETURN    {if(fn_type != VOID_TYPE){
+            | RETURN  {if(fn_type != VOID_TYPE){
                             yyerror("return statement without value is not allowed for function type other than void.");
                         }else{
                             printcode("return;");
                             has_returned = true;
-                        }}
+                        }
+                        }
             | DECL RETURN {has_returned = true;}
 ;
 
@@ -182,7 +182,7 @@ decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
 varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno); 
                         printcode("%s ",$1);
                         free($1); }
-    | IDENTIFIER '=' expr {
+    | IDENTIFIER '=' expr {  //asm("int3");
                                 if(verify_types($<t>-1,expr_type))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[expr_type], type_arr[$<t>-1]);
                                 add_var($<m>-2,$<t>-1,$1,yylineno);
                                 printcode("%s = %s",$1,$3);
@@ -309,6 +309,7 @@ assignstmt : IDENTIFIER assgtype expr {Variable *var = lookup_var($1);
                                     }
                                     // No need to free $2, its const char *
                                     free($1);free($3);
+                                    expr_type = VOID_TYPE;
                                     }
             | IDENTIFIER '[' expr arraydecldummy']' assgtype expr {Variable *var = lookup_var($1);
                                     if(var == NULL){
@@ -324,6 +325,7 @@ assignstmt : IDENTIFIER assgtype expr {Variable *var = lookup_var($1);
                                     }else{
                                         printcode("%s[%s] %s %s;",$1,$3,$6,$7);
                                     }
+                                    expr_type = VOID_TYPE;
                                     // No need to free $2, its const char *
                                     free($1);free($3);free($7);}
 
@@ -336,12 +338,12 @@ assgtype : '='  {$$ = "=";}
     | MOD '=' {$$ = "%=";}
 ;
 
-ifstmt: IF condition '{' ifdummy stmtlist '}' {popscope();printcode("}\n");}
-    | IF condition '{' ifdummy stmtlist '}' ELSE '{' elsedummy stmtlist '}' {printcode("}\n");}
-    | IF condition '{' ifdummy stmtlist '}' ELSE {popscope();printcode("}else ");} ifstmt
+ifstmt: IF expr '{' ifdummy stmtlist '}' {popscope();printcode("}\n");}
+    | IF expr '{' ifdummy stmtlist '}' ELSE '{' elsedummy stmtlist '}' {printcode("}\n");popscope();}
+    | IF expr '{' ifdummy stmtlist '}' ELSE {popscope();printcode("}else ");} ifstmt
 ;
 
-ifdummy :/* nothing */  {pushscope();printcode("if(%s){",$<s>-1);free($<s>-1);}
+ifdummy :/* nothing */  {if(expr_type !=BOOL_TYPE){yyerror("Condition must be of bool type");}pushscope();printcode("if(%s){",$<s>-1);free($<s>-1);}
 
 ;
 
@@ -349,23 +351,7 @@ elsedummy : /* nothing */   {popscope();pushscope();printcode("}else{");}
 
 ;
 
-whilestmt : WHILE condition '{' {printcode("while (%s) {",$2);free($2);} stmtlist '}' {printcode(" }");}
-
-condition: condition AND condition {$$= join($1," && ",$3);free($1);free($3);}
-    | condition OR condition    {$$= join($1," || ",$3);free($1);free($3);}
-    | NOT condition     {char * t =join("(",$2,")");
-                            $$ = join("!",t,"");free(t);free($2);}
-    | '(' condition ')' {$$= join("( ",$2," )");free($2);}
-    | basecondition 
-
-;
-basecondition : expr '<' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use < with complex type");}$$= join($1,"<",$3);free($1);free($3);}
-    | expr '>' expr             {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use > with complex type");}$$= join($1,">",$3);free($1);free($3);}
-    | expr '<''=' expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use <= with complex type");}$$= join($1,"<=",$4);free($1);free($4);}
-    | expr '>''=' expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use >= with complex type");}$$= join($1,">=",$4);free($1);free($4);}
-    | expr EQL expr             {$$= join($1,"==",$3);free($1);free($3);}
-    | expr NOT EQL expr         {$$= join($1,"!=",$4);free($1);free($4);}
-    | BOOLVAL
+whilestmt : WHILE expr '{' {if(expr_type !=BOOL_TYPE){yyerror("Condition must be of bool type");}printcode("while (%s) {",$2);pushscope();free($2);} stmtlist '}' {printcode(" }");popscope();expr_type=VOID_TYPE;}
 
 
 expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_val_arr =false;}
@@ -385,19 +371,30 @@ expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_val_arr =false;}
                             }
     | '(' expr ')'   {$$=join("( ",$2," )"); free($2); is_val_arr =false;}
     | '-' expr %prec UMINUS {$$=join("-","",$2); free($2); is_val_arr =false;}
+    | expr '<' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use < with complex type");}$$= join($1,"<",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr '>' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use > with complex type");}$$= join($1,">",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr LTE expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use <= with complex type");}$$= join($1,"<=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr  GTE expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use >= with complex type");}$$= join($1,">=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr  EQL expr %prec LEAST        {$$= join($1,"==",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr  NOT EQL expr  %prec LEAST     {$$= join($1,"!=",$4);free($1);free($4);expr_type = BOOL_TYPE;}
+    | expr AND expr {$$= join($1," && ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr OR expr    {$$= join($1," || ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | NOT expr   {char * t =join("(",$2,")");
+                            $$ = join("!",t,"");free(t);free($2);expr_type = BOOL_TYPE;}
     | value
 
-value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+value : cmplxnum {if( expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);;
                 }else{
                     expr_type = COMPLEX_TYPE;
                 }}
-    | INTNUM {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+    | INTNUM {if( expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[INT_TYPE],type_arr[expr_type]);;
                 }else if(!(expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == COMPLEX_TYPE)){
                     expr_type = INT_TYPE;
                 }}
-    | FLOATNUM { if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+    | FLOATNUM { if( expr_type == STRING_TYPE){
+                    
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);;
                 }else if(expr_type != COMPLEX_TYPE){
                     expr_type = FLOAT_TYPE;
@@ -407,7 +404,7 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                         yyerror("Undefined variable %s",$1);
                     }else if(_t->is_arr && !is_in_fncall){
                         yyerror("cannot use arrray without subscript.");
-                    }else if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+                    }else if(expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[_t->t],type_arr[expr_type]);;
                     }else if(_t->t ==COMPLEX_TYPE){
                         expr_type = COMPLEX_TYPE;
@@ -418,7 +415,7 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                     }}
     | BOOLVAL   {if(expr_type == VOID_TYPE){
                     expr_type = BOOL_TYPE;
-                }else if(expr_type != BOOL_TYPE){
+                }else if(expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
                 }}
     | STRINGVAL {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
@@ -438,7 +435,7 @@ value : cmplxnum {if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
                                                         pop_expr_and_args();
                                                         free(t);
                                                         if(v != NULL){
-                                                            if(expr_type == BOOL_TYPE || expr_type == STRING_TYPE){
+                                                            if( expr_type == STRING_TYPE){
                                                                 yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[v->t],type_arr[expr_type]);;
                                                             }else if(v->t ==COMPLEX_TYPE){
                                                                 expr_type = COMPLEX_TYPE;

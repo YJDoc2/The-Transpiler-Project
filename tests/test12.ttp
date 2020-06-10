@@ -1,0 +1,27 @@
+RAW <{
+#include<stdio.h>
+#include <stdbool.h>
+#include<complex.h>
+
+bool test(bool);
+}>
+
+fn main() -> void{
+    int i = 0;
+    
+    while i <= 8 {
+        if( i<5){
+            printf("i is still less than five, i = %d\n",i);
+        }else if i eql 5 {
+            printf("i = 5\n");
+        }else{
+            printf("i is greater than five now, i = %d\n",i);
+        }
+        i += 1;
+    }
+    return ;
+}
+fn test(bool b)->bool{
+
+    return b and 6<5;
+}

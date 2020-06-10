@@ -20,6 +20,8 @@
 
 "("|")"|","|"["|"]"                               {return yytext[0];}
 "<"|">"                                         {return yytext[0];}
+"<="                                        {return LTE;}
+">="                                        {return GTE;}
 
                                 /* RULES FOR RAW input*/
                                 /* In code, this expects Syntax RAW <{...}>
