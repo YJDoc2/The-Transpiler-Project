@@ -74,4 +74,6 @@ But this still does not allow for multiple assignments (a =b= 6) and assignments
 Added for loop <br />
 \# test13.c transpiled from test13.tpp for testing For loops<br />
 
-make header file generating function , generate header file after successful code compiling.<br />
+make file generating function , generate header file after successful code compiling.<br />
+Still have to add comment detecting in preparser and prelexer
+also check the lost bytes in memcheck

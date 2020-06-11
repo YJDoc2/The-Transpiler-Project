@@ -2312,13 +2312,13 @@ yyreduce:
 
   case 116:
 #line 360 "parser.y"
-                                                                       {pushscope();add_var(NONE_TYPE,expr_type,(yyvsp[-9].s),yylineno);print_step_range_loop((yyvsp[-9].s),(yyvsp[-7].s),(yyvsp[-4].s),(yyvsp[-1].s),expr_type);free((yyvsp[-9].s));free((yyvsp[-7].s));free((yyvsp[-4].s));}
+                                                                       {pushscope();add_var(NONE_TYPE,expr_type,(yyvsp[-9].s),yylineno);print_step_range_loop((yyvsp[-9].s),(yyvsp[-7].s),(yyvsp[-4].s),(yyvsp[-1].s),expr_type);free((yyvsp[-9].s));free((yyvsp[-7].s));free((yyvsp[-4].s));free((yyvsp[-1].s));}
 #line 2317 "parser.tab.c"
     break;
 
   case 117:
 #line 360 "parser.y"
-                                                                                                                                                                                                                         {printcode("}");popscope();}
+                                                                                                                                                                                                                                   {printcode("}");popscope();}
 #line 2323 "parser.tab.c"
     break;
 
@@ -2859,6 +2859,7 @@ void main(int argc , char **argv){
     __init_expr__();
     preparse();
     yyparse();
+    //print_code_header();
     __cleanup_expr__();
     __cleanup_scopes__();
     __cleanup_functions__();

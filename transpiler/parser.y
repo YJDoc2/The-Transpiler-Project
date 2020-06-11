@@ -357,7 +357,7 @@ whilestmt : WHILE expr '{' {if(expr_type !=BOOL_TYPE){yyerror("Condition must be
 ;
 
 forstmt : FOR IDENTIFIER IN expr '.' '.' expr rangecheckdummy {pushscope();add_var(NONE_TYPE,expr_type,$2,yylineno);print_simple_range_loop($2,$4,$7,expr_type);free($2);free($4);free($7);}'{' stmtlist '}' {printcode("}");popscope();}
-    | FOR IDENTIFIER IN expr '.' '.' expr '.' '.' expr rangecheckdummy {pushscope();add_var(NONE_TYPE,expr_type,$2,yylineno);print_step_range_loop($2,$4,$7,$10,expr_type);free($2);free($4);free($7);} '{' stmtlist '}' {printcode("}");popscope();}
+    | FOR IDENTIFIER IN expr '.' '.' expr '.' '.' expr rangecheckdummy {pushscope();add_var(NONE_TYPE,expr_type,$2,yylineno);print_step_range_loop($2,$4,$7,$10,expr_type);free($2);free($4);free($7);free($10);} '{' stmtlist '}' {printcode("}");popscope();}
     | FOR IDENTIFIER IN IDENTIFIER simplearraydummy {free($2);free($4);} '{' stmtlist '}' {printcode("}");popscope();}
     | FOR IDENTIFIER ',' IDENTIFIER IN IDENTIFIER iterarraydummy {free($2);free($4);free($6);} '{' stmtlist '}' {printcode("}");popscope();}
 ;
@@ -509,6 +509,7 @@ void main(int argc , char **argv){
     __init_expr__();
     preparse();
     yyparse();
+    print_code_header();
     __cleanup_expr__();
     __cleanup_scopes__();
     __cleanup_functions__();

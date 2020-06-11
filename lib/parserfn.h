@@ -61,7 +61,13 @@ void yyerror(char* s, ...);
  */
 void printcode(char* s, ...);
 
-//! TODO
-// int printheader();  //! ???ARGS???
+/*
+ * Prints all function declarations and required header inclusions
+ * should be called after the parsing is completed
+ *
+ * Params : None
+ *
+ */
+void print_code_header();
 
 #endif

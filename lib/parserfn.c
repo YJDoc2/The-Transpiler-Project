@@ -6,8 +6,11 @@
 #include <errno.h>
 #include <string.h>
 
-int errs = 0;  // number or errors in input, if non-zero at end of parsing,
-               // delete the temp file
+#include "functions.h"
+
+extern char *type_arr[], *mod_arr[];
+int errs = 0;  // number or errors in input, if non-zero at end of
+               // parsing, delete the temp file
 
 // way to skip the extra 'Syntax error' message of Bison
 static int last_err = -1;
@@ -44,23 +47,20 @@ int __init_io__(char *infile, char *outfile) {
     __cleanup_io__();
     exit(EXIT_FAILURE);
   }
-  //! TODO temporary hack
-  if (outfile == NULL) {
-    code = stdout;
-    header = stdout;
-    return 0;
-  }
-  // get the basename of fle
-  char tok[2] = ".";
-  crr_file_name = strtok(infile, tok);
-
+  char *out = outfile == NULL ? infile : outfile;
   // 3 =  two for '.' and ext one for end-of-string 0
-  char codename[strlen(crr_file_name) + 3];
-  char headname[strlen(crr_file_name) + 3];
-  strcpy(codename, crr_file_name);
-  strcpy(headname, crr_file_name);
-  strcat(codename, ".c");
-  strcat(headname, ".h");  //! TODO use this
+  char codename[strlen(out) + 3];
+  char headname[strlen(out) + 3];
+  strcpy(codename, out);
+  strcpy(headname, out);
+  for (int i = strlen(out) - 1; i > 0; --i) {
+    if (codename[i] == '.') {
+      strcpy(codename + i, ".c\0");
+      strcpy(headname + i, ".h\0");
+      break;
+    }
+  }
+
   code = fopen(codename, "w");
   if (code == NULL) {
     perror("cannot create new file for compiling");
@@ -73,6 +73,7 @@ int __init_io__(char *infile, char *outfile) {
     __cleanup_io__();
     exit(EXIT_FAILURE);
   }
+  printcode("#include \"%s\"\n\n", headname);
   return 0;
 }
 
@@ -145,4 +146,61 @@ void printcode(char *s, ...) {
   va_list ap;
   va_start(ap, s);
   vfprintf(code, s, ap);
+}
+
+// Helper function to print a single Param in function declaration
+static inline void print_param(Param *p) {
+  fprintf(header, "%s %s %s", mod_arr[p->m], type_arr[p->t], p->name);
+  if (p->is_arr) {
+    fprintf(header, "[] ");
+  } else {
+    fprintf(header, " ");
+  }
+}
+
+// Helper function to print parameters of the function in function declarations
+static void print_params(Linked_list *paramlist) {
+  // if function does not take any Param paramlist will be empty
+  if (paramlist == NULL) return;
+
+  ll_link *iter = paramlist->start;
+
+  // print first param, this is done outside the loop as after this each param
+  // must be preceeded with a ','
+  print_param((Param *)iter->data);
+  // if function has only one param
+  if (iter->next == NULL) return;
+  iter = iter->next;
+  // print rest of the prams
+  while (iter != NULL) {
+    fprintf(header, ",");
+    print_param((Param *)iter->data);
+    iter = iter->next;
+  }
+  return;
+}
+
+/*
+ * Prints all function declarations and required header inclusions
+ * should be called after the parsing is completed
+ *
+ * Params : None
+ *
+ */
+void print_code_header() {
+  fprintf(header,
+          "#include<stdio.h>\n#include<stdlib.h>\n#include<stdbool.h>\n#"
+          "include<complex.h>\n\n");
+  hashpair *iter = fnmap.start;
+  hashpair *end = fnmap.start + fnmap.size;
+  while (iter <= end) {
+    if (iter->key != NULL || iter->value != NULL) {
+      Function *f = (Function *)iter->value;
+      fprintf(header, "%s %s %s(", mod_arr[f->ret_m], type_arr[f->ret_t],
+              f->print_name);
+      print_params(f->param_list);
+      fprintf(header, " );\n\n");
+    }
+    ++iter;
+  }
 }
