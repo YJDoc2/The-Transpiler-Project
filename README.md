@@ -19,3 +19,10 @@ The snap of valgrind didn't work because of strlen error.<br />
 Only 1D arrays supported other than charbuf : read below <br/>
 
 for input-able strings, charbuf is introduced. it translates to char [ ][ ],and can be declared with [expr], [expr] = {...},[] = {...}, [expr][expr], [expr][expr] = {...}, [][expr] = {...}. these essentially creates char double array, where one can take in input.As C itself allows to take input in statically allocated strings, eg : char c[] = "...", ttp allows that as well by taking input in strings, but this will cause a seg fault at runtime, so it is best to create a charbuf [] to take string input, and charbuf[][] to make an array of input-able strings. <br />
+
+For loops comes in 4 types : <br />
+for i in start .. end {...} <br />
+for i in start .. end .. step {...} <br />
+for i in array {...} <br />
+for index,val in array {...} <br />
+There must be a space before and after '..' , and NOTE that loops with arrays can only be used if the array is declared in either same scope, or in global scope. Arrays received as function params cannot be used for this, as in generated for loop (sizeof(arr)/sizeof(arr[0])) is used, which gives size of array only if the array is declared in the said ways. When array is passed as fn param, it decays to a pointer, after wich the sizeof cannot give its size. <br />

@@ -18,8 +18,8 @@
                         /* GENERAL SYMBOL LIST */
 \{|\}|!|=|"+"|"-"|"*"|"/"|;                   {return yytext[0];}
 
-"("|")"|","|"["|"]"                               {return yytext[0];}
-"<"|">"                                         {return yytext[0];}
+"("|")"|","|"["|"]"                              {return yytext[0];}
+"<"|">"|"."                                         {return yytext[0];}
 "<="                                        {return LTE;}
 ">="                                        {return GTE;}
 
@@ -91,6 +91,8 @@ if                                   {return IF;}
 else                                 {return ELSE;}
 
 while                               {return WHILE;}
+for                                 {return FOR;}
+in                                 {return IN;}
 
 true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
 

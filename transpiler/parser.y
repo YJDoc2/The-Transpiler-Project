@@ -10,6 +10,7 @@
     #include "functions.h"
     #include "scope.h"
     #include "expressions.h"
+    #include "forloop.h"
 
     void preparse(); // as preparse is a macro from preparser.l must be given here
     extern char *type_arr[],*mod_arr[];
@@ -138,6 +139,7 @@ stmtlist :/* nothing */
     | stmtlist comment
     | stmtlist ifstmt
     | stmtlist whilestmt
+    | stmtlist forstmt
 ;
 
 stmt : RAW "<{" rawlist "}>" {printcode("%s",$4);}
@@ -352,8 +354,45 @@ elsedummy : /* nothing */   {popscope();pushscope();printcode("}else{");}
 ;
 
 whilestmt : WHILE expr '{' {if(expr_type !=BOOL_TYPE){yyerror("Condition must be of bool type");}printcode("while (%s) {",$2);pushscope();free($2);} stmtlist '}' {printcode(" }");popscope();expr_type=VOID_TYPE;}
+;
 
+forstmt : FOR IDENTIFIER IN expr '.' '.' expr rangecheckdummy {pushscope();add_var(NONE_TYPE,expr_type,$2,yylineno);print_simple_range_loop($2,$4,$7,expr_type);free($2);free($4);free($7);}'{' stmtlist '}' {printcode("}");popscope();}
+    | FOR IDENTIFIER IN expr '.' '.' expr '.' '.' expr rangecheckdummy {pushscope();add_var(NONE_TYPE,expr_type,$2,yylineno);print_step_range_loop($2,$4,$7,$10,expr_type);free($2);free($4);free($7);} '{' stmtlist '}' {printcode("}");popscope();}
+    | FOR IDENTIFIER IN IDENTIFIER simplearraydummy {free($2);free($4);} '{' stmtlist '}' {printcode("}");popscope();}
+    | FOR IDENTIFIER ',' IDENTIFIER IN IDENTIFIER iterarraydummy {free($2);free($4);free($6);} '{' stmtlist '}' {printcode("}");popscope();}
+;
 
+rangecheckdummy : /*nothing*/ {if(expr_type != INT_TYPE && expr_type != FLOAT_TYPE){yyerror("The range bounds and step must be of type int or float , got %s",type_arr[expr_type]);}}
+
+;
+
+simplearraydummy : /*nothing*/ {Variable *v = lookup_var($<s>0);
+                                    pushscope(); // must be done here, as the popscope occurs irrespective of existance of arr
+                                    if(v == NULL){
+                                        yyerror("Undefined variable %s",$<s>0);
+                                    }else if(!(v->is_arr)){
+                                        yyerror("Cannot iterate over non-array Variables");
+                                    }else{
+                                        add_var(NONE_TYPE,v->t,$<s>-2,yylineno);
+                                        print_array_loop($<s>-2,$<s>0,v->t);
+                                    }
+                                }
+
+;
+
+iterarraydummy : /*nothing*/ {Variable *v = lookup_var($<s>0);
+                                        pushscope(); // must be done here, as the popscope occurs irrespective of existance of arr
+                                    if(v == NULL){
+                                        yyerror("Undefined variable %s",$<s>0);
+                                    }else if(!(v->is_arr)){
+                                        yyerror("Cannot iterate over non-array Variables");
+                                    }else{
+                                        add_var(NONE_TYPE,INT_TYPE,$<s>-4,yylineno);
+                                        add_var(NONE_TYPE,v->t,$<s>-2,yylineno);
+                                        print_enumeration_loop($<s>-4,$<s>-2,$<s>0,v->t);
+                                    }}
+
+;
 expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_val_arr =false;}
     | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3); is_val_arr =false;}
     | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3); is_val_arr =false;}

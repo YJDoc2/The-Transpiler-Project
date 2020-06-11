@@ -70,6 +70,8 @@ Added better condition support : now conditions are expressions as well, which i
 This was done so that in same amount of conflicts as before, one can use assignments to bool, as well as return statements with conditions etc.<br />
 But this still does not allow for multiple assignments (a =b= 6) and assignments instead conditions,so not too bad...?
 \# test12.c transpiled from test12.tpp for testing the updated conditions in expressions<br />
-Add for loop <br />
+
+Added for loop <br />
+\# test13.c transpiled from test13.tpp for testing For loops<br />
 
 make header file generating function , generate header file after successful code compiling.<br />
