@@ -23,6 +23,7 @@
     modifier char_buf_mod = NONE_TYPE;
     bool is_val_arr = false;
     bool is_in_fncall = false;
+    int is_in_loop  =   0;
 
 %}
 
@@ -147,6 +148,8 @@ stmt : RAW "<{" rawlist "}>" {printcode("%s",$4);}
     | fncall {printcode("%s",$1);if(strcmp($1,"")!=0)printcode(";");free($1);}
     | returnstmt
     | assignstmt
+    | BREAK {printcode("break;");}
+    | CONTINUE  {printcode("continue;");}
 ;
 
 comment : BEGINCOMMENT {printcode("/*");} commentlist ENDCOMMENT {printcode("*/");}
@@ -261,8 +264,7 @@ fncall : IDENTIFIER '(' {push_expr_and_args();if(find_action($1)==0)is_in_fncall
                                             verify_call($1,fn,yylineno);
                                             $$ = get_fncall_str($1);
                                             ll_clear(arglist);
-                                            pop_expr_and_args();\
-                                            // TODOverify error types...
+                                            pop_expr_and_args();
                                             type fn_ret = fn->ret_t;
                                             if(expr_type == VOID_TYPE){
                                                 expr_type = fn_ret;
@@ -322,8 +324,8 @@ assignstmt : IDENTIFIER assgtype expr {Variable *var = lookup_var($1);
                                         yyerror("Cannot assign to constant variable.");
                                     }else if(verify_types(var->t,expr_type)){
                                         yyerror("cannot assign type %s to variable of type %s",type_arr[var->t],type_arr[expr_type]);
-                                    }else if(var->t == COMPLEX_TYPE && strcmp($6,"%=")==0){
-                                        yyerror("Cannot use mod on complex type");
+                                    }else if((var->t == COMPLEX_TYPE || var->t == FLOAT || var->t == DOUBLE_TYPE) && strcmp($6,"%=")==0){
+                                        yyerror("Cannot use mod on %s type",type_arr[var->t]);
                                     }else{
                                         printcode("%s[%s] %s %s;",$1,$3,$6,$7);
                                     }
@@ -353,13 +355,13 @@ elsedummy : /* nothing */   {popscope();pushscope();printcode("}else{");}
 
 ;
 
-whilestmt : WHILE expr '{' {if(expr_type !=BOOL_TYPE){yyerror("Condition must be of bool type");}printcode("while (%s) {",$2);pushscope();free($2);} stmtlist '}' {printcode(" }");popscope();expr_type=VOID_TYPE;}
+whilestmt : WHILE expr '{' {if(expr_type !=BOOL_TYPE){yyerror("Condition must be of bool type");}++is_in_loop;printcode("while (%s) {",$2);pushscope();free($2);} stmtlist '}' {printcode(" }");popscope();expr_type=VOID_TYPE;--is_in_loop;}
 ;
 
-forstmt : FOR IDENTIFIER IN expr '.' '.' expr rangecheckdummy {pushscope();add_var(NONE_TYPE,expr_type,$2,yylineno);print_simple_range_loop($2,$4,$7,expr_type);free($2);free($4);free($7);}'{' stmtlist '}' {printcode("}");popscope();}
-    | FOR IDENTIFIER IN expr '.' '.' expr '.' '.' expr rangecheckdummy {pushscope();add_var(NONE_TYPE,expr_type,$2,yylineno);print_step_range_loop($2,$4,$7,$10,expr_type);free($2);free($4);free($7);free($10);} '{' stmtlist '}' {printcode("}");popscope();}
-    | FOR IDENTIFIER IN IDENTIFIER simplearraydummy {free($2);free($4);} '{' stmtlist '}' {printcode("}");popscope();}
-    | FOR IDENTIFIER ',' IDENTIFIER IN IDENTIFIER iterarraydummy {free($2);free($4);free($6);} '{' stmtlist '}' {printcode("}");popscope();}
+forstmt : FOR IDENTIFIER IN expr '.' '.' expr rangecheckdummy {++is_in_loop;pushscope();add_var(NONE_TYPE,expr_type,$2,yylineno);print_simple_range_loop($2,$4,$7,expr_type);free($2);free($4);free($7);}'{' stmtlist '}' {printcode("}");popscope();--is_in_loop;}
+    | FOR IDENTIFIER IN expr '.' '.' expr '.' '.' expr rangecheckdummy {++is_in_loop;pushscope();add_var(NONE_TYPE,expr_type,$2,yylineno);print_step_range_loop($2,$4,$7,$10,expr_type);free($2);free($4);free($7);free($10);} '{' stmtlist '}' {printcode("}");popscope();--is_in_loop;}
+    | FOR IDENTIFIER IN IDENTIFIER simplearraydummy {++is_in_loop;free($2);free($4);} '{' stmtlist '}' {printcode("}");popscope();--is_in_loop;}
+    | FOR IDENTIFIER ',' IDENTIFIER IN IDENTIFIER iterarraydummy {++is_in_loop;free($2);free($4);free($6);} '{' stmtlist '}' {printcode("}");popscope();--is_in_loop;}
 ;
 
 rangecheckdummy : /*nothing*/ {if(expr_type != INT_TYPE && expr_type != FLOAT_TYPE){yyerror("The range bounds and step must be of type int or float , got %s",type_arr[expr_type]);}}
@@ -397,7 +399,10 @@ expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_val_arr =false;}
     | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3); is_val_arr =false;}
     | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3); is_val_arr =false;}
     | expr '/' expr  {$$=join($1,"/",$3); free($1);free($3); is_val_arr =false;}
-    | expr MOD expr  {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use mod on complex");}$$=join($1,"%",$3); free($1);free($3); is_val_arr =false;}
+    | expr MOD expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE){
+                        yyerror("Cannot use mod on %s type",type_arr[expr_type]);
+                        }
+                        $$=join($1,"%",$3); free($1);free($3); is_val_arr =false;}
     | '(' type ')' expr  %prec UMINUS    {void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
                                 sprintf(v,"(%s) ",type_arr[$2]);
                                 char * t = join("(",$4,")");

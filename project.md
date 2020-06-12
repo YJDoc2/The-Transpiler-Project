@@ -75,5 +75,20 @@ Added for loop <br />
 \# test13.c transpiled from test13.tpp for testing For loops<br />
 
 make file generating function , generate header file after successful code compiling.<br />
-Still have to add comment detecting in preparser and prelexer
-also check the lost bytes in memcheck
+Added comment detecting in preparser and prelexer
+Added break and continue statements
+add un-supported C tokens error in lexer
+
+## Stage 6
+
+Add file switching function, so that all classes(structs) can have their own file
+
+Add basic class(structure) support, just declaring them with only variables is enough for now
+
+then add fn declaration within the classes, which will go to their own files.
+
+## Stage 7
+
+Add class support in exprs, add support for accessing their methods
+Static methods ?
+add class support as params

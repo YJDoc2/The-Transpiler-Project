@@ -7,6 +7,7 @@
     extern int yyerror(char *,...);
     extern void printcode(char *,...);
     extern bool is_in_fn;
+    extern int is_in_loop;
 %}
 
 %option noyywrap nodefault yylineno
@@ -94,9 +95,17 @@ while                               {return WHILE;}
 for                                 {return FOR;}
 in                                 {return IN;}
 
+break                               {if(is_in_loop <= 0){yyerror("Cannot use break outside a Loop.");}else{return BREAK;}}
+continue                            {if(is_in_loop <= 0){yyerror("Cannot use continue outside a Loop.");}else{return CONTINUE;}}
+
 true|false                           {yylval.s = strdup(yytext);return BOOLVAL;}
 
 return                               { if(is_in_fn){return RETURN;}else{yyerror("Cannot use return outside function.\n");} }
+
+auto|char|enum|extern|inline|register   {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
+restrict|signed|struct|typedef|union    {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
+unsigned|volatile|switch|case|default   {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
+do|goto|sizeof                          {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
 
 \"(\\.|[^\"\n])*\"                      {yylval.s = strdup(yytext);return STRINGVAL;}
 \"(\\.|[^\"\n])*$                       {yyerror("unterminated string "); yylval.s = strdup(yytext);return ';';}

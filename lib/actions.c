@@ -131,7 +131,6 @@ static void __input_var__(void* v) {
   }
   // The given argument was a variable, so we have to take the input in it
   switch (var->t) {
-    //! TODO we have to implement for string input
     case VOID_TYPE:
       yyerror("cannot scan value of variable of type void : %s", var->name);
       break;

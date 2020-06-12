@@ -14,6 +14,7 @@
 %option outfile="prelex.c"
 
 %x RAWSTATE
+%x COMMENT
 
 %%
 
@@ -28,6 +29,14 @@ RAW                               { }
 <RAWSTATE>[ \t]		                {}
 <RAWSTATE>\}                        { char c = input(); if(c != '>'){}else{BEGIN 0;}}                                                                                           
 <RAWSTATE>[^}]*       	            { }
+
+
+"/*"                                { BEGIN COMMENT;}
+<COMMENT>"*/"                       {BEGIN 0;}
+<COMMENT>([^*]|\n)+|.               {}
+<COMMENT><<EOF>>                    {preerror("Unterminated multiline comment.");return 0;}
+
+"//".*\n                            {}
 
 fn                                  {return FNDECL;}
 

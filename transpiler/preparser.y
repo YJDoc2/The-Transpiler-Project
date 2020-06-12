@@ -37,12 +37,17 @@
 %type <m> modifier
 
 %%
-fndecllist :/*nothing*/
-    | fndecllist fndeclaration
-    | fndecllist error
+
+program : stmtlist
+
+stmtlist :/*nothing*/
+    | stmtlist fndeclaration
+    | stmtlist error
+    | stmtlist vardecl
 
 fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type {fnlineno=prelineno;}'{'{in_fn = true;}'}' {add_function($7,$8,$2,$2,fnlineno);free($2);in_fn=false;}
 
+vardecl: modifier type IDENTIFIER {free($3);}
 
 paramlist : /* nothing */
     | paramlist param
