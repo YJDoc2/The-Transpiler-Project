@@ -132,6 +132,7 @@ param : modifier type IDENTIFIER    {add_param($1,$2,false,$3);create_var($1,$2,
     | modifier type IDENTIFIER '[' ']' {add_param($1,$2,true,$3);add_array($1,$2,$3,yylineno); free($3);}
 
 stmtlist :/* nothing */
+    | stmtlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
     | stmtlist error ';' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
     | stmtlist error '}' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
     | stmtlist error '{' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
@@ -143,8 +144,7 @@ stmtlist :/* nothing */
     | stmtlist forstmt
 ;
 
-stmt : RAW "<{" rawlist "}>" {printcode("%s",$4);}
-    | vardeclaration
+stmt : vardeclaration
     | fncall {printcode("%s",$1);if(strcmp($1,"")!=0)printcode(";");free($1);}
     | returnstmt
     | assignstmt
@@ -513,6 +513,7 @@ void main(int argc , char **argv){
     __init_scopes__();
     __init_expr__();
     preparse();
+    printcode("\n#line 1 \"%s\"\n\n","./test.ttp");
     yyparse();
     print_code_header();
     __cleanup_expr__();

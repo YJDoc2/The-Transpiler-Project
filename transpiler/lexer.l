@@ -8,6 +8,7 @@
     extern void printcode(char *,...);
     extern bool is_in_fn;
     extern int is_in_loop;
+    extern char *crr_file_name;
 %}
 
 %option noyywrap nodefault yylineno
@@ -46,7 +47,8 @@ RAW                               { return RAW; } /* Start of the RAW direction,
                                         else{yylval.s = ""; BEGIN lastState;return RAWEND;}}/* Check if the } is follwed by a >
                                                                                                     if it is that means it the end of RAW syntax
                                                                                                     else its just a normal closing bracket.
-                                                                                                */                                                                                                
+                                                                                                */
+<RAWSTATE>[\n]*                         { yylval.s = strdup(yytext);printcode("\n#line %d \"%s\"\n",yylineno,crr_file_name); return RAWLINE; }                                                                                                                                                                                                    
 <RAWSTATE>[^}]*       	            { yylval.s = strdup(yytext); return RAWLINE; } /* Match All pattern for the internal text of RAW syntax.
                                                                                         except }, used to match the content inside the <{...}>*/
 "/*"                                {lastState = YY_START; BEGIN COMMENT;return BEGINCOMMENT;}
@@ -58,7 +60,7 @@ RAW                               { return RAW; } /* Start of the RAW direction,
 
 
 [ \t]*                              {}
-[\n]*                               {printcode("\n");}
+[\n]*                               {printcode("\n");printcode("\n#line %d \"%s\"\n",yylineno,crr_file_name);}
                         /* Rules of declarations */
 @decl                               {return DECL;} /* Explicit declaration , used to declare the variables that are declared in RAW code*/
 

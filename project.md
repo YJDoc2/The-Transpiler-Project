@@ -75,9 +75,12 @@ Added for loop <br />
 \# test13.c transpiled from test13.tpp for testing For loops<br />
 
 make file generating function , generate header file after successful code compiling.<br />
-Added comment detecting in preparser and prelexer
-Added break and continue statements
-add un-supported C tokens error in lexer
+NOTE : all test before now contains some redundant code that uses raw to hardcode fn declarations <br />
+Added comment detecting in preparser and prelexer<br />
+Added break and continue statements<br />
+Added un-supported C tokens error in lexer<br />
+Added #line in the generated codefile, for every line, nNOTE that for a generated code structure, like loops,
+this may show incorrect/slightly off line numbers<br />
 
 ## Stage 6
 

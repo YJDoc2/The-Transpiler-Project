@@ -47,6 +47,7 @@ int __init_io__(char *infile, char *outfile) {
     __cleanup_io__();
     exit(EXIT_FAILURE);
   }
+  crr_file_name = infile;
   char *out = outfile == NULL ? infile : outfile;
   // 3 =  two for '.' and ext one for end-of-string 0
   char codename[strlen(out) + 3];
