@@ -33,8 +33,6 @@ setup and use Valgrind to check and remove memory leaks; <br />
 Commment Document and refactor code <br />
 Added typecasting <br />
 
-(I am going to just remove this)Parse Function...all kind...(?)(What did I meant by this ???)(I guess includeing built in and inbuilt C functions...)<br/>
-
 ## Stage 4
 
 Added Basic Arrays, array declaration and assignment <br />
@@ -81,6 +79,9 @@ Added break and continue statements<br />
 Added un-supported C tokens error in lexer<br />
 Added #line in the generated codefile, for every line, nNOTE that for a generated code structure, like loops,
 this may show incorrect/slightly off line numbers<br />
+\# test14.c transpiled from test14.tpp for testing file generation and header generation<br />
+Added let syntax for declaring variables whose type can be concretely inferred from their expression., Note that for string type the type will always be char \*, if one needs input-able string, one must explicitly use charbuf[] <br/>
+\# test15.c transpiled from test15.tpp for testing let syntax<br />
 
 ## Stage 6
 

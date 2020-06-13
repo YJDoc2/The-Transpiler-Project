@@ -1,0 +1,29 @@
+int arr1[] = {5,6,7};
+fn main() -> void{
+
+    complex arr2[] = {(1,2),(3,4),(5,6)};
+    for i in 0 .. 8 {
+        print("i is now ",i,"\n");
+    }
+    print("\n");
+    for i in 1 .. 0 .. 0.1  {
+        print("i is now ",i,"\n");
+    }
+    print("\n");
+    RAW<{
+        a = 5;
+        b =6;
+    }>
+    for a in arr1{
+        print("a is now ",a,"\n");
+    }
+    print("\n");
+    for i,a in arr2{
+        print("at i = ",i," a is now ",a,"\n");
+    }
+
+}
+
+/*fn test(bool b)->bool{
+    return not b;
+}*/

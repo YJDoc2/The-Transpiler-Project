@@ -56,7 +56,7 @@ RAW                               { return RAW; } /* Start of the RAW direction,
 <COMMENT>([^*]|\n)+|.              {yylval.s = strdup(yytext);return COMMENTLINE;}
 <COMMENT><<EOF>>                    {yyerror("Unterminated multiline comment.");return 0;}
 
-"//".*\n                         {yylval.s = strdup(yytext);return COMMENTLINE;}
+"//".*$                         {yylval.s = strdup(yytext);return COMMENTLINE;}
 
 
 [ \t]*                              {}
@@ -78,11 +78,11 @@ short                               { yylval.t = SHORT_TYPE;return SHORT; }
 void                                { yylval.t = VOID_TYPE;return VOID; }
 string                              { yylval.t = STRING_TYPE; return STRING; }
 charbuf                             {return CHARBUF;}
+let                                 {return LET;}
 
 const                               { yylval.m = CONST_TYPE; return CONST; }
 static                              { yylval.m = STATIC_TYPE; return STATIC; }
 
-I                                    {return I;}
 mod                                  { return MOD;}
 
 eql                                   {return EQL;}
@@ -107,7 +107,7 @@ return                               { if(is_in_fn){return RETURN;}else{yyerror(
 auto|char|enum|extern|inline|register   {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
 restrict|signed|struct|typedef|union    {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
 unsigned|volatile|switch|case|default   {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
-do|goto|sizeof                          {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
+do|goto|sizeof|I                          {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
 
 \"(\\.|[^\"\n])*\"                      {yylval.s = strdup(yytext);return STRINGVAL;}
 \"(\\.|[^\"\n])*$                       {yyerror("unterminated string "); yylval.s = strdup(yytext);return ';';}

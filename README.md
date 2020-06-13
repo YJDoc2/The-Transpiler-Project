@@ -26,3 +26,5 @@ for i in start .. end .. step {...} <br />
 for i in array {...} <br />
 for index,val in array {...} <br />
 There must be a space before and after '..' , and NOTE that loops with arrays can only be used if the array is declared in either same scope, or in global scope. Arrays received as function params cannot be used for this, as in generated for loop (sizeof(arr)/sizeof(arr[0])) is used, which gives size of array only if the array is declared in the said ways. When array is passed as fn param, it decays to a pointer, after wich the sizeof cannot give its size. <br />
+
+Note that variables declared with let must have a expression value with concrete type assigned to it. Also they will alway be of no special modifier, i.e. neither const or static, for using any modifier, one must use declaration with explicit type.<br />

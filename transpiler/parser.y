@@ -39,7 +39,7 @@
 %left AND OR
 %left LTE GTE '<' '>'
 %left '+' '-'
-    /* I'm not sure of MOD yet...*/
+
 %left '*' '/' MOD
 %nonassoc UMINUS NOT
 
@@ -52,9 +52,8 @@
 %token BREAK CONTINUE FOR IF ELSE
 %token RETURN WHILE
 
-%token I MOD
-%token IN RAW USE
-%token DECL 
+%token IN RAW
+%token DECL LET
 %token <s> IDENTIFIER BOOLVAL STRINGVAL
 %token FNDECL 
 %token RETTYPE "->"
@@ -71,6 +70,7 @@
 %type <m> modifier
 %type <s> assgtype
 %type <s> value cmplxnum expr fncall
+%type <s> letarrvals
 
 %%
 program : topstmtlist
@@ -108,7 +108,7 @@ rawlist : /* nothing */
     | rawlist RAWLINE   {printcode("%s",$2); free($2);}
 ;
 
-fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type fndecldummy'{' stmtlist'}' {printcode("}");
+fndeclaration : FNDECL IDENTIFIER '(' {pushscope();} paramlist ')' "->" modifier type fndecldummy'{' stmtlist'}' {printcode("}");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",$2,type_arr[fn_type]);
                                                                                                     }
@@ -118,11 +118,10 @@ fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type fndecldum
                                                                                                     clear_literals();
                                                                                                     }
 
-fndecldummy : /* nothing */ {print_fn_delc($<s>-6);
+fndecldummy : /* nothing */ {print_fn_delc($<s>-7);
                             fn_type = $<t>0;
                             is_in_fn = true;
-                            has_returned = false;
-                            pushscope();} 
+                            has_returned = false;} 
 
 paramlist : /* nothing */
     | paramlist param
@@ -178,6 +177,15 @@ returnstmt : RETURN expr { if(expr_type != fn_type){
 vardeclaration : DECL modifier type decllist
     | modifier type { printcode("%s %s ",mod_arr[$1],type_arr[$2]); arr_type = $2;} varlist {printcode(" ;");arr_type=VOID_TYPE;}
     | modifier CHARBUF {printcode("%s char ",mod_arr[$1]); char_buf_mod = $1;} chararrdecllist {printcode(" ;");char_buf_mod = NONE_TYPE;}
+    | LET IDENTIFIER '=' expr {if(expr_type == VOID_TYPE){
+            yyerror("Cannot figure ou type of variable %s, consider typecasting the expression or explicitly stating type",$2);
+            }else{
+                add_var(NONE_TYPE,expr_type,$2,yylineno);
+                printcode("%s %s = %s;",type_arr[expr_type],$2,$4);
+            }
+            free($2);free($4);}
+    | LET letarraydecl
+
 ;
 
 decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
@@ -217,6 +225,31 @@ arraydecl: '[' expr ']'      {if(expr_type != INT_TYPE){yyerror("Array size must
 ;
 
 arraydecldummy : /*nothing*/ {if(expr_type != INT_TYPE){yyerror("Array size must be an int type got %s.",type_arr[expr_type]);}expr_type = VOID_TYPE;}
+
+letarraydecl :IDENTIFIER '[' ']' '=' '{' letarrvals '}' {if(arr_type == VOID_TYPE){
+                                                            yyerror("Cannot figure ou type of array %s, consider typecasting the expression or explicitly stating type",$1);
+                                                            }else{
+                                                                add_array(NONE_TYPE,  arr_type, $1, yylineno);
+                                                                printcode("%s %s[] = { %s };",type_arr[arr_type],$1,$6);
+                                                            }
+                                                            expr_type = VOID_TYPE;
+                                                            free($1);free($6);}
+    | IDENTIFIER '[' expr arraydecldummy ']' '=' '{' letarrvals '}' {if(arr_type== VOID_TYPE){
+                                                            yyerror("Cannot figure ou type of array %s, consider typecasting the expression or explicitly stating type",$1);
+                                                            }else{
+                                                                add_array(NONE_TYPE,  arr_type, $1, yylineno);
+                                                                printcode("%s %s[%s] = { %s };",type_arr[arr_type],$1,$3,$8);
+                                                            }expr_type = VOID_TYPE;
+                                                            free($1);free($3);free($8);}
+
+letarrvals : expr           {arr_type = expr_type;if(arr_type == STRING_TYPE){expr_type = VOID_TYPE;}}
+    | letarrvals ',' expr   {if(verify_types(expr_type,arr_type)){
+                                yyerror("Invalid assignment : %s type cannot be stored in same array as %s",type_arr[expr_type],type_arr[arr_type]);
+                            }else{
+                                arr_type = expr_type;
+                            }
+                            if(arr_type == STRING_TYPE)expr_type = VOID_TYPE;
+                            $$=join($1,",",$3);free($1);free($3);}
 
 chararrdecllist: IDENTIFIER {printcode("%s",$1);}strdecl {free($1);expr_type = VOID_TYPE;}
     | chararrdecllist ',' IDENTIFIER {printcode(" ,%s",$3);} strdecl {free($3);expr_type = VOID_TYPE;}
