@@ -1,0 +1,17 @@
+class testclass1{
+    int a;
+    RAW <{ char  s[50];}>
+    @decl string s[];
+    float b[50] ;
+}
+
+class testclass2{
+    int gdb;
+    string gamma;
+}
+
+class testclass3{
+    int now_its_really_just_checking;
+    RAW<{ char p[50]; }>
+    @decl string p;
+}

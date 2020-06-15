@@ -15,6 +15,7 @@ FILE* tempcode = NULL;
 FILE* temphead = NULL;
 extern FILE *code, *header;
 extern char* main_file_headname;
+extern Class* current_class;
 
 /*
  * initializes all required DS and allocated memory in this module
@@ -65,7 +66,7 @@ void __cleanup_classes__() { hm_delete(classmap, __delete_classmap__); }
  * name : name of the class
  * Returns : Pointer to the new class
  */
-Class* add_class(char* name) {
+Class* add_class(char* name, int line) {
   char* temp = strdup(name);
   Class* c = (Class*)calloc(1, sizeof(Class));
   c->name = name;
@@ -75,6 +76,7 @@ Class* add_class(char* name) {
   *(c->methods) =
       make_hashmap(METHODMAP_INIT_SIZE, __hash_str__, __compair__str__);
   hm_add(&classmap, temp, c);
+  c->declaration = line;
   return c;
 }
 
@@ -91,18 +93,26 @@ Class* add_class(char* name) {
  *
  * Returns : void
  */
-void add_attr(Class* class, modifier m, type t, char* name, bool is_arr) {
+void add_attr(Class* class, modifier m, type t, char* name, bool is_arr,
+              int line) {
+  void* find = hm_get(class->attr, name);
+  if (find != NULL) {
+    yyerror("Attribute %s is already declared for class %s on line %d", name,
+            class->name, ((attr*)find)->declaration);
+    return;
+  }
   char* temp = strdup(name);
   attr* a = (attr*)calloc(1, sizeof(attr));
   a->is_arr = is_arr;
   a->m = m;
   a->t = t;
   a->name = temp;
+  a->declaration = line;
   hm_add(class->attr, temp, a);
 }
 
 /*
- * A function to add a method to th class
+ * A function to add a method to the class
  *
  * Params :
  * class : pointer to the class
@@ -117,7 +127,13 @@ void add_attr(Class* class, modifier m, type t, char* name, bool is_arr) {
  * Returns : void
  */
 void add_method(Class* class, char* name, type ret_t, bool is_static,
-                Linked_list* paramlist) {
+                Linked_list* paramlist, int line) {
+  void* find = hm_get(class->methods, name);
+  if (find != NULL) {
+    yyerror("method %s is already declared for class %s on line %d", name,
+            class->name, ((method*)find)->declaration);
+    return;
+  }
   char* keyname = strdup(name);
 
   char* printname =
@@ -129,11 +145,31 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
   fn->param_list = paramlist;
   fn->print_name = printname;
   fn->ret_t = ret_t;
+  fn->declaration = line;
   hm_add(class->methods, keyname, fn);
 }
 
-//! TODO
-void print_header_start() {}
+// Helper function that prints the start of a class header
+// this print include statement for header files of all classes defined before
+// it and also prints the include for the header of the file currently parsing
+static void print_header_start() {
+  hashpair* iter = classmap.start;
+  hashpair* end = iter + classmap.size;
+  while (iter <= end) {
+    if (iter->key != NULL || iter->value != NULL) {
+      if (strcmp(iter->key, current_class->name) == 0) {
+        ++iter;
+        continue;  // skip if same class
+      }
+
+      fprintf(code, "#include \"class_%s.h\"\n", (char*)iter->key);
+    }
+    ++iter;
+  }
+  fprintf(code, "#include \"%s\"\n", main_file_headname);
+  fprintf(code, "#ifndef __CLASS_%s__\n", current_class->name);
+  fprintf(code, "#define __CLASS_%s__\n", current_class->name);
+}
 
 /*
  * A function that switches codefile and header file in parserfn to a new files
@@ -172,12 +208,13 @@ void start_class_definition(char* name) {
 }
 
 void print_class_header(char* name) {
+  fprintf(header, "\n #endif\n");  // must be header now, as the files are by
+                                   // the proper name
   //! TODO print methods
 }
 
 /*
  * prints the class's remaining headerfile
- * closes th '{' started in start_class_definition
  */
 void end_class_definition(char* name) {
   print_class_header(name);

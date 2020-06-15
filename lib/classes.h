@@ -3,6 +3,7 @@
 
 #include "hashmap.h"
 #include "linkedlist.h"
+#include "parserfn.h"
 #include "variables.h"
 
 extern Hashmap classmap;
@@ -12,13 +13,14 @@ typedef struct {
   type t;
   char* name;
   bool is_arr;
+  int declaration;
 } attr;
 
 typedef struct {
   char* name;
   Hashmap* methods;
   Hashmap* attr;
-
+  int declaration;
 } Class;
 
 typedef struct {
@@ -26,6 +28,7 @@ typedef struct {
   Linked_list* param_list;
   type ret_t;
   bool is_static_method;
+  int declaration;
 } method;
 
 /*
@@ -47,7 +50,7 @@ void __cleanup_classes__();
  * name : name of the class
  * Returns : Pointer to the new class
  */
-Class* add_class(char* name);
+Class* add_class(char* name, int line);
 
 /*
  * Function to add an attribute in the class
@@ -62,10 +65,11 @@ Class* add_class(char* name);
  *
  * Returns : void
  */
-void add_attr(Class* class, modifier m, type t, char* name, bool is_arr);
+void add_attr(Class* class, modifier m, type t, char* name, bool is_arr,
+              int line);
 
 /*
- * A function to add a method to th class
+ * A function to add a method to the class
  *
  * Params :
  * class : pointer to the class
@@ -80,7 +84,7 @@ void add_attr(Class* class, modifier m, type t, char* name, bool is_arr);
  * Returns : void
  */
 void add_method(Class* class, char* name, type ret_t, bool is_static,
-                Linked_list* paramlist);
+                Linked_list* paramlist, int line);
 
 /*
  * A function that switches codefile and header file in parserfn to a new files

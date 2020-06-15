@@ -35,6 +35,7 @@
 
 %type <t> type
 %type <m> modifier
+%type <s> ident
 
 %%
 
@@ -45,17 +46,19 @@ stmtlist :/*nothing*/
     | stmtlist error
     | stmtlist vardecl
 
-fndeclaration : FNDECL IDENTIFIER '(' paramlist ')' "->" modifier type {fnlineno=prelineno;}'{'{in_fn = true;}'}' {add_function($7,$8,$2,$2,fnlineno);free($2);in_fn=false;}
+fndeclaration : FNDECL ident '(' paramlist ')' "->" modifier type {fnlineno=prelineno;}'{'{in_fn = true;}'}' {add_function($7,$8,$2,$2,fnlineno);free($2);in_fn=false;}
 
-vardecl: modifier type IDENTIFIER {free($3);}
+vardecl: modifier type ident {free($3);}
 
 paramlist : /* nothing */
     | paramlist param
     | paramlist ','  param
 
-param : modifier type IDENTIFIER    {add_param($1,$2,false,$3); free($3);}      
-    | modifier type IDENTIFIER '[' ']' {add_param($1,$2,true,$3);free($3);}            
+param : modifier type ident    {add_param($1,$2,false,$3); free($3);}      
+    | modifier type ident '[' ']' {add_param($1,$2,true,$3);free($3);}            
 
+
+ident : IDENTIFIER {$$ = strdup($1);}
 
 type : INT
     | LONG

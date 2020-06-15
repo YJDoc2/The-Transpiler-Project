@@ -1796,43 +1796,43 @@ yyreduce:
 
   case 26:
 #line 117 "parser.y"
-                                {current_class = add_class((yyvsp[-1].s));start_class_definition((yyvsp[-1].s));}
+                                {current_class = add_class((yyvsp[-1].s),yylineno);start_class_definition((yyvsp[-1].s));}
 #line 1801 "parser.tab.c"
     break;
 
   case 27:
 #line 117 "parser.y"
-                                                                                                     {end_attr_list((yyvsp[-3].s));}
+                                                                                                              {end_attr_list((yyvsp[-3].s));}
 #line 1807 "parser.tab.c"
     break;
 
   case 28:
 #line 117 "parser.y"
-                                                                                                                                           {end_class_definition();free((yyvsp[-6].s));current_class = NULL;}
+                                                                                                                                                    {end_class_definition();printcode("#include \"class_%s.h\"",(yyvsp[-6].s));free((yyvsp[-6].s));current_class = NULL;}
 #line 1813 "parser.tab.c"
     break;
 
   case 31:
 #line 121 "parser.y"
-                                   {add_attr(current_class,NONE_TYPE,(yyvsp[-2].t),(yyvsp[-1].s),false);printcode("%s %s;\n",type_arr[(yyvsp[-2].t)],(yyvsp[-1].s));free((yyvsp[-1].s));}
+                                   {add_attr(current_class,NONE_TYPE,(yyvsp[-2].t),(yyvsp[-1].s),false,yylineno);printcode("%s %s;\n",type_arr[(yyvsp[-2].t)],(yyvsp[-1].s));free((yyvsp[-1].s));}
 #line 1819 "parser.tab.c"
     break;
 
   case 32:
 #line 122 "parser.y"
-                                         {add_attr(current_class,CONST_TYPE,(yyvsp[-2].t),(yyvsp[-1].s),false);printcode("const %s %s;\n",type_arr[(yyvsp[-2].t)],(yyvsp[-1].s));free((yyvsp[-1].s));}
+                                         {add_attr(current_class,CONST_TYPE,(yyvsp[-2].t),(yyvsp[-1].s),false,yylineno);printcode("const %s %s;\n",type_arr[(yyvsp[-2].t)],(yyvsp[-1].s));free((yyvsp[-1].s));}
 #line 1825 "parser.tab.c"
     break;
 
   case 33:
 #line 123 "parser.y"
-                                                               {add_attr(current_class,NONE_TYPE,(yyvsp[-6].t),(yyvsp[-5].s),true);printcode("%s %s[%s];\n",type_arr[(yyvsp[-6].t)],(yyvsp[-5].s),(yyvsp[-3].s));free((yyvsp[-5].s));free((yyvsp[-3].s));}
+                                                               {add_attr(current_class,NONE_TYPE,(yyvsp[-6].t),(yyvsp[-5].s),true,yylineno);printcode("%s %s[%s];\n",type_arr[(yyvsp[-6].t)],(yyvsp[-5].s),(yyvsp[-3].s));free((yyvsp[-5].s));free((yyvsp[-3].s));}
 #line 1831 "parser.tab.c"
     break;
 
   case 34:
 #line 124 "parser.y"
-                                                                     {add_attr(current_class,CONST_TYPE,(yyvsp[-6].t),(yyvsp[-5].s),true);printcode("const %s %s[%s];\n",type_arr[(yyvsp[-6].t)],(yyvsp[-5].s),(yyvsp[-3].s));free((yyvsp[-5].s));free((yyvsp[-3].s));}
+                                                                     {add_attr(current_class,CONST_TYPE,(yyvsp[-6].t),(yyvsp[-5].s),true,yylineno);printcode("const %s %s[%s];\n",type_arr[(yyvsp[-6].t)],(yyvsp[-5].s),(yyvsp[-3].s));free((yyvsp[-5].s));free((yyvsp[-3].s));}
 #line 1837 "parser.tab.c"
     break;
 
@@ -1844,25 +1844,25 @@ yyreduce:
 
   case 36:
 #line 126 "parser.y"
-                                         {add_attr(current_class,NONE_TYPE,(yyvsp[-2].t),(yyvsp[-1].s),false);}
+                                         {add_attr(current_class,NONE_TYPE,(yyvsp[-2].t),(yyvsp[-1].s),false,yylineno);free((yyvsp[-1].s));}
 #line 1849 "parser.tab.c"
     break;
 
   case 37:
 #line 127 "parser.y"
-                                              {add_attr(current_class,CONST_TYPE,(yyvsp[-2].t),(yyvsp[-1].s),false);}
+                                              {add_attr(current_class,CONST_TYPE,(yyvsp[-2].t),(yyvsp[-1].s),false,yylineno);free((yyvsp[-1].s));}
 #line 1855 "parser.tab.c"
     break;
 
   case 38:
 #line 128 "parser.y"
-                                                {add_attr(current_class,NONE_TYPE,(yyvsp[-4].t),(yyvsp[-3].s),true);}
+                                                {add_attr(current_class,NONE_TYPE,(yyvsp[-4].t),(yyvsp[-3].s),true,yylineno);free((yyvsp[-3].s));}
 #line 1861 "parser.tab.c"
     break;
 
   case 39:
 #line 129 "parser.y"
-                                                       {add_attr(current_class,CONST_TYPE,(yyvsp[-4].t),(yyvsp[-3].s),true);}
+                                                       {add_attr(current_class,CONST_TYPE,(yyvsp[-4].t),(yyvsp[-3].s),true,yylineno);free((yyvsp[-3].s));}
 #line 1867 "parser.tab.c"
     break;
 

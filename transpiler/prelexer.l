@@ -54,6 +54,9 @@ short                               { prelval.t = SHORT_TYPE;if(!in_fn)return SH
 void                                { prelval.t = VOID_TYPE;if(!in_fn)return VOID; }
 string                              { prelval.t = STRING_TYPE; if(!in_fn)return STRING; }
 
+let                                 {}
+class                               {}
+
 const                               { prelval.m = CONST_TYPE; if(!in_fn)return CONST; }
 static                              { prelval.m = STATIC_TYPE; if(!in_fn)return STATIC; }
 
@@ -63,7 +66,7 @@ static                              { prelval.m = STATIC_TYPE; if(!in_fn)return 
 
 __temp[0-9]+                                        {preerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
 
-[_a-zA-Z][_a-zA-Z0-9]*           {if(!in_fn){prelval.s = strdup(yytext);return IDENTIFIER;}}
+[_a-zA-Z][_a-zA-Z0-9]*           {if(!in_fn){prelval.s = yytext;return IDENTIFIER;}}
 
 .                                   {}
 

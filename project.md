@@ -90,6 +90,8 @@ and class methods must be defined before they are called.Also all attributes bef
 
 added initial class support <br />
 Can define attributes , creates new .h and .c files <br />
+\# test16.c transpiled from test16.tpp for testing class definitions only with attributes<br />
+Now after class definition , it adds a #include for each class in the main file
 
 Add basic class(structure) support, just declaring them with only variables is enough for now
 

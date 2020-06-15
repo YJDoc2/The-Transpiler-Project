@@ -114,19 +114,19 @@ rawlist : /* nothing */
 ;
 
 
-classdef : CLASS IDENTIFIER '{' {current_class = add_class($2);start_class_definition($2);} attrlist {end_attr_list($2);} methodlist '}'   {end_class_definition();free($2);current_class = NULL;}
+classdef : CLASS IDENTIFIER '{' {current_class = add_class($2,yylineno);start_class_definition($2);} attrlist {end_attr_list($2);} methodlist '}'   {end_class_definition();printcode("#include \"class_%s.h\"",$2);free($2);current_class = NULL;}
 
 attrlist: /*nothing*/
     | attrlist error ';'
-    | attrlist type IDENTIFIER ';' {add_attr(current_class,NONE_TYPE,$2,$3,false);printcode("%s %s;\n",type_arr[$2],$3);free($3);}
-    | attrlist CONST type IDENTIFIER ';' {add_attr(current_class,CONST_TYPE,$3,$4,false);printcode("const %s %s;\n",type_arr[$3],$4);free($4);}
-    | attrlist type IDENTIFIER '[' expr arraysizedummy ']' ';' {add_attr(current_class,NONE_TYPE,$2,$3,true);printcode("%s %s[%s];\n",type_arr[$2],$3,$5);free($3);free($5);}
-    | attrlist CONST type IDENTIFIER '[' expr arraysizedummy ']' ';' {add_attr(current_class,CONST_TYPE,$3,$4,true);printcode("const %s %s[%s];\n",type_arr[$3],$4,$6);free($4);free($6);}
+    | attrlist type IDENTIFIER ';' {add_attr(current_class,NONE_TYPE,$2,$3,false,yylineno);printcode("%s %s;\n",type_arr[$2],$3);free($3);}
+    | attrlist CONST type IDENTIFIER ';' {add_attr(current_class,CONST_TYPE,$3,$4,false,yylineno);printcode("const %s %s;\n",type_arr[$3],$4);free($4);}
+    | attrlist type IDENTIFIER '[' expr arraysizedummy ']' ';' {add_attr(current_class,NONE_TYPE,$2,$3,true,yylineno);printcode("%s %s[%s];\n",type_arr[$2],$3,$5);free($3);free($5);}
+    | attrlist CONST type IDENTIFIER '[' expr arraysizedummy ']' ';' {add_attr(current_class,CONST_TYPE,$3,$4,true,yylineno);printcode("const %s %s[%s];\n",type_arr[$3],$4,$6);free($4);free($6);}
     | attrlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
-    | attrlist DECL type IDENTIFIER ';'  {add_attr(current_class,NONE_TYPE,$3,$4,false);}
-    | attrlist DECL CONST type IDENTIFIER ';' {add_attr(current_class,CONST_TYPE,$4,$5,false);}
-    | attrlist DECL type IDENTIFIER '[' ']' ';' {add_attr(current_class,NONE_TYPE,$3,$4,true);}
-    | attrlist DECL CONST type IDENTIFIER '[' ']' ';'  {add_attr(current_class,CONST_TYPE,$4,$5,true);}
+    | attrlist DECL type IDENTIFIER ';'  {add_attr(current_class,NONE_TYPE,$3,$4,false,yylineno);free($4);}
+    | attrlist DECL CONST type IDENTIFIER ';' {add_attr(current_class,CONST_TYPE,$4,$5,false,yylineno);free($5);}
+    | attrlist DECL type IDENTIFIER '[' ']' ';' {add_attr(current_class,NONE_TYPE,$3,$4,true,yylineno);free($4);}
+    | attrlist DECL CONST type IDENTIFIER '[' ']' ';'  {add_attr(current_class,CONST_TYPE,$4,$5,true,yylineno);free($5);}
 
 methodlist :
 

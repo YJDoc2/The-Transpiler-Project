@@ -4,11 +4,14 @@
 #include "parserfn.h"
 
 #include <errno.h>
+#include <libgen.h>
 #include <string.h>
 
 #include "functions.h"
 
 extern char *type_arr[], *mod_arr[];
+extern Hashmap classmap;
+
 int errs = 0;  // number or errors in input, if non-zero at end of
                // parsing, delete the temp file
 
@@ -196,6 +199,11 @@ void print_code_header() {
   fprintf(header,
           "#include<stdio.h>\n#include<stdlib.h>\n#include<stdbool.h>\n#"
           "include<complex.h>\n\n");
+  char *name = basename(main_file_headname);
+  name[strlen(name) - 2] = '\0';
+  fprintf(header, "#ifndef __%s__ \n", name);
+  fprintf(header, "#define __%s__ \n", name);
+
   hashpair *iter = fnmap.start;
   hashpair *end = fnmap.start + fnmap.size;
   while (iter <= end) {
@@ -208,4 +216,5 @@ void print_code_header() {
     }
     ++iter;
   }
+  fprintf(header, "\n\n#endif\n");
 }
