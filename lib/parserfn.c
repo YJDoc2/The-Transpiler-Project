@@ -16,6 +16,7 @@ int errs = 0;  // number or errors in input, if non-zero at end of
 static int last_err = -1;
 
 char *crr_file_name;
+char *main_file_headname;
 
 //! TODO Both says current as for generating classes if implemented these
 //! can be switched to different files
@@ -74,6 +75,8 @@ int __init_io__(char *infile, char *outfile) {
     __cleanup_io__();
     exit(EXIT_FAILURE);
   }
+  main_file_headname = (char *)calloc(1, strlen(headname));
+  strcpy(main_file_headname, headname);
   printcode("#include \"%s\"\n\n", headname);
   return 0;
 }
@@ -83,6 +86,7 @@ int __init_io__(char *infile, char *outfile) {
  * Should be called before exiting the program
  */
 int __cleanup_io__() {
+  free(main_file_headname);
   if (code != NULL) {
     fclose(code);
   }

@@ -11,6 +11,7 @@
     #include "scope.h"
     #include "expressions.h"
     #include "forloop.h"
+    #include "classes.h"
 
     void preparse(); // as preparse is a macro from preparser.l must be given here
     extern char *type_arr[],*mod_arr[];
@@ -21,9 +22,10 @@
     type expr_type = VOID_TYPE;
     type arr_type = VOID_TYPE;
     modifier char_buf_mod = NONE_TYPE;
-    bool is_val_arr = false;
+    bool is_composite_val = false;
     bool is_in_fncall = false;
     int is_in_loop  =   0;
+    Class * current_class = NULL;
 
 %}
 
@@ -66,6 +68,8 @@
 %token BEGINCOMMENT ENDCOMMENT 
 %token <s> COMMENTLINE
 
+%token CLASS
+
 %type <t> type
 %type <m> modifier
 %type <s> assgtype
@@ -103,10 +107,29 @@ topstmt : RAW "<{" rawlist "}>" {printcode("%s",$4);}
     | vardeclaration {yyerror("missing ;");expr_type =VOID_TYPE;}
     | fndeclaration {expr_type =VOID_TYPE;}
     | comment
+    | classdef
 
 rawlist : /* nothing */
     | rawlist RAWLINE   {printcode("%s",$2); free($2);}
 ;
+
+
+classdef : CLASS IDENTIFIER '{' {current_class = add_class($2);start_class_definition($2);} attrlist {end_attr_list($2);} methodlist '}'   {end_class_definition();free($2);current_class = NULL;}
+
+attrlist: /*nothing*/
+    | attrlist error ';'
+    | attrlist type IDENTIFIER ';' {add_attr(current_class,NONE_TYPE,$2,$3,false);printcode("%s %s;\n",type_arr[$2],$3);free($3);}
+    | attrlist CONST type IDENTIFIER ';' {add_attr(current_class,CONST_TYPE,$3,$4,false);printcode("const %s %s;\n",type_arr[$3],$4);free($4);}
+    | attrlist type IDENTIFIER '[' expr arraysizedummy ']' ';' {add_attr(current_class,NONE_TYPE,$2,$3,true);printcode("%s %s[%s];\n",type_arr[$2],$3,$5);free($3);free($5);}
+    | attrlist CONST type IDENTIFIER '[' expr arraysizedummy ']' ';' {add_attr(current_class,CONST_TYPE,$3,$4,true);printcode("const %s %s[%s];\n",type_arr[$3],$4,$6);free($4);free($6);}
+    | attrlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
+    | attrlist DECL type IDENTIFIER ';'  {add_attr(current_class,NONE_TYPE,$3,$4,false);}
+    | attrlist DECL CONST type IDENTIFIER ';' {add_attr(current_class,CONST_TYPE,$4,$5,false);}
+    | attrlist DECL type IDENTIFIER '[' ']' ';' {add_attr(current_class,NONE_TYPE,$3,$4,true);}
+    | attrlist DECL CONST type IDENTIFIER '[' ']' ';'  {add_attr(current_class,CONST_TYPE,$4,$5,true);}
+
+methodlist :
+
 
 fndeclaration : FNDECL IDENTIFIER '(' {pushscope();} paramlist ')' "->" modifier type fndecldummy'{' stmtlist'}' {printcode("}");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
@@ -220,11 +243,11 @@ arraydecl: '[' expr ']'      {if(expr_type != INT_TYPE){yyerror("Array size must
                                             }
     |  '[' ']'        {yyerror("Array size missing");}
     |  '[' ']' '=' '{' {printcode("%s[] = { ",$<s>-1);} arrayvallist '}' {printcode(" }");}
-    | '[' expr ']' '=' '{' arraydecldummy {printcode("%s[%s] = { ",$<s>-1,$2);free($2);} arrayvallist '}' {printcode(" }");}
+    | '[' expr ']' '=' '{' arraysizedummy {printcode("%s[%s] = { ",$<s>-1,$2);free($2);} arrayvallist '}' {printcode(" }");}
 
 ;
 
-arraydecldummy : /*nothing*/ {if(expr_type != INT_TYPE){yyerror("Array size must be an int type got %s.",type_arr[expr_type]);}expr_type = VOID_TYPE;}
+arraysizedummy : /*nothing*/ {if(expr_type != INT_TYPE){yyerror("Array size must be an int type got %s.",type_arr[expr_type]);}expr_type = VOID_TYPE;}
 
 letarraydecl :IDENTIFIER '[' ']' '=' '{' letarrvals '}' {if(arr_type == VOID_TYPE){
                                                             yyerror("Cannot figure ou type of array %s, consider typecasting the expression or explicitly stating type",$1);
@@ -234,7 +257,7 @@ letarraydecl :IDENTIFIER '[' ']' '=' '{' letarrvals '}' {if(arr_type == VOID_TYP
                                                             }
                                                             expr_type = VOID_TYPE;
                                                             free($1);free($6);}
-    | IDENTIFIER '[' expr arraydecldummy ']' '=' '{' letarrvals '}' {if(arr_type== VOID_TYPE){
+    | IDENTIFIER '[' expr arraysizedummy ']' '=' '{' letarrvals '}' {if(arr_type== VOID_TYPE){
                                                             yyerror("Cannot figure ou type of array %s, consider typecasting the expression or explicitly stating type",$1);
                                                             }else{
                                                                 add_array(NONE_TYPE,  arr_type, $1, yylineno);
@@ -255,18 +278,18 @@ chararrdecllist: IDENTIFIER {printcode("%s",$1);}strdecl {free($1);expr_type = V
     | chararrdecllist ',' IDENTIFIER {printcode(" ,%s",$3);} strdecl {free($3);expr_type = VOID_TYPE;}
 
 
-strdecl :'[' expr ']'  arraydecldummy {printcode("[%s]",$2);add_var(char_buf_mod,STRING_TYPE,$<s>-1,yylineno);free($2);}
-    | '[' expr ']' arraydecldummy '=' expr {if(expr_type != STRING_TYPE){yyerror("cannot assign any type other than string to charbuf, got %s.",type_arr[expr_type]);
+strdecl :'[' expr ']'  arraysizedummy {printcode("[%s]",$2);add_var(char_buf_mod,STRING_TYPE,$<s>-1,yylineno);free($2);}
+    | '[' expr ']' arraysizedummy '=' expr {if(expr_type != STRING_TYPE){yyerror("cannot assign any type other than string to charbuf, got %s.",type_arr[expr_type]);
                                     }else{printcode("[%s] = %s",$2,$6);add_var(char_buf_mod,STRING_TYPE,$<s>-1,yylineno);}free($2);free($6);}
     | '[' ']' '=' expr {if(expr_type != STRING_TYPE){yyerror("cannot assign any type other than string to charbuf, got %s.",type_arr[expr_type]);
                         }else{printcode("[] = %s",$4);add_var(char_buf_mod,STRING_TYPE,$<s>-1,yylineno);}free($4);}
-    | '['expr ']'arraydecldummy '[' expr ']' arraydecldummy '=' '{' {printcode("[%s][%s] = {",$2,$6);arr_type = STRING_TYPE;} arrayvallist '}' {printcode("}");arr_type = VOID_TYPE;
+    | '['expr ']'arraysizedummy '[' expr ']' arraysizedummy '=' '{' {printcode("[%s][%s] = {",$2,$6);arr_type = STRING_TYPE;} arrayvallist '}' {printcode("}");arr_type = VOID_TYPE;
                                                                                                                 add_array(char_buf_mod,  STRING_TYPE, $<s>-1, yylineno);
                                                                                                                 free($2);free($6);}
-    | '[' ']' '[' expr ']' arraydecldummy '=' '{' {printcode("[][%s] = { ",$4);arr_type = STRING_TYPE;} arrayvallist '}' {printcode("}");arr_type = VOID_TYPE;
+    | '[' ']' '[' expr ']' arraysizedummy '=' '{' {printcode("[][%s] = { ",$4);arr_type = STRING_TYPE;} arrayvallist '}' {printcode("}");arr_type = VOID_TYPE;
                                                                                                 add_array(char_buf_mod,  STRING_TYPE, $<s>-1, yylineno);
                                                                                                 free($4);}
-    | '['expr ']'arraydecldummy '[' expr ']' arraydecldummy {printcode("[%s][%s]",$2,$6);add_array(char_buf_mod,  STRING_TYPE, $<s>-1, yylineno);}
+    | '['expr ']'arraysizedummy '[' expr ']' arraysizedummy {printcode("[%s][%s]",$2,$6);add_array(char_buf_mod,  STRING_TYPE, $<s>-1, yylineno);}
 
     | '[' ']' '[' ']' {yyerror("Both sizes cannot be empty in a charbuf array");}
 ;
@@ -326,8 +349,8 @@ arg : expr  { void *v = lookup_var($1);
                 if(v == NULL){
                     v = add_literal(NONE_TYPE,expr_type,$1);
                 }
-                if(is_val_arr){((Variable *)v)->is_raw = false;}
-                ll_add(arglist,v);free($1);expr_type = VOID_TYPE;is_val_arr = false;}
+                if(is_composite_val){((Variable *)v)->is_raw = false;}
+                ll_add(arglist,v);free($1);expr_type = VOID_TYPE;is_composite_val = false;}
 ;
 
 assignstmt : IDENTIFIER assgtype expr {Variable *var = lookup_var($1);
@@ -348,7 +371,7 @@ assignstmt : IDENTIFIER assgtype expr {Variable *var = lookup_var($1);
                                     free($1);free($3);
                                     expr_type = VOID_TYPE;
                                     }
-            | IDENTIFIER '[' expr arraydecldummy']' assgtype expr {Variable *var = lookup_var($1);
+            | IDENTIFIER '[' expr arraysizedummy']' assgtype expr {Variable *var = lookup_var($1);
                                     if(var == NULL){
                                         yyerror("Undeclared variable %s.",$1);
                                     }else if(!var->is_arr){
@@ -428,26 +451,26 @@ iterarraydummy : /*nothing*/ {Variable *v = lookup_var($<s>0);
                                     }}
 
 ;
-expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_val_arr =false;}
-    | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3); is_val_arr =false;}
-    | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3); is_val_arr =false;}
-    | expr '/' expr  {$$=join($1,"/",$3); free($1);free($3); is_val_arr =false;}
+expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_composite_val =false;}
+    | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3); is_composite_val =false;}
+    | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3); is_composite_val =false;}
+    | expr '/' expr  {$$=join($1,"/",$3); free($1);free($3); is_composite_val =false;}
     | expr MOD expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE){
                         yyerror("Cannot use mod on %s type",type_arr[expr_type]);
                         }
-                        $$=join($1,"%",$3); free($1);free($3); is_val_arr =false;}
+                        $$=join($1,"%",$3); free($1);free($3); is_composite_val =false;}
     | '(' type ')' expr  %prec UMINUS    {void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
                                 sprintf(v,"(%s) ",type_arr[$2]);
                                 char * t = join("(",$4,")");
                                 $$ = join(v,"",t);
-                                 is_val_arr =false;
+                                 is_composite_val =false;
                                 free(v);
                                 free(t);
                                 free($4);
                                 expr_type = $2;
                             }
-    | '(' expr ')'   {$$=join("( ",$2," )"); free($2); is_val_arr =false;}
-    | '-' expr %prec UMINUS {$$=join("-","",$2); free($2); is_val_arr =false;}
+    | '(' expr ')'   {$$=join("( ",$2," )"); free($2); is_composite_val =false;}
+    | '-' expr %prec UMINUS {$$=join("-","",$2); free($2); is_composite_val =false;}
     | expr '<' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use < with complex type");}$$= join($1,"<",$3);free($1);free($3);expr_type = BOOL_TYPE;}
     | expr '>' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use > with complex type");}$$= join($1,">",$3);free($1);free($3);expr_type = BOOL_TYPE;}
     | expr LTE expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use <= with complex type");}$$= join($1,"<=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
@@ -508,7 +531,7 @@ value : cmplxnum {if( expr_type == STRING_TYPE){
                                                         char *t = join($1,"[",$4);
                                                         
                                                         $$ = join(t,"]","");
-                                                        is_val_arr = true;
+                                                        is_composite_val = true;
                                                         pop_expr_and_args();
                                                         free(t);
                                                         if(v != NULL){
@@ -545,10 +568,14 @@ void main(int argc , char **argv){
     __init_functions__();
     __init_scopes__();
     __init_expr__();
+    __init_classes__();
+
     preparse();
     printcode("\n#line 1 \"%s\"\n\n","./test.ttp");
     yyparse();
     print_code_header();
+
+    __cleanup_classes__();
     __cleanup_expr__();
     __cleanup_scopes__();
     __cleanup_functions__();

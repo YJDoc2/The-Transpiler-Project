@@ -85,7 +85,11 @@ Added let syntax for declaring variables whose type can be concretely inferred f
 
 ## Stage 6
 
-Add file switching function, so that all classes(structs) can have their own file
+In case of classes definitions must be defined before use, i.e classes must be defined before other code,
+and class methods must be defined before they are called.Also all attributes before methods. <br />
+
+added initial class support <br />
+Can define attributes , creates new .h and .c files <br />
 
 Add basic class(structure) support, just declaring them with only variables is enough for now
 

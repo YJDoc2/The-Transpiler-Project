@@ -4,4 +4,4 @@
 test.*
 *.a
 ttp
-valgrind/
+class_*

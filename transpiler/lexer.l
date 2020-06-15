@@ -68,6 +68,8 @@ fn                                  {return FNDECL;}
 
 "->"                                {return RETTYPE;}
 
+class                               {return CLASS;}
+
 bool                                { yylval.t = BOOL_TYPE; return BOOL; }
 complex                             { yylval.t = COMPLEX_TYPE; return COMPLEX; }
 int                                 { yylval.t = INT_TYPE;return INT; }
