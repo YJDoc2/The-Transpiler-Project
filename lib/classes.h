@@ -87,11 +87,20 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
                 Linked_list* paramlist, int line);
 
 /*
- * A function that switches codefile and header file in parserfn to a new files
- * named as name.c and name.h
- * Also start printing definition of class :
- *  typedef struct name{
- *  the closing '}' will be done in print_class_header
+ * Prints a method declaration to code file
+ * print in format : type print_name (parmalist){
+ * the '{' must be cloed in the calling code
+ *
+ * Parmas :
+ * class : class to which the method belongs,
+ * methodname : name of the method without the class
+ */
+void print_method(Class* class, char* methodname);
+
+/*
+ * A function that switches codefile and header file in parserfn to a new
+ * files named as name.c and name.h Also start printing definition of class
+ * : typedef struct name{ the closing '}' will be done in print_class_header
  * Params :
  * name : name of the class
  */

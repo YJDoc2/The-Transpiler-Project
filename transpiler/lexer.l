@@ -3,12 +3,14 @@
     #include <stdbool.h>
     #include "variables.h"
     #include "parser.h"
+    #include "classes.h"
     int lastState = 0;
-    extern int yyerror(char *,...);
     extern void printcode(char *,...);
     extern bool is_in_fn;
     extern int is_in_loop;
     extern char *crr_file_name;
+    extern Class *current_class;
+    extern bool is_static_method;
 %}
 
 %option noyywrap nodefault yylineno
@@ -69,6 +71,9 @@ fn                                  {return FNDECL;}
 "->"                                {return RETTYPE;}
 
 class                               {return CLASS;}
+@static                             {return STATICMETHOD;}
+
+this                                {if(current_class == NULL || is_static_method){yyerror("Canot use this outside class mthods or inside static methods.");}else{return THIS;}}
 
 bool                                { yylval.t = BOOL_TYPE; return BOOL; }
 complex                             { yylval.t = COMPLEX_TYPE; return COMPLEX; }

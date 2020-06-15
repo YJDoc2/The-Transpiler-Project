@@ -15,6 +15,7 @@
 
     void preparse(); // as preparse is a macro from preparser.l must be given here
     extern char *type_arr[],*mod_arr[];
+    extern Linked_list *temp_list;
     bool is_in_fn = false;
     bool has_returned = false;
     type fn_type = VOID_TYPE;
@@ -26,6 +27,7 @@
     bool is_in_fncall = false;
     int is_in_loop  =   0;
     Class * current_class = NULL;
+    bool is_static_method;
 
 %}
 
@@ -68,7 +70,7 @@
 %token BEGINCOMMENT ENDCOMMENT 
 %token <s> COMMENTLINE
 
-%token CLASS
+%token CLASS STATICMETHOD THIS
 
 %type <t> type
 %type <m> modifier
@@ -128,8 +130,48 @@ attrlist: /*nothing*/
     | attrlist DECL type IDENTIFIER '[' ']' ';' {add_attr(current_class,NONE_TYPE,$3,$4,true,yylineno);free($4);}
     | attrlist DECL CONST type IDENTIFIER '[' ']' ';'  {add_attr(current_class,CONST_TYPE,$4,$5,true,yylineno);free($5);}
 
-methodlist :
+methodlist : /*nothing*/
+    | methodlist FNDECL IDENTIFIER '(' {pushscope();} methodparamlist ')' "->" type methoddummy '{' stmtlist'}' {printcode("}");
+                                                                                                    if(fn_type != VOID_TYPE && !has_returned){
+                                                                                                        yyerror("function %s require %s return type, corresponding return statement not found",$3,type_arr[fn_type]);
+                                                                                                    }
+                                                                                                    free($3);
+                                                                                                    is_in_fn = false;
+                                                                                                    popscope();
+                                                                                                    clear_literals();
+                                                                                                    is_static_method = false;
+                                                                                                    }
+    | methodlist staticdummy FNDECL IDENTIFIER '(' {pushscope();} methodparamlist ')' "->" type methoddummy'{' stmtlist'}' {printcode("}");
+                                                                                                    if(fn_type != VOID_TYPE && !has_returned){
+                                                                                                        yyerror("function %s require %s return type, corresponding return statement not found",$4,type_arr[fn_type]);
+                                                                                                    }
+                                                                                                    free($4);
+                                                                                                    is_in_fn = false;
+                                                                                                    popscope();
+                                                                                                    clear_literals();
+                                                                                                    is_static_method = false;
+                                                                                                    }
 
+;
+
+methodparamlist : /*nothing*/
+    | methodparamlist methodparam
+    | methodparamlist ',' methodparam 
+
+methodparam : modifier type IDENTIFIER  {add_param($1,$2,false,$3); create_var($1,$2,$3,yylineno);free($3);}
+    | modifier type IDENTIFIER '[' ']'  {add_param($1,$2,true,$3); add_array($1,$2,$3,yylineno);free($3);}
+
+staticdummy : STATICMETHOD {is_static_method = true;}
+
+;
+
+methoddummy : /*nothing*/ {add_method(current_class, $<s>-6, $<t>0, is_static_method,temp_list, yylineno);
+                            print_method(current_class,$<s>-6);
+                            temp_list = NULL;
+                            fn_type = $<t>0;
+                            is_in_fn = true;
+                            has_returned = false;}
+;
 
 fndeclaration : FNDECL IDENTIFIER '(' {pushscope();} paramlist ')' "->" modifier type fndecldummy'{' stmtlist'}' {printcode("}");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){

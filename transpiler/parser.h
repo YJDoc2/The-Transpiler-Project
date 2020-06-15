@@ -94,7 +94,9 @@ extern int yydebug;
     BEGINCOMMENT = 300,
     ENDCOMMENT = 301,
     COMMENTLINE = 302,
-    CLASS = 303
+    CLASS = 303,
+    STATICMETHOD = 304,
+    THIS = 305
   };
 #endif
 
@@ -102,13 +104,13 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 32 "parser.y"
+#line 34 "parser.y"
 
     char *s;
     type t;
     modifier m;
 
-#line 112 "parser.tab.h"
+#line 114 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

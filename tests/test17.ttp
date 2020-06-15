@@ -1,0 +1,17 @@
+class testclass1{
+    int a;
+    RAW <{ char  s[50];}>
+    @decl string s[];
+    float b[50] ;
+    fn test_method(int abd)->void{
+        print("hello ",abd);
+    }
+    @static fn test_static()->void{
+        print("testing static");
+    }
+}
+
+
+fn main() -> void{
+    print("hello there");
+}

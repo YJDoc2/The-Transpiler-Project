@@ -5,6 +5,7 @@
 #include <stdlib.h>
 
 #include "common.h"
+#include "functions.h"
 #define CLASSMAP_INIT_SIZE 20
 #define ATTRMAP_INIT_SIZE 20
 #define METHODMAP_INIT_SIZE 20
@@ -13,10 +14,12 @@ Hashmap classmap;
 
 FILE* tempcode = NULL;
 FILE* temphead = NULL;
+extern char* type_arr[];
 extern FILE *code, *header;
 extern char* main_file_headname;
 extern Class* current_class;
 
+char* class_method_format = "_%s_%s";
 /*
  * initializes all required DS and allocated memory in this module
  * Must be called before any other function call in this module
@@ -38,7 +41,7 @@ void __delete_method__(void* key, void* value) {
   free(key);
   method* fn = (method*)value;
   free(fn->print_name);
-  ll_delete(fn->param_list, __delete_paramlist__);
+  fn->param_list == NULL ?: ll_delete(fn->param_list, __delete_paramlist__);
   free(fn->param_list);
   free(fn);
 }
@@ -138,8 +141,8 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
 
   char* printname =
       (char*)calloc(1, strlen(keyname) + strlen(class->name) +
-                           2);  // 1 ofr _ after classname, 1 for \0
-  sprintf(printname, "%s_%s", class->name, keyname);
+                           3);  // 2 ofr _ before and after classname, 1 for \0
+  sprintf(printname, class_method_format, class->name, keyname);
   method* fn = (method*)calloc(1, sizeof(method));
   fn->is_static_method = is_static;
   fn->param_list = paramlist;
@@ -147,6 +150,44 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
   fn->ret_t = ret_t;
   fn->declaration = line;
   hm_add(class->methods, keyname, fn);
+}
+
+/*
+ * Prints a method declaration to code file
+ * print in format : type print_name (parmalist){
+ * the '{' must be cloed in the calling code
+ *
+ * Parmas :
+ * class : class to which the method belongs,
+ * methodname : name of the method without the class
+ */
+void print_method(Class* class, char* methodname) {
+  method* fn = (method*)hm_get(class->methods, methodname);
+  if (fn == NULL) {
+    yyerror(
+        "Internal error : trying to print declaration of method not inserted "
+        "in class defination");
+    return;
+  }
+  printcode("%s %s ( ", type_arr[fn->ret_t], fn->print_name);
+
+  ll_link* iter = fn->param_list == NULL ? NULL : fn->param_list->start;
+  if (!fn->is_static_method) {
+    printcode("%s *this", class->name);
+    if (iter != NULL) printcode(" , ");
+  }
+  while (iter != NULL) {
+    Param* p = (Param*)iter->data;
+    printcode("%s %s", type_arr[p->t], p->name);
+    if (p->is_arr) {
+      printcode("[]");
+    }
+    if (iter->next != NULL) {
+      printcode(" , ");
+    }
+    iter = iter->next;
+  }
+  printcode(" ) {");
 }
 
 // Helper function that prints the start of a class header
@@ -236,4 +277,5 @@ void end_attr_list(char* name) {
   FILE* t = header;
   header = code;
   code = t;
+  printcode("#include \"class_%s.h\"\n", name);
 }

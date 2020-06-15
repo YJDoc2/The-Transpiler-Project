@@ -93,6 +93,9 @@ Can define attributes , creates new .h and .c files <br />
 \# test16.c transpiled from test16.tpp for testing class definitions only with attributes<br />
 Now after class definition , it adds a #include for each class in the main file
 
+\# test17.c transpiled from test17.tpp for testing method declarations<br />
+Added initial method declaration support in classes, More testing is required<br />
+
 Add basic class(structure) support, just declaring them with only variables is enough for now
 
 then add fn declaration within the classes, which will go to their own files.
