@@ -12,6 +12,7 @@
     extern char *crr_file_name;
     extern Class *current_class;
     extern bool is_static_method;
+    bool is_class(char *);
 %}
 
 %option noyywrap nodefault yylineno
@@ -126,7 +127,7 @@ do|goto|sizeof|I                          {yyerror("Keyword %s is not support, c
 
 __temp[0-9]+                                        {yyerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
 
-[_a-zA-Z][_a-zA-Z0-9]*           {yylval.s = strdup(yytext); return IDENTIFIER;}
+[_a-zA-Z][_a-zA-Z0-9]*           {yylval.s = strdup(yytext); if(is_class(yytext)){return CLASSNAME;}else{return IDENTIFIER;}}
 
 .                               {fprintf(stderr,"unknown token '%s'\n",yytext);}
 %%

@@ -99,7 +99,7 @@ void add_var(modifier m, type t, char *ident, int line);
  *
  * Returns : void
  */
-void add_array(modifier m, type t, char *ident, int line);
+Variable *add_array(modifier m, type t, char *ident, int line);
 
 /*
  * Searches for the given variable name starting from the topmost ( current )

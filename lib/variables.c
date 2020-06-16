@@ -54,7 +54,7 @@ void __cleanup_vars__() { hm_delete(varmap, __del_var__); }
  *        later
  * line : line on which variable is defined
  *
- * Returns : void
+ * Returns : Pointer to created variable
  */
 Variable* create_var(modifier m, type t, char* ident, int line) {
   char* _name =
@@ -108,19 +108,21 @@ void add_var(modifier m, type t, char* ident, int line) {
  *        later
  * line : line on which variable is defined
  *
- * Returns : void
+ * Returns : Pointer to created variable
  */
-void add_array(modifier m, type t, char* ident, int line) {
+Variable* add_array(modifier m, type t, char* ident, int line) {
   Hashmap* hm = scopelist.top == NULL ? &varmap : (Hashmap*)scopelist.top->data;
   Variable* look = hm_get(hm, ident);
   if (look == NULL) {
     create_var(m, t, ident, line);
     look = (Variable*)hm_get(hm, ident);
     look->is_arr = true;
+
   } else {
     yyerror("Variable %s already delcared on line %d", ident,
             look->declaration);
   }
+  return look;
 }
 
 /*

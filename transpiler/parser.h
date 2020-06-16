@@ -96,7 +96,8 @@ extern int yydebug;
     COMMENTLINE = 302,
     CLASS = 303,
     STATICMETHOD = 304,
-    THIS = 305
+    THIS = 305,
+    CLASSNAME = 306
   };
 #endif
 
@@ -109,8 +110,9 @@ union YYSTYPE
     char *s;
     type t;
     modifier m;
+    bool b;
 
-#line 114 "parser.tab.h"
+#line 116 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;

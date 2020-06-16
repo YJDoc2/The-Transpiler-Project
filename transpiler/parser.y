@@ -44,6 +44,7 @@
     char *s;
     type t;
     modifier m;
+    bool b;
 }
 
 
@@ -80,12 +81,14 @@
 %token <s> COMMENTLINE
 
 %token CLASS STATICMETHOD THIS
+%token <s> CLASSNAME
 
 %type <t> type
 %type <m> modifier
 %type <s> assgtype
 %type <s> value cmplxnum expr fncall
 %type <s> letarrvals
+%type <b> arraysign
 
 %%
 program : topstmtlist
@@ -129,16 +132,33 @@ classdef : CLASS IDENTIFIER '{' {current_class = add_class($2,yylineno);start_cl
 
 attrlist: /*nothing*/
     | attrlist error ';'
-    | attrlist type IDENTIFIER ';' {add_attr(current_class,NONE_TYPE,$2,$3,false,yylineno);printcode("%s %s;\n",type_arr[$2],$3);free($3);}
-    | attrlist CONST type IDENTIFIER ';' {add_attr(current_class,CONST_TYPE,$3,$4,false,yylineno);printcode("const %s %s;\n",type_arr[$3],$4);free($4);}
-    | attrlist type IDENTIFIER '[' expr arraysizedummy ']' ';' {add_attr(current_class,NONE_TYPE,$2,$3,true,yylineno);printcode("%s %s[%s];\n",type_arr[$2],$3,$5);free($3);free($5);}
-    | attrlist CONST type IDENTIFIER '[' expr arraysizedummy ']' ';' {add_attr(current_class,CONST_TYPE,$3,$4,true,yylineno);printcode("const %s %s[%s];\n",type_arr[$3],$4,$6);free($4);free($6);}
+    | attrlist modifier type IDENTIFIER ';' {if($2 == STATIC_TYPE){
+                                                yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
+                                                }add_attr(current_class,$2,$3,$4,false,yylineno);
+                                                printcode("%s %s %s;\n",mod_arr[$2],type_arr[$3],$4);free($4);}
+    | attrlist modifier type IDENTIFIER '[' expr arraysizedummy ']' ';' {if($2 == STATIC_TYPE){
+                                                                    yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
+                                                                    }add_attr(current_class,$2,$3,$4,true,yylineno);printcode("%s %s %s[%s];\n",mod_arr[$2],type_arr[$3],$4,$6);free($4);free($6);}
+    | attrlist modifier CLASSNAME IDENTIFIER ';'  {if($2 == STATIC_TYPE){
+                                                    yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
+                                                    }add_class_type_attr(current_class,$2,$3,$4,false,yylineno);
+                                                    printcode("%s %s %s;\n",mod_arr[$2],$3,$4);
+                                                    free($3);free($4);}
+    |attrlist modifier CLASSNAME IDENTIFIER '['expr arraysizedummy ']' ';'  {if($2 == STATIC_TYPE){
+                                                    yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
+                                                    }add_class_type_attr(current_class,$2,$3,$4,true,yylineno);
+                                                    printcode("%s %s %s[%s];\n",mod_arr[$2],$3,$4,$6);
+                                                    free($3);free($4);free($6);}
     | attrlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
-    | attrlist DECL type IDENTIFIER ';'  {add_attr(current_class,NONE_TYPE,$3,$4,false,yylineno);free($4);}
-    | attrlist DECL CONST type IDENTIFIER ';' {add_attr(current_class,CONST_TYPE,$4,$5,false,yylineno);free($5);}
-    | attrlist DECL type IDENTIFIER '[' ']' ';' {add_attr(current_class,NONE_TYPE,$3,$4,true,yylineno);free($4);}
-    | attrlist DECL CONST type IDENTIFIER '[' ']' ';'  {add_attr(current_class,CONST_TYPE,$4,$5,true,yylineno);free($5);}
-    | attrlist DECL IDENTIFIER IDENTIFIER ';'           {add_class_type_attr(current_class,NONE_TYPE,$3,$4,false,yylineno);free($3);free($4);}
+    | attrlist DECL modifier type IDENTIFIER arraysign ';'  {if($3 == STATIC_TYPE){
+                                                yyerror("Cannot use static on class attributes");$3 = NONE_TYPE;
+                                                }add_attr(current_class,$3,$4,$5,$6,yylineno);free($5);}
+    | attrlist DECL modifier CLASSNAME IDENTIFIER arraysign ';'  {if($3 == STATIC_TYPE){
+                                                            yyerror("Cannot use static on class attributes");$3 = NONE_TYPE;
+                                                            }add_class_type_attr(current_class,$3,$4,$5,$6,yylineno);free($4);free($5);}
+
+arraysign : /*nothing*/ {$$= false;}
+    | '[' ']'   {$$ = true;}
 
 methodlist : /*nothing*/
     | methodlist FNDECL IDENTIFIER '(' {pushscope();} methodparamlist ')' "->" type methoddummy '{' stmtlist'}' {printcode("}");
@@ -250,7 +270,8 @@ returnstmt : RETURN expr { if(expr_type != fn_type){
 ;
 
 vardeclaration : DECL modifier type decllist
-    | DECL modifier IDENTIFIER IDENTIFIER {create_class_var($2,$3,$4,yylineno);}
+    | DECL modifier CLASSNAME IDENTIFIER {create_class_var($2,$3,$4,false,yylineno);}
+    | modifier CLASSNAME {printcode("%s %s ",mod_arr[$1],$2);} classvarlist {printcode(" ;");free($2);}
     | modifier type { printcode("%s %s ",mod_arr[$1],type_arr[$2]); arr_type = $2;} varlist {printcode(" ;");arr_type=VOID_TYPE;}
     | modifier CHARBUF {printcode("%s char ",mod_arr[$1]); char_buf_mod = $1;} chararrdecllist {printcode(" ;");char_buf_mod = NONE_TYPE;}
     | LET IDENTIFIER '=' expr {if(expr_type == VOID_TYPE){
@@ -263,6 +284,11 @@ vardeclaration : DECL modifier type decllist
     | LET letarraydecl
 
 ;
+
+classvarlist : IDENTIFIER       {create_class_var($<m>-2,$<s>-1,$1,false,yylineno);printcode("%s",$1);free($1);}
+    | IDENTIFIER '[' expr arraysizedummy ']' {create_class_var($<m>-2,$<s>-1,$1,true,yylineno);printcode("%s[%s]",$1,$3);free($1);free($3);}
+    | classvarlist ',' IDENTIFIER     {create_class_var($<m>-2,$<s>-1,$3,false,yylineno);printcode(", %s",$3);free($3);}
+    | classvarlist ',' IDENTIFIER '[' expr arraysizedummy ']' {create_class_var($<m>-2,$<s>-1,$3,true,yylineno);printcode(", %s[%s]",$3,$5);free($3);free($5);}
 
 decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
     | decllist ',' IDENTIFIER {create_var($<m>-1,$<t>0,$3,yylineno); free($3); }
@@ -536,7 +562,6 @@ expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_composite_val =f
                             $$ = join("!",t,"");free(t);free($2);expr_type = BOOL_TYPE;}
     | value
 ;
-classcheckdummy : /*nothing*/ {if(expr_type != CLASS_TYPE){yyerror("attribute or methods can only be accessed on class type objects found %s",type_arr[expr_type]);}}
 
 value : cmplxnum {if( expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);
@@ -588,7 +613,10 @@ value : cmplxnum {if( expr_type == STRING_TYPE){
                                                         }
                                                         char *t = join($1,"[",$4);$$ = join(t,"]","");is_composite_val = true;pop_expr_and_args();free(t);
                                                         if(v != NULL){
-                                                            if( expr_type == STRING_TYPE){
+                                                            if(v->is_class){
+                                                                expr_type = CLASS_TYPE;
+                                                                classname = v->t.class;
+                                                            }else if( expr_type == STRING_TYPE){
                                                                 yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[v->t.t],type_arr[expr_type]);;
                                                             }else if(v->t.t ==COMPLEX_TYPE){
                                                                 expr_type = COMPLEX_TYPE;
@@ -610,6 +638,9 @@ value : cmplxnum {if( expr_type == STRING_TYPE){
                                         }
                                         $$ = join($1,".",$4);free($1);free($4);
                                     }
+;
+
+classcheckdummy : /*nothing*/ {if(expr_type != CLASS_TYPE){yyerror("attribute or methods can only be accessed on class type objects found %s",type_arr[expr_type]);}}
 ;
 
 cmplxnum : '(' expr ',' expr ')' {void* _t = calloc(1, strlen($2) + strlen($4) + 1+2+2);/*1 for the + symbol,

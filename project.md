@@ -97,12 +97,9 @@ Now after class definition , it adds a #include for each class in the main file
 Added method declaration printing in class header files, also added extern declaration in main file header for non-static global variables
 \# test18.c transpiled from test18.tpp for testing multiple class declaration and file generations<br />
 
-variable declaration for class types
-Should use -> or . for class var access?
-
-Add basic class(structure) support, just declaring them with only variables is enough for now
-
-then add fn declaration within the classes, which will go to their own files.
+variable declaration for class types : declaration using normal and @decl is done, verification fo var types is still remaining
+Currently in UNSTABLE STATE<br />
+add verification of class type and check for class in all var access, in expr<br />
 
 ## Stage 7
 

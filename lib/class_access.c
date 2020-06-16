@@ -53,9 +53,15 @@ method *find_method(char *classname, char *methodname) {
   return (method *)t;
 }
 
-void create_class_var(modifier m, char *classname, char *name, int line) {
+void create_class_var(modifier m, char *classname, char *name, bool is_array,
+                      int line) {
   Class *t = (Class *)hm_get(&classmap, classname);
-  Variable *v = create_var(m, INT_TYPE, name, line);
+  Variable *v = NULL;
+  if (is_array) {
+    v = add_array(m, INT_TYPE, name, line);
+  } else {
+    v = create_var(m, INT_TYPE, name, line);
+  }
   v->is_class = true;
   v->t.class = t->name;
 }

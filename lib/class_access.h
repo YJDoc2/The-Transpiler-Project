@@ -39,6 +39,7 @@ attr *find_attr(char *classname, char *attrname);
  */
 method *find_method(char *classname, char *methodname);
 
-void create_class_var(modifier m, char *classname, char *name, int line);
+void create_class_var(modifier m, char *classname, char *name, bool is_array,
+                      int line);
 
 #endif
