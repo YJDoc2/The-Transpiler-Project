@@ -97,7 +97,8 @@ Now after class definition , it adds a #include for each class in the main file
 Added method declaration printing in class header files, also added extern declaration in main file header for non-static global variables
 \# test18.c transpiled from test18.tpp for testing multiple class declaration and file generations<br />
 
-Added initial method declaration support in classes, More testing is required<br />
+variable declaration for class types
+Should use -> or . for class var access?
 
 Add basic class(structure) support, just declaring them with only variables is enough for now
 

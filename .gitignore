@@ -4,4 +4,5 @@
 test.*
 *.a
 ttp
-class_*
+class_t*
+*.output

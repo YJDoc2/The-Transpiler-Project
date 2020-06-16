@@ -36,16 +36,16 @@ char* type_str_arr[] = {
 static void __print_var__(void* v) {
   Variable* var = (Variable*)v;
   // If Variable is RAW and of string type
-  if (var->is_raw && var->t == STRING_TYPE) {
-    printcode("%s", type_str_arr[var->t]);
+  if (var->is_raw && var->t.t == STRING_TYPE) {
+    printcode("%s", type_str_arr[var->t.t]);
     return;
   }
-  switch (var->t) {
+  switch (var->t.t) {
     case VOID_TYPE:  // Should never be reached, but for safety
       yyerror("cannot print value of variable of type void : %s", var->name);
       break;
     default:  // print the format specifyer corrsponding to the varable type
-      printcode("%s ", type_str_arr[var->t]);
+      printcode("%s ", type_str_arr[var->t.t]);
       break;
   }
 }
@@ -69,11 +69,11 @@ static void action_print() {
     printcode(",");
 
     Variable* var = (Variable*)_t->data;
-    if (var->t == COMPLEX_TYPE) {
+    if (var->t.t == COMPLEX_TYPE) {
       // If its complex type print real and img part seperately,
       // also complex doesn't have a default format specifier
       printcode(complex_format, var->name, var->name, var->name);
-    } else if (var->t == BOOL_TYPE) {
+    } else if (var->t.t == BOOL_TYPE) {
       // bool doesn't have a format specifier, so we use string here to be
       // little more helpful
       printcode(bool_format, var->name);
@@ -111,12 +111,12 @@ static void __input_var__(void* v) {
   }
   // print the value if its raw ,i.e an expression
   if (var->is_raw) {
-    if (var->t == COMPLEX_TYPE) {
+    if (var->t.t == COMPLEX_TYPE) {
       // print complex numbers
       printcode("printf(\"%s\",", type_str_arr[COMPLEX_TYPE]);
       printcode(complex_format, var->name, var->name, var->name);
       printcode(");\n");
-    } else if (var->t == BOOL_TYPE) {
+    } else if (var->t.t == BOOL_TYPE) {
       // print bool values. this is not done as just %s as one can give !true or
       // something which can be handled correctly this way
       printcode("printf(\"%s\",", type_str_arr[BOOL_TYPE]);
@@ -124,13 +124,13 @@ static void __input_var__(void* v) {
       printcode(");\n");
     } else {
       // for other types its just a simple print statement
-      printcode("printf(\"%s \",%s);\n", type_str_arr[var->t], var->name);
+      printcode("printf(\"%s \",%s);\n", type_str_arr[var->t.t], var->name);
     }
 
     return;
   }
   // The given argument was a variable, so we have to take the input in it
-  switch (var->t) {
+  switch (var->t.t) {
     case VOID_TYPE:
       yyerror("cannot scan value of variable of type void : %s", var->name);
       break;
@@ -161,11 +161,11 @@ static void __input_var__(void* v) {
       break;
     case STRING_TYPE:
       // No need for '&' as string is basically char *
-      printcode("scanf(\"%s\",%s);\n", type_str_arr[var->t], var->name);
+      printcode("scanf(\"%s\",%s);\n", type_str_arr[var->t.t], var->name);
       break;
     default:
       // for other variables just normal scanf
-      printcode("scanf(\"%s\",&%s);\n", type_str_arr[var->t], var->name);
+      printcode("scanf(\"%s\",&%s);\n", type_str_arr[var->t.t], var->name);
       break;
   }
 }

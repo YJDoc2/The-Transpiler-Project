@@ -1,5 +1,8 @@
-#ifndef __CLASSES__
-#define __CLASSES__
+/*
+ * This contains function realted to declration and parsing of classes
+ */
+#ifndef __CLASS_DECL__
+#define __CLASS_DECL__
 
 #include "hashmap.h"
 #include "linkedlist.h"
@@ -10,9 +13,10 @@ extern Hashmap classmap;
 
 typedef struct {
   modifier m;
-  type t;
+  type_u t;
   char* name;
   bool is_arr;
+  bool is_class;
   int declaration;
 } attr;
 
@@ -68,6 +72,9 @@ Class* add_class(char* name, int line);
 void add_attr(Class* class, modifier m, type t, char* name, bool is_arr,
               int line);
 
+void add_class_type_attr(Class* class, modifier m, char* classname, char* name,
+                         bool is_arr, int line);
+
 /*
  * A function to add a method to the class
  *
@@ -89,7 +96,7 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
 /*
  * Prints a method declaration to code file
  * print in format : type print_name (parmalist){
- * the '{' must be cloed in the calling code
+ * the '{' must be closed in the calling code
  *
  * Parmas :
  * class : class to which the method belongs,

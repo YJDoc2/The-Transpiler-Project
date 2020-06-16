@@ -43,7 +43,7 @@ class                               {return CLASS;}
 
 fn                                  {if(!pre_in_class)return FNDECL;}
 
-"->"                                {if(!pre_in_class)return RETTYPE;}
+"->"                                {if(!in_fn && !pre_in_class)return RETTYPE;}
 
 [ \t\n]*                              {}
 
@@ -58,7 +58,6 @@ void                                { prelval.t = VOID_TYPE;if(!in_fn && !pre_in
 string                              { prelval.t = STRING_TYPE; if(!in_fn && !pre_in_class)return STRING; }
 
 let                                 {}
-class                               {}
 
 const                               { prelval.m = CONST_TYPE; if(!in_fn && !pre_in_class)return CONST; }
 static                              { prelval.m = STATIC_TYPE; if(!in_fn && !pre_in_class)return STATIC; }

@@ -1,4 +1,7 @@
-#include "classes.h"
+/*
+ * This contains function realted to declration and parsing of classes
+ */
+#include "class_decl.h"
 
 #include <stdarg.h>
 #include <stdio.h>
@@ -114,7 +117,28 @@ void add_attr(Class* class, modifier m, type t, char* name, bool is_arr,
   attr* a = (attr*)calloc(1, sizeof(attr));
   a->is_arr = is_arr;
   a->m = m;
-  a->t = t;
+  a->is_class = false;
+  a->t.t = t;
+  a->name = temp;
+  a->declaration = line;
+  hm_add(class->attr, temp, a);
+}
+
+void add_class_type_attr(Class* class, modifier m, char* classname, char* name,
+                         bool is_arr, int line) {
+  void* find = hm_get(class->attr, name);
+  if (find != NULL) {
+    yyerror("Attribute %s is already declared for class %s on line %d", name,
+            class->name, ((attr*)find)->declaration);
+    return;
+  }
+  Class* c = hm_get(&classmap, classname);
+  char* temp = strdup(name);
+  attr* a = (attr*)calloc(1, sizeof(attr));
+  a->is_arr = is_arr;
+  a->m = m;
+  a->is_class = true;
+  a->t.class = c->name;
   a->name = temp;
   a->declaration = line;
   hm_add(class->attr, temp, a);
@@ -183,7 +207,7 @@ void print_method_start(Class* class, method* fn) {
 /*
  * Prints a method declaration to code file
  * print in format : type print_name (parmalist){
- * the '{' must be cloed in the calling code
+ * the '{' must be closed in the calling code
  *
  * Parmas :
  * class : class to which the method belongs,
@@ -194,7 +218,7 @@ void print_method(Class* class, char* methodname) {
   if (fn == NULL) {
     yyerror(
         "Internal error : trying to print declaration of method not inserted "
-        "in class defination");
+        "in class definition");
     return;
   }
   print_method_start(class, fn);

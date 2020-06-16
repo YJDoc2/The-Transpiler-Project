@@ -633,8 +633,8 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-#define YY_NUM_RULES 36
-#define YY_END_OF_BUFFER 37
+#define YY_NUM_RULES 35
+#define YY_END_OF_BUFFER 36
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -644,19 +644,19 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[119] =
     {   0,
-       17,   17,    9,    9,    0,    0,   37,   35,   17,   17,
-       35,    3,   35,   35,   35,   34,   34,   34,   34,   34,
-       34,   34,   34,   34,   34,   34,    1,    2,    9,    7,
-        8,   12,   12,   12,   17,   17,    0,    0,   32,   31,
-        0,   16,   10,    0,    5,   34,   34,   34,   34,   34,
-       34,   34,   34,   15,   34,   34,   34,   34,   34,   34,
-        9,    9,    0,    6,   12,   12,   11,    0,   31,    0,
-        0,   13,    5,    4,   34,   34,   34,   34,   34,   34,
-       34,   20,   27,   34,   34,   34,   34,   34,    6,   34,
-       18,   34,   34,   34,   34,   34,   23,   34,   34,   34,
+       17,   17,    9,    9,    0,    0,   36,   34,   17,   17,
+       34,    3,   34,   34,   34,   33,   33,   33,   33,   33,
+       33,   33,   33,   33,   33,   33,    1,    2,    9,    7,
+        8,   12,   12,   12,   17,   17,    0,    0,   31,   30,
+        0,   16,   10,    0,    5,   33,   33,   33,   33,   33,
+       33,   33,   33,   15,   33,   33,   33,   33,   33,   33,
+        9,    9,    0,    6,   12,   12,   11,    0,   30,    0,
+        0,   13,    5,    4,   33,   33,   33,   33,   33,   33,
+       33,   20,   27,   33,   33,   33,   33,   33,    6,   33,
+       18,   33,   33,   33,   33,   33,   23,   33,   33,   33,
 
-       25,   34,   14,   34,   29,   34,   22,   24,   34,   34,
-       34,   34,   21,   30,   26,   33,   19,    0
+       25,   33,   14,   33,   28,   33,   22,   24,   33,   33,
+       33,   33,   21,   29,   26,   32,   19,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -797,10 +797,10 @@ static const flex_int16_t yy_chk[232] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static const flex_int32_t yy_rule_can_match_eol[37] =
+static const flex_int32_t yy_rule_can_match_eol[36] =
     {   0,
 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
 
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
@@ -1203,7 +1203,7 @@ YY_RULE_SETUP
 case 16:
 YY_RULE_SETUP
 #line 46 "prelexer.l"
-{if(!pre_in_class)return RETTYPE;}
+{if(!in_fn && !pre_in_class)return RETTYPE;}
 	YY_BREAK
 case 17:
 /* rule 17 can match eol */
@@ -1263,53 +1263,48 @@ YY_RULE_SETUP
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 61 "prelexer.l"
-{}
+#line 62 "prelexer.l"
+{ prelval.m = CONST_TYPE; if(!in_fn && !pre_in_class)return CONST; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
 #line 63 "prelexer.l"
-{ prelval.m = CONST_TYPE; if(!in_fn && !pre_in_class)return CONST; }
+{ prelval.m = STATIC_TYPE; if(!in_fn && !pre_in_class)return STATIC; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 64 "prelexer.l"
-{ prelval.m = STATIC_TYPE; if(!in_fn && !pre_in_class)return STATIC; }
-	YY_BREAK
-case 31:
-YY_RULE_SETUP
-#line 67 "prelexer.l"
+#line 66 "prelexer.l"
 {}
 	YY_BREAK
-case 32:
+case 31:
 *yy_cp = (yy_hold_char); /* undo effects of setting up yytext */
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 68 "prelexer.l"
+#line 67 "prelexer.l"
 {preerror("unterminated string ");}
+	YY_BREAK
+case 32:
+YY_RULE_SETUP
+#line 69 "prelexer.l"
+{preerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 70 "prelexer.l"
-{preerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
+#line 71 "prelexer.l"
+{if(!in_fn && !pre_in_class){prelval.s = yytext;return IDENTIFIER;}}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 72 "prelexer.l"
-{if(!in_fn && !pre_in_class){prelval.s = yytext;return IDENTIFIER;}}
+#line 73 "prelexer.l"
+{}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 74 "prelexer.l"
-{}
-	YY_BREAK
-case 36:
-YY_RULE_SETUP
-#line 76 "prelexer.l"
+#line 75 "prelexer.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1313 "prelex.c"
+#line 1308 "prelex.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(RAWSTATE):
 	yyterminate();
@@ -2327,7 +2322,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 76 "prelexer.l"
+#line 75 "prelexer.l"
 
 
 int preerror(char *s){

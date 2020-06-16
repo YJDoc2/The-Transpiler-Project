@@ -224,7 +224,7 @@ void print_code_header() {
     if (iter->key != NULL || iter->value != NULL) {
       Variable *v = (Variable *)iter->value;
       if (v->m != STATIC_TYPE) {
-        fprintf(header, "extern %s %s;\n", type_arr[v->t], v->name);
+        fprintf(header, "extern %s %s;\n", type_arr[v->t.t], v->name);
       }
     }
     ++iter;

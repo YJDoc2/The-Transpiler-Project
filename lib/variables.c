@@ -13,10 +13,8 @@
 #define VAR_HM_INIT_SIZE 241
 
 //! The order MUST be same as the order of types in the type enum
-char* type_arr[] = {
-    "int",  "float", "double", "bool", "float complex",
-    "long", "short", "char *", "void",
-};
+char* type_arr[] = {"int",  "float", "double", "bool", "float complex",
+                    "long", "short", "char *", "void", "class"};
 
 //! The order MUST be same as the order of modifiers in the modifier enum
 char* mod_arr[] = {"", "const", "static"};
@@ -58,13 +56,13 @@ void __cleanup_vars__() { hm_delete(varmap, __del_var__); }
  *
  * Returns : void
  */
-void create_var(modifier m, type t, char* ident, int line) {
+Variable* create_var(modifier m, type t, char* ident, int line) {
   char* _name =
       strdup(ident);  // MUST duplicate as Parser discards ident ptr after call
   Variable* v = (Variable*)calloc(1, sizeof(Variable));
   v->name = _name;
   v->m = m;
-  v->t = t;
+  v->t.t = t;
   v->declaration = line;
   v->is_raw = false;
   v->is_arr = false;
@@ -72,6 +70,7 @@ void create_var(modifier m, type t, char* ident, int line) {
   // store it in the current scope
   Hashmap* hm = scopelist.top == NULL ? &varmap : (Hashmap*)scopelist.top->data;
   hm_add(hm, _name, v);
+  return v;
 }
 
 /*

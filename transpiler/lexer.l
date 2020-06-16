@@ -3,7 +3,7 @@
     #include <stdbool.h>
     #include "variables.h"
     #include "parser.h"
-    #include "classes.h"
+    #include "class_decl.h"
     int lastState = 0;
     extern void printcode(char *,...);
     extern bool print_lineno;

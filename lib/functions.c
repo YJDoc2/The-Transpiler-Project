@@ -255,16 +255,16 @@ int verify_call(char* fnname, Function* fn, int lineno) {
 
     // if types are different incorrect call but check for rest of arg types
     // anyway
-    if (p->t != arg->t) {
+    if (p->t != arg->t.t) {
       yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, type_arr[p->t],
-              fn->declaration, type_arr[arg->t]);
+              fn->declaration, type_arr[arg->t.t]);
     }
     if (p->is_arr != arg->is_arr) {
       yyerror(fncall_incorrect_arr_msg, lineno, argnum, type_arr[p->t],
-              p->is_arr ? "array" : "", fn->declaration, type_arr[arg->t],
+              p->is_arr ? "array" : "", fn->declaration, type_arr[arg->t.t],
               arg->is_arr ? "array" : "");
     }
-    if (arg->t == CONST_TYPE && p->t != CONST_TYPE) {
+    if (arg->t.t == CONST_TYPE && p->t != CONST_TYPE) {
       yyerror(fncall_incorrect_const_type_msg, lineno, argnum, fn->declaration);
     }
 

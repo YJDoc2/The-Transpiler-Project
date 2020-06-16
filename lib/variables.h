@@ -19,18 +19,26 @@ typedef enum {
   SHORT_TYPE,
   STRING_TYPE,
   VOID_TYPE,
+  CLASS_TYPE
 } type;
 
 // Enum for variable modifiers
 typedef enum { NONE_TYPE, CONST_TYPE, STATIC_TYPE } modifier;
 
+// Union to store either type or the classname
+typedef union type_u {
+  type t;
+  char *class;
+} type_u;
+
 // Structure to store information about the variable
 typedef struct {
   bool is_raw;
   char *name;
-  type t;
+  type_u t;
   modifier m;
   bool is_arr;
+  bool is_class;
   int declaration;
 } Variable;
 
@@ -61,7 +69,7 @@ void __cleanup_vars__();
  *
  * Returns : void
  */
-void create_var(modifier m, type t, char *ident, int line);
+Variable *create_var(modifier m, type t, char *ident, int line);
 
 /*
  * Creates the variable if not previously declared  in same scope, otherwise

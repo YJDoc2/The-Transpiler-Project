@@ -25,7 +25,7 @@ prelexer.o : prelexer.l
 	$(CC) $(CPPFLAGS) $(CFLAGS) prelexer.c
 
 parser.o: parser.y
-	bison -d parser.y
+	bison -dv parser.y
 	mv ./parser.tab.c ./parser.c
 	mv ./parser.tab.h ./parser.h
 	$(CC) $(CPPFLAGS) $(CFLAGS) parser.c

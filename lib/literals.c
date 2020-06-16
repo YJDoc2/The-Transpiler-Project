@@ -38,7 +38,7 @@ void *add_literal(modifier m, type t, char *ident) {
   Variable *v = (Variable *)calloc(1, sizeof(Variable));
   v->name = name;
   v->m = m;
-  v->t = t;
+  v->t.t = t;
   v->declaration = 0;
   v->is_raw = true;
   ll_add(&literals, v);
