@@ -14,18 +14,25 @@
     #include "classes.h"
 
     void preparse(); // as preparse is a macro from preparser.l must be given here
+    
+    bool print_lineno = false;
+
     extern char *type_arr[],*mod_arr[];
     extern Linked_list *temp_list;
+    
     bool is_in_fn = false;
     bool has_returned = false;
+    
     type fn_type = VOID_TYPE;
     type arg_type;
     type expr_type = VOID_TYPE;
     type arr_type = VOID_TYPE;
     modifier char_buf_mod = NONE_TYPE;
+    
     bool is_composite_val = false;
     bool is_in_fncall = false;
     int is_in_loop  =   0;
+    
     Class * current_class = NULL;
     bool is_static_method;
 

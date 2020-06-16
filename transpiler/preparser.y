@@ -13,6 +13,8 @@
     bool in_fn = false;
     extern int prelineno;
     int fnlineno = 0;
+    bool pre_in_class = false;
+    //!TODO maybe combine in_fn and pre_in_class
 %}
 
 %union{
@@ -33,6 +35,8 @@
 
 %token <s> IDENTIFIER
 
+%token CLASS
+
 %type <t> type
 %type <m> modifier
 %type <s> ident
@@ -45,8 +49,11 @@ stmtlist :/*nothing*/
     | stmtlist fndeclaration
     | stmtlist error
     | stmtlist vardecl
+    | stmtlist classdecl
 
-fndeclaration : FNDECL ident '(' paramlist ')' "->" modifier type {fnlineno=prelineno;}'{'{in_fn = true;}'}' {add_function($7,$8,$2,$2,fnlineno);free($2);in_fn=false;}
+classdecl : CLASS IDENTIFIER'{' {pre_in_class = true;} '}' {pre_in_class = false;}
+
+fndeclaration : FNDECL ident '(' paramlist ')' "->" modifier type {fnlineno=prelineno;}'{'{in_fn = true;}'}' {if(!pre_in_class)add_function($7,$8,$2,$2,fnlineno);free($2);in_fn=false;}
 
 vardecl: modifier type ident {free($3);}
 
@@ -54,8 +61,8 @@ paramlist : /* nothing */
     | paramlist param
     | paramlist ','  param
 
-param : modifier type ident    {add_param($1,$2,false,$3); free($3);}      
-    | modifier type ident '[' ']' {add_param($1,$2,true,$3);free($3);}            
+param : modifier type ident    {if(!pre_in_class)add_param($1,$2,false,$3); free($3);}      
+    | modifier type ident '[' ']' {if(!pre_in_class)add_param($1,$2,true,$3);free($3);}            
 
 
 ident : IDENTIFIER {$$ = strdup($1);}

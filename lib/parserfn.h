@@ -64,7 +64,7 @@ void printcode(char* s, ...);
 /*
  * Prints all function declarations and required header inclusions
  * should be called after the parsing is completed
- *
+ * Also print glabal non-static variables as extern vars
  * Params : None
  *
  */

@@ -633,8 +633,8 @@ static void yynoreturn yy_fatal_error ( const char* msg  );
 	(yy_hold_char) = *yy_cp; \
 	*yy_cp = '\0'; \
 	(yy_c_buf_p) = yy_cp;
-#define YY_NUM_RULES 35
-#define YY_END_OF_BUFFER 36
+#define YY_NUM_RULES 36
+#define YY_END_OF_BUFFER 37
 /* This struct is not used in this scanner,
    but its presence is necessary. */
 struct yy_trans_info
@@ -644,19 +644,19 @@ struct yy_trans_info
 	};
 static const flex_int16_t yy_accept[119] =
     {   0,
-       16,   16,    9,    9,    0,    0,   36,   34,   16,   16,
-       34,    3,   34,   34,   34,   33,   33,   33,   33,   33,
-       33,   33,   33,   33,   33,   33,    1,    2,    9,    7,
-        8,   12,   12,   12,   16,   16,    0,    0,   31,   30,
-        0,   15,   10,    0,    5,   33,   33,   33,   33,   33,
-       33,   33,   33,   14,   33,   33,   33,   33,   33,   33,
-        9,    9,    0,    6,   12,   12,   11,    0,   30,    0,
-        0,   13,    5,    4,   33,   33,   33,   33,   33,   33,
-       33,   19,   26,   33,   33,   33,   33,   33,    6,   33,
-       17,   33,   33,   33,   33,   33,   22,   33,   33,   33,
+       17,   17,    9,    9,    0,    0,   37,   35,   17,   17,
+       35,    3,   35,   35,   35,   34,   34,   34,   34,   34,
+       34,   34,   34,   34,   34,   34,    1,    2,    9,    7,
+        8,   12,   12,   12,   17,   17,    0,    0,   32,   31,
+        0,   16,   10,    0,    5,   34,   34,   34,   34,   34,
+       34,   34,   34,   15,   34,   34,   34,   34,   34,   34,
+        9,    9,    0,    6,   12,   12,   11,    0,   31,    0,
+        0,   13,    5,    4,   34,   34,   34,   34,   34,   34,
+       34,   20,   27,   34,   34,   34,   34,   34,    6,   34,
+       18,   34,   34,   34,   34,   34,   23,   34,   34,   34,
 
-       24,   33,   27,   33,   28,   33,   21,   23,   33,   33,
-       33,   33,   20,   29,   25,   32,   18,    0
+       25,   34,   14,   34,   29,   34,   22,   24,   34,   34,
+       34,   34,   21,   30,   26,   33,   19,    0
     } ;
 
 static const YY_CHAR yy_ec[256] =
@@ -797,10 +797,10 @@ static const flex_int16_t yy_chk[232] =
     } ;
 
 /* Table of booleans, true if rule could match eol. */
-static const flex_int32_t yy_rule_can_match_eol[36] =
+static const flex_int32_t yy_rule_can_match_eol[37] =
     {   0,
-0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 1, 0, 0, 0, 
-    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
+0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 1, 1, 0, 0, 0, 1, 0, 0, 
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,     };
 
 static yy_state_type yy_last_accepting_state;
 static char *yy_last_accepting_cpos;
@@ -826,9 +826,10 @@ char *yytext;
     extern bool in_fn;
     int nbrack = 0;
     extern int errs;
-#line 830 "prelex.c"
+    extern bool pre_in_class;
+#line 831 "prelex.c"
 
-#line 832 "prelex.c"
+#line 833 "prelex.c"
 
 #define INITIAL 0
 #define RAWSTATE 1
@@ -1047,10 +1048,10 @@ YY_DECL
 		}
 
 	{
-#line 19 "prelexer.l"
+#line 20 "prelexer.l"
 
 
-#line 1054 "prelex.c"
+#line 1055 "prelex.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1119,191 +1120,196 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 21 "prelexer.l"
-{if(!in_fn)return pretext[0]; ++nbrack;}
+#line 22 "prelexer.l"
+{if(!in_fn && !pre_in_class)return pretext[0]; ++nbrack;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 22 "prelexer.l"
+#line 23 "prelexer.l"
 {if(nbrack ==0)return pretext[0]; --nbrack;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 23 "prelexer.l"
-{if(!in_fn)return pretext[0];}
+#line 24 "prelexer.l"
+{if(!in_fn && !pre_in_class)return pretext[0];}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 26 "prelexer.l"
+#line 27 "prelexer.l"
 { } 
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 27 "prelexer.l"
+#line 28 "prelexer.l"
 { BEGIN RAWSTATE;  } 
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 28 "prelexer.l"
+#line 29 "prelexer.l"
 { BEGIN 0; } 
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 29 "prelexer.l"
+#line 30 "prelexer.l"
 {}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 30 "prelexer.l"
+#line 31 "prelexer.l"
 { char c = input(); if(c != '>'){}else{BEGIN 0;}}                                                                                           
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 31 "prelexer.l"
+#line 32 "prelexer.l"
 { }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 34 "prelexer.l"
+#line 35 "prelexer.l"
 { BEGIN COMMENT;}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 35 "prelexer.l"
+#line 36 "prelexer.l"
 {BEGIN 0;}
 	YY_BREAK
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 36 "prelexer.l"
+#line 37 "prelexer.l"
 {}
 	YY_BREAK
 case YY_STATE_EOF(COMMENT):
-#line 37 "prelexer.l"
+#line 38 "prelexer.l"
 {preerror("Unterminated multiline comment.");return 0;}
 	YY_BREAK
 case 13:
 /* rule 13 can match eol */
 YY_RULE_SETUP
-#line 39 "prelexer.l"
+#line 40 "prelexer.l"
 {}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 41 "prelexer.l"
-{return FNDECL;}
+#line 42 "prelexer.l"
+{return CLASS;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 43 "prelexer.l"
-{return RETTYPE;}
+#line 44 "prelexer.l"
+{if(!pre_in_class)return FNDECL;}
 	YY_BREAK
 case 16:
-/* rule 16 can match eol */
 YY_RULE_SETUP
-#line 45 "prelexer.l"
-{}
+#line 46 "prelexer.l"
+{if(!pre_in_class)return RETTYPE;}
 	YY_BREAK
 case 17:
+/* rule 17 can match eol */
 YY_RULE_SETUP
-#line 47 "prelexer.l"
-{ prelval.t = BOOL_TYPE; if(!in_fn)return BOOL; }
+#line 48 "prelexer.l"
+{}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 48 "prelexer.l"
-{ prelval.t = COMPLEX_TYPE; if(!in_fn)return COMPLEX; }
+#line 50 "prelexer.l"
+{ prelval.t = BOOL_TYPE; if(!in_fn && !pre_in_class)return BOOL; }
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 49 "prelexer.l"
-{ prelval.t = INT_TYPE;if(!in_fn)return INT; }
+#line 51 "prelexer.l"
+{ prelval.t = COMPLEX_TYPE; if(!in_fn && !pre_in_class)return COMPLEX; }
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 50 "prelexer.l"
-{ prelval.t = DOUBLE_TYPE;if(!in_fn)return DOUBLE; }
+#line 52 "prelexer.l"
+{ prelval.t = INT_TYPE;if(!in_fn && !pre_in_class)return INT; }
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 51 "prelexer.l"
-{ prelval.t = FLOAT_TYPE;if(!in_fn)return FLOAT; }
+#line 53 "prelexer.l"
+{ prelval.t = DOUBLE_TYPE;if(!in_fn && !pre_in_class)return DOUBLE; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 52 "prelexer.l"
-{ prelval.t = LONG_TYPE;if(!in_fn)return LONG; }
+#line 54 "prelexer.l"
+{ prelval.t = FLOAT_TYPE;if(!in_fn && !pre_in_class)return FLOAT; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 53 "prelexer.l"
-{ prelval.t = SHORT_TYPE;if(!in_fn)return SHORT; }
+#line 55 "prelexer.l"
+{ prelval.t = LONG_TYPE;if(!in_fn && !pre_in_class)return LONG; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 54 "prelexer.l"
-{ prelval.t = VOID_TYPE;if(!in_fn)return VOID; }
+#line 56 "prelexer.l"
+{ prelval.t = SHORT_TYPE;if(!in_fn && !pre_in_class)return SHORT; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 55 "prelexer.l"
-{ prelval.t = STRING_TYPE; if(!in_fn)return STRING; }
+#line 57 "prelexer.l"
+{ prelval.t = VOID_TYPE;if(!in_fn && !pre_in_class)return VOID; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 57 "prelexer.l"
-{}
+#line 58 "prelexer.l"
+{ prelval.t = STRING_TYPE; if(!in_fn && !pre_in_class)return STRING; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 58 "prelexer.l"
+#line 60 "prelexer.l"
 {}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 60 "prelexer.l"
-{ prelval.m = CONST_TYPE; if(!in_fn)return CONST; }
+#line 61 "prelexer.l"
+{}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 61 "prelexer.l"
-{ prelval.m = STATIC_TYPE; if(!in_fn)return STATIC; }
+#line 63 "prelexer.l"
+{ prelval.m = CONST_TYPE; if(!in_fn && !pre_in_class)return CONST; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
 #line 64 "prelexer.l"
-{}
+{ prelval.m = STATIC_TYPE; if(!in_fn && !pre_in_class)return STATIC; }
 	YY_BREAK
 case 31:
+YY_RULE_SETUP
+#line 67 "prelexer.l"
+{}
+	YY_BREAK
+case 32:
 *yy_cp = (yy_hold_char); /* undo effects of setting up yytext */
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 65 "prelexer.l"
+#line 68 "prelexer.l"
 {preerror("unterminated string ");}
-	YY_BREAK
-case 32:
-YY_RULE_SETUP
-#line 67 "prelexer.l"
-{preerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 69 "prelexer.l"
-{if(!in_fn){prelval.s = yytext;return IDENTIFIER;}}
+#line 70 "prelexer.l"
+{preerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 71 "prelexer.l"
-{}
+#line 72 "prelexer.l"
+{if(!in_fn && !pre_in_class){prelval.s = yytext;return IDENTIFIER;}}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 73 "prelexer.l"
+#line 74 "prelexer.l"
+{}
+	YY_BREAK
+case 36:
+YY_RULE_SETUP
+#line 76 "prelexer.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1307 "prelex.c"
+#line 1313 "prelex.c"
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(RAWSTATE):
 	yyterminate();
@@ -2321,7 +2327,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 73 "prelexer.l"
+#line 76 "prelexer.l"
 
 
 int preerror(char *s){

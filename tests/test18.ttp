@@ -1,0 +1,35 @@
+int a =90;
+static int j = 50;
+
+class testclass1{
+    int a;
+    RAW <{ char  s[50];}>
+    @decl string s[];
+    float b[50] ;
+    fn test_method(int abd)->void{
+        print(a);
+        print("hello ",abd);
+    }
+    @static fn test_static()->void{
+        print("testing static");
+    }
+}
+
+
+class testclass2{
+    int gdb;
+    string gamma;
+    @static fn testing_static_again() ->void{
+        print("testing static method once again");
+    }
+}
+
+class testclass3{
+    int now_its_really_just_checking;
+    RAW<{ char p[50]; }>
+    @decl string p;
+}
+
+fn main() -> void{
+    print("hello there");
+}

@@ -70,9 +70,15 @@ void __cleanup_classes__() { hm_delete(classmap, __delete_classmap__); }
  * Returns : Pointer to the new class
  */
 Class* add_class(char* name, int line) {
+  Class* t = (Class*)hm_get(&classmap, name);
+  if (t != NULL) {
+    yyerror("Class with name %s is already defined on line %d.", name,
+            t->declaration);
+    return t;
+  }
   char* temp = strdup(name);
   Class* c = (Class*)calloc(1, sizeof(Class));
-  c->name = name;
+  c->name = temp;
   c->attr = (Hashmap*)calloc(1, sizeof(Hashmap));
   c->methods = (Hashmap*)calloc(1, sizeof(Hashmap));
   *(c->attr) = make_hashmap(ATTRMAP_INIT_SIZE, __hash_str__, __compair__str__);
@@ -152,23 +158,8 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
   hm_add(class->methods, keyname, fn);
 }
 
-/*
- * Prints a method declaration to code file
- * print in format : type print_name (parmalist){
- * the '{' must be cloed in the calling code
- *
- * Parmas :
- * class : class to which the method belongs,
- * methodname : name of the method without the class
- */
-void print_method(Class* class, char* methodname) {
-  method* fn = (method*)hm_get(class->methods, methodname);
-  if (fn == NULL) {
-    yyerror(
-        "Internal error : trying to print declaration of method not inserted "
-        "in class defination");
-    return;
-  }
+// Helper function to print method start
+void print_method_start(Class* class, method* fn) {
   printcode("%s %s ( ", type_arr[fn->ret_t], fn->print_name);
 
   ll_link* iter = fn->param_list == NULL ? NULL : fn->param_list->start;
@@ -187,6 +178,26 @@ void print_method(Class* class, char* methodname) {
     }
     iter = iter->next;
   }
+}
+
+/*
+ * Prints a method declaration to code file
+ * print in format : type print_name (parmalist){
+ * the '{' must be cloed in the calling code
+ *
+ * Parmas :
+ * class : class to which the method belongs,
+ * methodname : name of the method without the class
+ */
+void print_method(Class* class, char* methodname) {
+  method* fn = (method*)hm_get(class->methods, methodname);
+  if (fn == NULL) {
+    yyerror(
+        "Internal error : trying to print declaration of method not inserted "
+        "in class defination");
+    return;
+  }
+  print_method_start(class, fn);
   printcode(" ) {");
 }
 
@@ -249,9 +260,22 @@ void start_class_definition(char* name) {
 }
 
 void print_class_header(char* name) {
-  fprintf(header, "\n #endif\n");  // must be header now, as the files are by
-                                   // the proper name
-  //! TODO print methods
+  // temporarily switching files as print_method_start prints it in codefile
+  FILE* temp = code;
+  code = header;
+  hashpair* iter = current_class->methods->start;
+  hashpair* end = iter + current_class->methods->size;
+  while (iter <= end) {
+    if (iter->key != NULL || iter->value != NULL) {
+      method* fn = (method*)iter->value;
+      print_method_start(current_class, fn);
+      printcode(" );\n");
+    }
+    ++iter;
+  }
+
+  printcode("\n #endif\n");
+  code = temp;  // switching back
 }
 
 /*

@@ -11,6 +11,7 @@
 
 extern char *type_arr[], *mod_arr[];
 extern Hashmap classmap;
+extern Hashmap varmap;
 
 int errs = 0;  // number or errors in input, if non-zero at end of
                // parsing, delete the temp file
@@ -191,6 +192,7 @@ static void print_params(Linked_list *paramlist) {
 /*
  * Prints all function declarations and required header inclusions
  * should be called after the parsing is completed
+ * Also print glabal non-static variables as extern vars
  *
  * Params : None
  *
@@ -216,5 +218,17 @@ void print_code_header() {
     }
     ++iter;
   }
+  iter = varmap.start;
+  end = varmap.start + varmap.size;
+  while (iter <= end) {
+    if (iter->key != NULL || iter->value != NULL) {
+      Variable *v = (Variable *)iter->value;
+      if (v->m != STATIC_TYPE) {
+        fprintf(header, "extern %s %s;\n", type_arr[v->t], v->name);
+      }
+    }
+    ++iter;
+  }
+
   fprintf(header, "\n\n#endif\n");
 }

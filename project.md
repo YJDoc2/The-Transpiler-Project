@@ -94,6 +94,9 @@ Can define attributes , creates new .h and .c files <br />
 Now after class definition , it adds a #include for each class in the main file
 
 \# test17.c transpiled from test17.tpp for testing method declarations<br />
+Added method declaration printing in class header files, also added extern declaration in main file header for non-static global variables
+\# test18.c transpiled from test18.tpp for testing multiple class declaration and file generations<br />
+
 Added initial method declaration support in classes, More testing is required<br />
 
 Add basic class(structure) support, just declaring them with only variables is enough for now
