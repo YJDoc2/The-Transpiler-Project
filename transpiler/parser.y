@@ -35,7 +35,7 @@
     int is_in_loop  =   0;
     
     Class * current_class = NULL;
-    char * classname;
+    char *expr_class;
     bool is_static_method;
 
 %}
@@ -141,14 +141,18 @@ attrlist: /*nothing*/
                                                                     }add_attr(current_class,$2,$3,$4,true,yylineno);printcode("%s %s %s[%s];\n",mod_arr[$2],type_arr[$3],$4,$6);free($4);free($6);}
     | attrlist modifier CLASSNAME IDENTIFIER ';'  {if($2 == STATIC_TYPE){
                                                     yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
-                                                    }add_class_type_attr(current_class,$2,$3,$4,false,yylineno);
+                                                    }else if(strcmp($3,current_class->name)==0){
+                                                        yyerror("cannot reference a class in itself");
+                                                    }else{add_class_type_attr(current_class,$2,$3,$4,false,yylineno);
                                                     printcode("%s %s %s;\n",mod_arr[$2],$3,$4);
-                                                    free($3);free($4);}
+                                                    free($3);free($4);}}
     |attrlist modifier CLASSNAME IDENTIFIER '['expr arraysizedummy ']' ';'  {if($2 == STATIC_TYPE){
                                                     yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
-                                                    }add_class_type_attr(current_class,$2,$3,$4,true,yylineno);
+                                                    }else if(strcmp($3,current_class->name)==0){
+                                                        yyerror("cannot reference a class in itself");
+                                                    }else{add_class_type_attr(current_class,$2,$3,$4,true,yylineno);
                                                     printcode("%s %s %s[%s];\n",mod_arr[$2],$3,$4,$6);
-                                                    free($3);free($4);free($6);}
+                                                    free($3);free($4);free($6);}}
     | attrlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
     | attrlist DECL modifier type IDENTIFIER arraysign ';'  {if($3 == STATIC_TYPE){
                                                 yyerror("Cannot use static on class attributes");$3 = NONE_TYPE;
@@ -282,7 +286,7 @@ vardeclaration : DECL modifier type decllist
             }
             free($2);free($4);}
     | LET letarraydecl
-
+//! TODO add classes in let ???
 ;
 
 classvarlist : IDENTIFIER       {create_class_var($<m>-2,$<s>-1,$1,false,yylineno);printcode("%s",$1);free($1);}
@@ -297,8 +301,7 @@ decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
 varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno); 
                         printcode("%s ",$1);
                         free($1); }
-    | IDENTIFIER '=' expr {  //asm("int3");
-                                if(verify_types($<t>-1,expr_type))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[expr_type], type_arr[$<t>-1]);
+    | IDENTIFIER '=' expr { if(verify_types($<t>-1,expr_type))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[expr_type], type_arr[$<t>-1]);
                                 add_var($<m>-2,$<t>-1,$1,yylineno);
                                 printcode("%s = %s",$1,$3);
                                 free($1);free($3);}
@@ -436,19 +439,26 @@ assignstmt : IDENTIFIER assgtype expr {Variable *var = lookup_var($1);
                                     if(var == NULL){
                                         yyerror("Undeclared variable %s.",$1);
                                     }else if(var->is_arr){
-                                        yyerror("Cannot subscript a non-array type variable");
+                                        yyerror("Cannot assign to base of an array");
                                     }else if(var->m == CONST_TYPE){
                                         yyerror("Cannot assign to constant variable.");
+                                    }else if(var->is_class){
+                                        if(expr_type != CLASS_TYPE ){
+                                            yyerror("cannot assign %s to class type variable",type_arr[expr_type]);
+                                        }else if(expr_class != var->t.class){
+                                            yyerror("cannot assign class %s value to class %s variable",expr_class,var->t.class);
+                                        }else if(strcmp($2,"=") != 0){
+                                            yyerror("cannot perform compund operations on class type variables");
+                                        }
                                     }else if(verify_types(var->t.t,expr_type)){
                                         yyerror("cannot assign type %s to variable of type %s",type_arr[var->t.t],type_arr[expr_type]);
                                     }else if(var->t.t == COMPLEX_TYPE && strcmp($2,"%=")==0){
                                         yyerror("Cannot use mod on complex type");
-                                    }else{
-                                        printcode("%s %s %s;",$1,$2,$3);
                                     }
+                                    printcode("%s %s %s;",$1,$2,$3);
                                     // No need to free $2, its const char *
                                     free($1);free($3);
-                                    expr_type = VOID_TYPE;
+                                    expr_type = VOID_TYPE;expr_class = NULL;
                                     }
             | IDENTIFIER '[' expr arraysizedummy']' assgtype expr {Variable *var = lookup_var($1);
                                     if(var == NULL){
@@ -457,14 +467,21 @@ assignstmt : IDENTIFIER assgtype expr {Variable *var = lookup_var($1);
                                         yyerror("Cannot subscript a non-array type variable");
                                     }else if(var->m == CONST_TYPE){
                                         yyerror("Cannot assign to constant variable.");
+                                    }else if(var->is_class){
+                                        if(expr_type != CLASS_TYPE ){
+                                            yyerror("cannot assign %s to class type variable",type_arr[expr_type]);
+                                        }else if(expr_class!=var->t.class){
+                                            yyerror("cannot assign class %s value to class %s variable",expr_class,var->t.class);
+                                        }else if(strcmp($6,"=") != 0){
+                                            yyerror("cannot perform compund operations on class type variables");
+                                        }
                                     }else if(verify_types(var->t.t,expr_type)){
                                         yyerror("cannot assign type %s to variable of type %s",type_arr[var->t.t],type_arr[expr_type]);
                                     }else if((var->t.t == COMPLEX_TYPE || var->t.t == FLOAT || var->t.t == DOUBLE_TYPE) && strcmp($6,"%=")==0){
                                         yyerror("Cannot use mod on %s type",type_arr[var->t.t]);
-                                    }else{
-                                        printcode("%s[%s] %s %s;",$1,$3,$6,$7);
                                     }
-                                    expr_type = VOID_TYPE;
+                                    printcode("%s[%s] %s %s;",$1,$3,$6,$7);
+                                    expr_type = VOID_TYPE;expr_class = NULL;
                                     // No need to free $2, its const char *
                                     free($1);free($3);free($7);}
 
@@ -530,15 +547,16 @@ iterarraydummy : /*nothing*/ {Variable *v = lookup_var($<s>0);
                                     }}
 
 ;
-expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_composite_val =false;}
+expr: expr '+' expr  { $$=join($1,"+",$3); free($1);free($3); is_composite_val =false;}
     | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3); is_composite_val =false;}
     | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3); is_composite_val =false;}
     | expr '/' expr  {$$=join($1,"/",$3); free($1);free($3); is_composite_val =false;}
-    | expr MOD expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE){
+    | expr MOD expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == CLASS_TYPE){
                         yyerror("Cannot use mod on %s type",type_arr[expr_type]);
                         }
                         $$=join($1,"%",$3); free($1);free($3); is_composite_val =false;}
-    | '(' type ')' expr  %prec UMINUS    {void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
+    | '(' type ')' expr  %prec UMINUS    {
+                                void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
                                 sprintf(v,"(%s) ",type_arr[$2]);
                                 char * t = join("(",$4,")");
                                 $$ = join(v,"",t);
@@ -549,31 +567,31 @@ expr: expr '+' expr  {$$=join($1,"+",$3); free($1);free($3); is_composite_val =f
                                 expr_type = $2;
                             }
     | '(' expr ')'   {$$=join("( ",$2," )"); free($2); is_composite_val =false;}
-    | '-' expr %prec UMINUS {$$=join("-","",$2); free($2); is_composite_val =false;}
-    | expr '<' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use < with complex type");}$$= join($1,"<",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr '>' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use > with complex type");}$$= join($1,">",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr LTE expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use <= with complex type");}$$= join($1,"<=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr  GTE expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use >= with complex type");}$$= join($1,">=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr  EQL expr %prec LEAST        {$$= join($1,"==",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr  NOT EQL expr  %prec LEAST     {$$= join($1,"!=",$4);free($1);free($4);expr_type = BOOL_TYPE;}
-    | expr AND expr {$$= join($1," && ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | '-' expr  %prec UMINUS {$$=join("-","",$2); free($2); is_composite_val =false;}
+    | expr '<' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use < with %s type",type_arr[expr_type]);}$$= join($1,"<",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr '>' expr   {if(expr_type == COMPLEX_TYPE ){yyerror("Cannot use > with %s type",type_arr[expr_type]);}$$= join($1,">",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr LTE expr         {if(expr_type == COMPLEX_TYPE ){yyerror("Cannot use <= with %s type",type_arr[expr_type]);}$$= join($1,"<=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr GTE expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use >= with %s type",type_arr[expr_type]);}$$= join($1,">=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr EQL expr  %prec LEAST        {$$= join($1,"==",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr NOT EQL expr  %prec LEAST     {$$= join($1,"!=",$4);free($1);free($4);expr_type = BOOL_TYPE;}
+    | expr AND expr  {$$= join($1," && ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
     | expr OR expr    {$$= join($1," || ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
     | NOT expr   {char * t =join("(",$2,")");
                             $$ = join("!",t,"");free(t);free($2);expr_type = BOOL_TYPE;}
     | value
 ;
 
-value : cmplxnum {if( expr_type == STRING_TYPE){
+value : cmplxnum {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);
                 }else{
                     expr_type = COMPLEX_TYPE;
                 }}
-    | INTNUM {if( expr_type == STRING_TYPE){
+    | INTNUM {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[INT_TYPE],type_arr[expr_type]);;
                 }else if(!(expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == COMPLEX_TYPE)){
                     expr_type = INT_TYPE;
                 }}
-    | FLOATNUM { if( expr_type == STRING_TYPE){
+    | FLOATNUM { if( expr_type == STRING_TYPE|| expr_type == CLASS_TYPE){
                     
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);;
                 }else if(expr_type != COMPLEX_TYPE){
@@ -581,7 +599,7 @@ value : cmplxnum {if( expr_type == STRING_TYPE){
                 }}
     | BOOLVAL   {if(expr_type == VOID_TYPE){
                     expr_type = BOOL_TYPE;
-                }else if(expr_type == STRING_TYPE){
+                }else if(expr_type == STRING_TYPE|| expr_type == CLASS_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
                 }}
     | STRINGVAL {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
@@ -590,8 +608,11 @@ value : cmplxnum {if( expr_type == STRING_TYPE){
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$1);
                     }else if(_t->is_class){
+                        if(expr_type == CLASS_TYPE){
+                            yyerror("Cannot combine class type with anything else");
+                        }
                         expr_type = CLASS_TYPE;
-                        classname = _t->t.class;
+                        expr_class = _t->t.class;
                     }else if(_t->is_arr && !is_in_fncall){
                         yyerror("cannot use arrray without subscript.");
                     }else if(expr_type == STRING_TYPE){
@@ -606,16 +627,19 @@ value : cmplxnum {if( expr_type == STRING_TYPE){
     | IDENTIFIER '[' {push_expr_and_args();} expr ']' { Variable *v = lookup_var($1);
                                                         if(v == NULL){
                                                             yyerror("Undefined variable %s",$$);
-                                                        }else if(!v->is_arr && v->t.t != STRING_TYPE){
-                                                            yyerror("Subscripted object must be of array or string type. got %s type",type_arr[v->t.t]);
+                                                        }else if(!v->is_arr){
+                                                            yyerror("Subscripted object must be of array");
                                                         }else if(expr_type != INT_TYPE){
                                                             yyerror("Subscript must be of int type got %s type",type_arr[expr_type]);
                                                         }
                                                         char *t = join($1,"[",$4);$$ = join(t,"]","");is_composite_val = true;pop_expr_and_args();free(t);
                                                         if(v != NULL){
                                                             if(v->is_class){
+                                                                if(expr_type == CLASS_TYPE){
+                                                                    yyerror("Cannot combine class type with anything else");
+                                                                }
                                                                 expr_type = CLASS_TYPE;
-                                                                classname = v->t.class;
+                                                                expr_class = v->t.class;
                                                             }else if( expr_type == STRING_TYPE){
                                                                 yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[v->t.t],type_arr[expr_type]);;
                                                             }else if(v->t.t ==COMPLEX_TYPE){
@@ -626,19 +650,53 @@ value : cmplxnum {if( expr_type == STRING_TYPE){
                                                                 expr_type = v->t.t;
                                                             }
                                                         }free($1);free($4);}
-    | value '.' classcheckdummy IDENTIFIER { attr* a = find_attr(classname,$4);    
+    | value '.' classcheckdummy IDENTIFIER { attr* a = find_attr(expr_class,$4);    
                                         if(a== NULL){
                                             yyerror("No attribute %s declared on class %s",$1,$4);
                                         }else{
                                             if(a->is_class){
                                                 expr_type = CLASS_TYPE;
-                                                classname = a->t.class;
-                                            }else{expr_type = a->t.t;}
-                                            
+                                                expr_class = a->t.class;
+                                            }else if(a->is_arr && !is_in_fncall){
+                                                yyerror("cannot use arrray without subscript.");
+                                            }else if(a->t.t ==COMPLEX_TYPE){
+                                                expr_type = COMPLEX_TYPE;
+                                            }else if(a->t.t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
+                                                expr_type = FLOAT_TYPE;
+                                            }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
+                                                expr_type = a->t.t;
+                                            }
                                         }
                                         $$ = join($1,".",$4);free($1);free($4);
                                     }
+    | value '.' classcheckdummy IDENTIFIER '[' {push_expr_and_args();} expr  arraysizedummy']'  { attr* a = find_attr(expr_class,$4);  
+                                                                                                pop_expr_and_args();  
+                                                                                    if(a== NULL){
+                                                                                        yyerror("No attribute %s declared on class %s",$1,$4);
+                                                                                    }else{
+                                                                                        if(!a->is_arr){
+                                                                                            yyerror("Subscripted object must be of array.");
+                                                                                        }else if(a->is_class){
+                                                                                            expr_type = CLASS_TYPE;
+                                                                                            expr_class = a->t.class;
+                                                                                        }else if( expr_type == STRING_TYPE){
+                                                                                           yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[a->t.t],type_arr[expr_type]);
+                                                                                        }else if(a->t.t ==COMPLEX_TYPE){
+                                                                                            expr_type = COMPLEX_TYPE;
+                                                                                        }else if(a->t.t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
+                                                                                            expr_type = FLOAT_TYPE;
+                                                                                        }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
+                                                                                            expr_type = a->t.t;
+                                                                                        }
+                                                                                    }
+                                                                                    char * t = join($1,".",$4);
+                                                                                    char *tt = join(t,"[",$7);
+                                                                                    $$ = join(tt,"]","");
+                                                                                    free(t);free(tt);
+                                                                                    free($1);free($4);free($7);
+                                                                                }
 ;
+
 
 classcheckdummy : /*nothing*/ {if(expr_type != CLASS_TYPE){yyerror("attribute or methods can only be accessed on class type objects found %s",type_arr[expr_type]);}}
 ;

@@ -110,6 +110,10 @@ char *join(char *start, char *middle, char *end) {
  *
  */
 int verify_types(type combining_with, type combining_type) {
+  if (combining_type == CLASS_TYPE && combining_with != CLASS_TYPE ||
+      combining_type != CLASS_TYPE && combining_with == CLASS_TYPE) {
+    return 1;
+  }
   if (combining_type == VOID_TYPE || combining_with == VOID_TYPE)
     return 1;  // if either was void its incorrect
 
