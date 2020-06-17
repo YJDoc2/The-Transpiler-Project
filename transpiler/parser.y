@@ -36,6 +36,9 @@
     
     Class * current_class = NULL;
     char *expr_class;
+    type temp_type;
+    char * temp_class;
+    bool is_assignable = false;
     bool is_static_method;
 
 %}
@@ -89,6 +92,7 @@
 %type <s> value cmplxnum expr fncall
 %type <s> letarrvals
 %type <b> arraysign
+%type <s> varvals
 
 %%
 program : topstmtlist
@@ -435,57 +439,35 @@ arg : expr  { void *v = lookup_var($1);
                 ll_add(arglist,v);free($1);expr_type = VOID_TYPE;is_composite_val = false;}
 ;
 
-assignstmt : IDENTIFIER assgtype expr {Variable *var = lookup_var($1);
-                                    if(var == NULL){
-                                        yyerror("Undeclared variable %s.",$1);
-                                    }else if(var->is_arr){
-                                        yyerror("Cannot assign to base of an array");
-                                    }else if(var->m == CONST_TYPE){
-                                        yyerror("Cannot assign to constant variable.");
-                                    }else if(var->is_class){
+assignstmt : varvals assigndummy assgtype expr {
+                                    if(temp_type == CLASS_TYPE){
                                         if(expr_type != CLASS_TYPE ){
                                             yyerror("cannot assign %s to class type variable",type_arr[expr_type]);
-                                        }else if(expr_class != var->t.class){
-                                            yyerror("cannot assign class %s value to class %s variable",expr_class,var->t.class);
-                                        }else if(strcmp($2,"=") != 0){
+                                        }else if(strcmp(expr_class,temp_class) != 0){
+                                            yyerror("cannot assign class %s value to class %s variable",expr_class,temp_class);
+                                        }else if(strcmp($3,"=") != 0){
                                             yyerror("cannot perform compund operations on class type variables");
                                         }
-                                    }else if(verify_types(var->t.t,expr_type)){
-                                        yyerror("cannot assign type %s to variable of type %s",type_arr[var->t.t],type_arr[expr_type]);
-                                    }else if(var->t.t == COMPLEX_TYPE && strcmp($2,"%=")==0){
+                                    }else if(verify_types(temp_type,expr_type)){
+                                        yyerror("cannot assign type %s to variable of type %s",type_arr[temp_type],type_arr[expr_type]);
+                                    }else if(temp_type == COMPLEX_TYPE&& strcmp($3,"%=")==0){
                                         yyerror("Cannot use mod on complex type");
                                     }
-                                    printcode("%s %s %s;",$1,$2,$3);
+                                    printcode("%s %s %s;",$1,$3,$4);
                                     // No need to free $2, its const char *
-                                    free($1);free($3);
+                                    free($1);free($4);
                                     expr_type = VOID_TYPE;expr_class = NULL;
+                                    temp_class = NULL; temp_type = VOID_TYPE;
                                     }
-            | IDENTIFIER '[' expr arraysizedummy']' assgtype expr {Variable *var = lookup_var($1);
-                                    if(var == NULL){
-                                        yyerror("Undeclared variable %s.",$1);
-                                    }else if(!var->is_arr){
-                                        yyerror("Cannot subscript a non-array type variable");
-                                    }else if(var->m == CONST_TYPE){
-                                        yyerror("Cannot assign to constant variable.");
-                                    }else if(var->is_class){
-                                        if(expr_type != CLASS_TYPE ){
-                                            yyerror("cannot assign %s to class type variable",type_arr[expr_type]);
-                                        }else if(expr_class!=var->t.class){
-                                            yyerror("cannot assign class %s value to class %s variable",expr_class,var->t.class);
-                                        }else if(strcmp($6,"=") != 0){
-                                            yyerror("cannot perform compund operations on class type variables");
-                                        }
-                                    }else if(verify_types(var->t.t,expr_type)){
-                                        yyerror("cannot assign type %s to variable of type %s",type_arr[var->t.t],type_arr[expr_type]);
-                                    }else if((var->t.t == COMPLEX_TYPE || var->t.t == FLOAT || var->t.t == DOUBLE_TYPE) && strcmp($6,"%=")==0){
-                                        yyerror("Cannot use mod on %s type",type_arr[var->t.t]);
-                                    }
-                                    printcode("%s[%s] %s %s;",$1,$3,$6,$7);
-                                    expr_type = VOID_TYPE;expr_class = NULL;
-                                    // No need to free $2, its const char *
-                                    free($1);free($3);free($7);}
 
 ;
+
+assigndummy : /*nothing*/ {temp_type=expr_type;temp_class=expr_class;
+                            expr_type=VOID_TYPE;expr_class=NULL;
+                            if(!is_assignable){yyerror("cannot assign to given variable");}
+                            } 
+
+
 assgtype : '='  {$$ = "=";}
     | '+' '=' {$$ = "+=";}
     | '-' '=' {$$ = "-=";}
@@ -604,10 +586,15 @@ value : cmplxnum {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                 }}
     | STRINGVAL {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
     | fncall    
-    | IDENTIFIER { Variable *_t = lookup_var($1);
+    | varvals
+;
+
+varvals : IDENTIFIER { Variable *_t = lookup_var($1);
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$1);
-                    }else if(_t->is_class){
+                    }else {
+                        is_assignable = _t->m != CONST_TYPE;
+                    if(_t->is_class){
                         if(expr_type == CLASS_TYPE){
                             yyerror("Cannot combine class type with anything else");
                         }
@@ -623,7 +610,7 @@ value : cmplxnum {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                         expr_type = FLOAT_TYPE;
                     }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
                         expr_type = _t->t.t;
-                    }}
+                    }}}
     | IDENTIFIER '[' {push_expr_and_args();} expr ']' { Variable *v = lookup_var($1);
                                                         if(v == NULL){
                                                             yyerror("Undefined variable %s",$$);
@@ -634,6 +621,7 @@ value : cmplxnum {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                                                         }
                                                         char *t = join($1,"[",$4);$$ = join(t,"]","");is_composite_val = true;pop_expr_and_args();free(t);
                                                         if(v != NULL){
+                                                            is_assignable = v->m != CONST_TYPE;
                                                             if(v->is_class){
                                                                 if(expr_type == CLASS_TYPE){
                                                                     yyerror("Cannot combine class type with anything else");
@@ -650,10 +638,11 @@ value : cmplxnum {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                                                                 expr_type = v->t.t;
                                                             }
                                                         }free($1);free($4);}
-    | value '.' classcheckdummy IDENTIFIER { attr* a = find_attr(expr_class,$4);    
+    | varvals '.' classcheckdummy IDENTIFIER { attr* a = find_attr(expr_class,$4);    
                                         if(a== NULL){
                                             yyerror("No attribute %s declared on class %s",$1,$4);
                                         }else{
+                                            is_assignable = a->m != CONST_TYPE;
                                             if(a->is_class){
                                                 expr_type = CLASS_TYPE;
                                                 expr_class = a->t.class;
@@ -669,11 +658,12 @@ value : cmplxnum {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                                         }
                                         $$ = join($1,".",$4);free($1);free($4);
                                     }
-    | value '.' classcheckdummy IDENTIFIER '[' {push_expr_and_args();} expr  arraysizedummy']'  { attr* a = find_attr(expr_class,$4);  
+    | varvals '.' classcheckdummy IDENTIFIER '[' {push_expr_and_args();} expr  arraysizedummy']'  { attr* a = find_attr(expr_class,$4);  
                                                                                                 pop_expr_and_args();  
                                                                                     if(a== NULL){
                                                                                         yyerror("No attribute %s declared on class %s",$1,$4);
                                                                                     }else{
+                                                                                        is_assignable = a->m != CONST_TYPE;
                                                                                         if(!a->is_arr){
                                                                                             yyerror("Subscripted object must be of array.");
                                                                                         }else if(a->is_class){
@@ -695,8 +685,6 @@ value : cmplxnum {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                                                                                     free(t);free(tt);
                                                                                     free($1);free($4);free($7);
                                                                                 }
-;
-
 
 classcheckdummy : /*nothing*/ {if(expr_type != CLASS_TYPE){yyerror("attribute or methods can only be accessed on class type objects found %s",type_arr[expr_type]);}}
 ;

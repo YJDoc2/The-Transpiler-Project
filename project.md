@@ -97,8 +97,12 @@ Now after class definition , it adds a #include for each class in the main file
 Added method declaration printing in class header files, also added extern declaration in main file header for non-static global variables
 \# test18.c transpiled from test18.tpp for testing multiple class declaration and file generations<br />
 
-variable declaration for class types : declaration using normal and @decl is done, verification fo var types is still remaining
+variable declaration for class types : declaration using normal and @decl is done, verification fo var types is still remaining<br />
+
+added assignment to class attrs, by separating varvals, which denote values which can be assigned to<br />
+<strong>NOTE Still more checking is required</strong><br/>
 Currently in UNSTABLE STATE<br />
+
 add verification of class type and check for class in all var access, in expr<br />
 
 ## Stage 7
