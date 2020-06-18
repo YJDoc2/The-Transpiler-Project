@@ -88,8 +88,8 @@ void add_var(modifier m, type t, char *ident, int line);
 
 /*
  * Creates the variable of array type if not previously declared  in same scope,
- * otherwise yyerror the error message Does not print the variable
- *
+ * otherwise yyerror the error message
+ * Does not print the variable
  * Params :
  * m : modifier of variable to be created
  * t : type of variable to be created

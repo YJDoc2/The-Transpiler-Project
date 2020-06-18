@@ -53,14 +53,37 @@ method *find_method(char *classname, char *methodname) {
   return (method *)t;
 }
 
+/*
+ * Creates a variable of class type
+ * yyerrors error if the variable is already existing
+ * Parmas :
+ * m : modifier of variable
+ * classname : class of the variable
+ * name : name of the variable;
+ * is_array : is the variable of array type
+ * line : line on which the variable is declared
+ *
+ * Returns : void
+ */
 void create_class_var(modifier m, char *classname, char *name, bool is_array,
                       int line) {
   Class *t = (Class *)hm_get(&classmap, classname);
-  Variable *v = NULL;
+  if (t == NULL) {
+    yyerror("No class named %s is found", classname);
+    return;
+  }
+  Variable *v = (Variable *)lookup_var(name);
+  if (v != NULL) {
+    yyerror("Variable of name %s already declared on line %d", name,
+            v->declaration);
+    return;
+  }
+  // CLASS_TYPE is just given as temp placeholder, we overwrite it in class
+  // field of enum after creation
   if (is_array) {
-    v = add_array(m, INT_TYPE, name, line);
+    v = add_array(m, CLASS_TYPE, name, line);
   } else {
-    v = create_var(m, INT_TYPE, name, line);
+    v = create_var(m, CLASS_TYPE, name, line);
   }
   v->is_class = true;
   v->t.class = t->name;

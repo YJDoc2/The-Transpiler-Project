@@ -100,13 +100,18 @@ Added method declaration printing in class header files, also added extern decla
 variable declaration for class types : declaration using normal and @decl is done, verification fo var types is still remaining<br />
 
 added assignment to class attrs, by separating varvals, which denote values which can be assigned to<br />
+Added let assignment for class type
 <strong>NOTE Still more checking is required</strong><br/>
 Currently in UNSTABLE STATE<br />
 
 add verification of class type and check for class in all var access, in expr<br />
+let statements for class type assignments?
 
 ## Stage 7
 
 Add class support in exprs, add support for accessing their methods
 Static methods ?
 add class support as params
+
+Maybe merge add_var and add_array method in single as crate_class_var has done
+DO some formatting and pretty-printing of the parser and lexer

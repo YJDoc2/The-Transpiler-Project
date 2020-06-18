@@ -125,7 +125,7 @@ topstmt : RAW "<{" rawlist "}>" {printcode("%s",$4);}
     | vardeclaration {yyerror("missing ;");expr_type =VOID_TYPE;}
     | fndeclaration {expr_type =VOID_TYPE;}
     | comment
-    | classdef
+    | classdef {expr_type =VOID_TYPE;}
 
 rawlist : /* nothing */
     | rawlist RAWLINE   {printcode("%s",$2); free($2);}
@@ -145,14 +145,16 @@ attrlist: /*nothing*/
                                                                     }add_attr(current_class,$2,$3,$4,true,yylineno);printcode("%s %s %s[%s];\n",mod_arr[$2],type_arr[$3],$4,$6);free($4);free($6);}
     | attrlist modifier CLASSNAME IDENTIFIER ';'  {if($2 == STATIC_TYPE){
                                                     yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
-                                                    }else if(strcmp($3,current_class->name)==0){
+                                                    } 
+                                                    if(strcmp($3,current_class->name)==0){
                                                         yyerror("cannot reference a class in itself");
                                                     }else{add_class_type_attr(current_class,$2,$3,$4,false,yylineno);
                                                     printcode("%s %s %s;\n",mod_arr[$2],$3,$4);
                                                     free($3);free($4);}}
     |attrlist modifier CLASSNAME IDENTIFIER '['expr arraysizedummy ']' ';'  {if($2 == STATIC_TYPE){
                                                     yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
-                                                    }else if(strcmp($3,current_class->name)==0){
+                                                    }
+                                                    if(strcmp($3,current_class->name)==0){
                                                         yyerror("cannot reference a class in itself");
                                                     }else{add_class_type_attr(current_class,$2,$3,$4,true,yylineno);
                                                     printcode("%s %s %s[%s];\n",mod_arr[$2],$3,$4,$6);
@@ -196,7 +198,7 @@ methodparamlist : /*nothing*/
     | methodparamlist methodparam
     | methodparamlist ',' methodparam 
 
-methodparam : modifier type IDENTIFIER  {add_param($1,$2,false,$3); create_var($1,$2,$3,yylineno);free($3);}
+methodparam : modifier type IDENTIFIER  {add_param($1,$2,false,$3); add_var($1,$2,$3,yylineno);free($3);/*duplicated as paramlist does not create var*/}
     | modifier type IDENTIFIER '[' ']'  {add_param($1,$2,true,$3); add_array($1,$2,$3,yylineno);free($3);}
 
 staticdummy : STATICMETHOD {is_static_method = true;}
@@ -230,20 +232,20 @@ paramlist : /* nothing */
     | paramlist param
     | paramlist ','  param
 
-param : modifier type IDENTIFIER    {add_param($1,$2,false,$3);create_var($1,$2,$3,yylineno); free($3);}
+param : modifier type IDENTIFIER    {add_param($1,$2,false,$3);add_var($1,$2,$3,yylineno); free($3);}
     | modifier type IDENTIFIER '[' ']' {add_param($1,$2,true,$3);add_array($1,$2,$3,yylineno); free($3);}
 
 stmtlist :/* nothing */
     | stmtlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
-    | stmtlist error ';' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
-    | stmtlist error '}' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
-    | stmtlist error '{' {yyerror("error on token %s",yytext);expr_type = VOID_TYPE;}
-    | stmtlist stmt ';' {expr_type= VOID_TYPE;}
-    | stmtlist stmt {yyerror("missing ;");expr_type =  VOID_TYPE;}
+    | stmtlist error ';' {yyerror("error on token %s",yytext);expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
+    | stmtlist error '}' {yyerror("error on token %s",yytext);expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
+    | stmtlist error '{' {yyerror("error on token %s",yytext);expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
+    | stmtlist stmt ';' {expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
+    | stmtlist stmt {yyerror("missing ;");expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
     | stmtlist comment
-    | stmtlist ifstmt
-    | stmtlist whilestmt
-    | stmtlist forstmt
+    | stmtlist ifstmt {expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
+    | stmtlist whilestmt {expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
+    | stmtlist forstmt {expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
 ;
 
 stmt : vardeclaration
@@ -277,13 +279,17 @@ returnstmt : RETURN expr { if(expr_type != fn_type){
             | DECL RETURN {has_returned = true;}
 ;
 
-vardeclaration : DECL modifier type decllist
-    | DECL modifier CLASSNAME IDENTIFIER {create_class_var($2,$3,$4,false,yylineno);}
+vardeclaration : DECL modifier type {temp_type = $3;} decllist {temp_type = VOID_TYPE;}
+    | DECL modifier CLASSNAME {temp_type = CLASS_TYPE;temp_class=$3;} classdecllist {temp_type = VOID_TYPE;temp_class=NULL;free($3);}
     | modifier CLASSNAME {printcode("%s %s ",mod_arr[$1],$2);} classvarlist {printcode(" ;");free($2);}
     | modifier type { printcode("%s %s ",mod_arr[$1],type_arr[$2]); arr_type = $2;} varlist {printcode(" ;");arr_type=VOID_TYPE;}
     | modifier CHARBUF {printcode("%s char ",mod_arr[$1]); char_buf_mod = $1;} chararrdecllist {printcode(" ;");char_buf_mod = NONE_TYPE;}
     | LET IDENTIFIER '=' expr {if(expr_type == VOID_TYPE){
             yyerror("Cannot figure ou type of variable %s, consider typecasting the expression or explicitly stating type",$2);
+            }else if(expr_type == CLASS_TYPE){
+                create_class_var(NONE_TYPE,expr_class,$2,false,yylineno);
+                printcode("%s %s = %s;",expr_class,$2,$4);
+                expr_class = NULL;expr_type = VOID_TYPE;
             }else{
                 add_var(NONE_TYPE,expr_type,$2,yylineno);
                 printcode("%s %s = %s;",type_arr[expr_type],$2,$4);
@@ -298,10 +304,16 @@ classvarlist : IDENTIFIER       {create_class_var($<m>-2,$<s>-1,$1,false,yylinen
     | classvarlist ',' IDENTIFIER     {create_class_var($<m>-2,$<s>-1,$3,false,yylineno);printcode(", %s",$3);free($3);}
     | classvarlist ',' IDENTIFIER '[' expr arraysizedummy ']' {create_class_var($<m>-2,$<s>-1,$3,true,yylineno);printcode(", %s[%s]",$3,$5);free($3);free($5);}
 
-decllist: IDENTIFIER {create_var($<m>-1,$<t>0,$1,yylineno); free($1); }
-    | decllist ',' IDENTIFIER {create_var($<m>-1,$<t>0,$3,yylineno); free($3); }
+decllist: IDENTIFIER {add_var($<m>-1,temp_type,$1,yylineno); free($1); }
+    | IDENTIFIER '[' ']' {add_array($<m>-1,temp_type,$1,yylineno);free($1);}
+    | decllist ',' IDENTIFIER {add_var($<m>-1,temp_type,$3,yylineno); free($3); }
+    | decllist ',' IDENTIFIER '[' ']' {add_array($<m>-1,temp_type,$3,yylineno);free($3);}
 ;
 
+classdecllist : IDENTIFIER arraysign {create_class_var($<m>-2,temp_class,$1,$2,yylineno);free($1);}
+    |classdecllist ',' IDENTIFIER arraysign {create_class_var($<m>-2,temp_class,$3,$4,yylineno);free($3);}
+
+;
 varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno); 
                         printcode("%s ",$1);
                         free($1); }
@@ -337,6 +349,9 @@ arraysizedummy : /*nothing*/ {if(expr_type != INT_TYPE){yyerror("Array size must
 
 letarraydecl :IDENTIFIER '[' ']' '=' '{' letarrvals '}' {if(arr_type == VOID_TYPE){
                                                             yyerror("Cannot figure ou type of array %s, consider typecasting the expression or explicitly stating type",$1);
+                                                            }else if(arr_type == CLASS_TYPE){
+                                                                create_class_var(NONE_TYPE,temp_class,$1,true,yylineno);
+                                                                printcode("%s %s[] = { %s };",temp_class,$1,$6);
                                                             }else{
                                                                 add_array(NONE_TYPE,  arr_type, $1, yylineno);
                                                                 printcode("%s %s[] = { %s };",type_arr[arr_type],$1,$6);
@@ -345,24 +360,30 @@ letarraydecl :IDENTIFIER '[' ']' '=' '{' letarrvals '}' {if(arr_type == VOID_TYP
                                                             free($1);free($6);}
     | IDENTIFIER '[' expr arraysizedummy ']' '=' '{' letarrvals '}' {if(arr_type== VOID_TYPE){
                                                             yyerror("Cannot figure ou type of array %s, consider typecasting the expression or explicitly stating type",$1);
+                                                            }else if(arr_type == CLASS_TYPE){
+                                                                create_class_var(NONE_TYPE,temp_class,$1,true,yylineno);
+                                                                printcode("%s %s[%s] = { %s };",temp_class,$1,$3,$8);
                                                             }else{
                                                                 add_array(NONE_TYPE,  arr_type, $1, yylineno);
                                                                 printcode("%s %s[%s] = { %s };",type_arr[arr_type],$1,$3,$8);
                                                             }expr_type = VOID_TYPE;
                                                             free($1);free($3);free($8);}
 
-letarrvals : expr           {arr_type = expr_type;if(arr_type == STRING_TYPE){expr_type = VOID_TYPE;}}
+letarrvals : expr           {arr_type = expr_type;if(arr_type == STRING_TYPE){expr_type = VOID_TYPE;}if(expr_type == CLASS_TYPE){expr_type = VOID_TYPE;temp_class=expr_class;}}
     | letarrvals ',' expr   {if(verify_types(expr_type,arr_type)){
                                 yyerror("Invalid assignment : %s type cannot be stored in same array as %s",type_arr[expr_type],type_arr[arr_type]);
+                            }else if(expr_type == CLASS_TYPE && strcmp(expr_class,temp_class)!=0){
+                                yyerror("Cannot combine classes of %s and %s in same array",expr_class,temp_class);
                             }else{
                                 arr_type = expr_type;
                             }
-                            if(arr_type == STRING_TYPE)expr_type = VOID_TYPE;
+                            if(arr_type == STRING_TYPE || expr_type == CLASS_TYPE)expr_type = VOID_TYPE;
                             $$=join($1,",",$3);free($1);free($3);}
+;
 
 chararrdecllist: IDENTIFIER {printcode("%s",$1);}strdecl {free($1);expr_type = VOID_TYPE;}
     | chararrdecllist ',' IDENTIFIER {printcode(" ,%s",$3);} strdecl {free($3);expr_type = VOID_TYPE;}
-
+;
 
 strdecl :'[' expr ']'  arraysizedummy {printcode("[%s]",$2);add_var(char_buf_mod,STRING_TYPE,$<s>-1,yylineno);free($2);}
     | '[' expr ']' arraysizedummy '=' expr {if(expr_type != STRING_TYPE){yyerror("cannot assign any type other than string to charbuf, got %s.",type_arr[expr_type]);
@@ -589,6 +610,15 @@ value : cmplxnum {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
     | varvals
 ;
 
+cmplxnum : '(' expr ',' expr ')' {void* _t = calloc(1, strlen($2) + strlen($4) + 1+2+2);/*1 for the + symbol,
+                                                                                        2 for the perenthesis around the img part
+                                                                                        2 for the parenthesis around the whole*/
+                                        strcat(_t,"(");strcat(_t, $2);strcat(_t,"+");
+                                        strcat(_t,"(");strcat(_t, $4);strcat(_t,")");
+                                        strcat(_t, "*I");strcat(_t,")");
+                                            $$ = (char*)_t;free($2);free($4);}
+;
+
 varvals : IDENTIFIER { Variable *_t = lookup_var($1);
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$1);
@@ -685,17 +715,8 @@ varvals : IDENTIFIER { Variable *_t = lookup_var($1);
                                                                                     free(t);free(tt);
                                                                                     free($1);free($4);free($7);
                                                                                 }
-
-classcheckdummy : /*nothing*/ {if(expr_type != CLASS_TYPE){yyerror("attribute or methods can only be accessed on class type objects found %s",type_arr[expr_type]);}}
 ;
-
-cmplxnum : '(' expr ',' expr ')' {void* _t = calloc(1, strlen($2) + strlen($4) + 1+2+2);/*1 for the + symbol,
-                                                                                        2 for the perenthesis around the img part
-                                                                                        2 for the parenthesis around the whole*/
-                                        strcat(_t,"(");strcat(_t, $2);strcat(_t,"+");
-                                        strcat(_t,"(");strcat(_t, $4);strcat(_t,")");
-                                        strcat(_t, "*I");strcat(_t,")");
-                                            $$ = (char*)_t;free($2);free($4);}
+classcheckdummy : /*nothing*/ {if(expr_type != CLASS_TYPE){yyerror("attribute or methods can only be accessed on class type objects found %s",type_arr[expr_type]);}}
 ;
 %%
 

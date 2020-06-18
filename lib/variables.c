@@ -75,7 +75,8 @@ Variable* create_var(modifier m, type t, char* ident, int line) {
 
 /*
  * Creates the variable if not previously declared in same scope, otherwise
- * yyerror the error message Does not print the variable
+ * yyerror the error message
+ * Does not print the variable
  *
  * Params :
  * m : modifier of variable to be created
@@ -84,13 +85,13 @@ Variable* create_var(modifier m, type t, char* ident, int line) {
  *        later
  * line : line on which variable is defined
  *
- * Returns : void
+ * Returns : void;
  */
 void add_var(modifier m, type t, char* ident, int line) {
   Hashmap* hm = scopelist.top == NULL ? &varmap : (Hashmap*)scopelist.top->data;
   Variable* look = hm_get(hm, ident);
   if (look == NULL) {
-    create_var(m, t, ident, line);
+    look = create_var(m, t, ident, line);
   } else {
     yyerror("Variable %s already delcared on line %d", ident,
             look->declaration);

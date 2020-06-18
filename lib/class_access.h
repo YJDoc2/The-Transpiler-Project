@@ -39,6 +39,18 @@ attr *find_attr(char *classname, char *attrname);
  */
 method *find_method(char *classname, char *methodname);
 
+/*
+ * Creates a variable of class type
+ * yyerrors error if the variable is already existing
+ * Parmas :
+ * m : modifier of variable
+ * classname : class of the variable
+ * name : name of the variable;
+ * is_array : is the variable of array type
+ * line : line on which the variable is declared
+ *
+ * Returns : void
+ */
 void create_class_var(modifier m, char *classname, char *name, bool is_array,
                       int line);
 

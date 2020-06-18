@@ -38,7 +38,11 @@ void __delete_attr__(void* key, void* val) {
   free(val);
 }
 
-void __delete_paramlist__(void* val) {}
+void __delete_paramlist__(void* val) {
+  Param* p = (Param*)val;
+  free(p->name);
+  free(val);
+}
 
 void __delete_method__(void* key, void* value) {
   free(key);
