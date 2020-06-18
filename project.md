@@ -97,21 +97,22 @@ Now after class definition , it adds a #include for each class in the main file
 Added method declaration printing in class header files, also added extern declaration in main file header for non-static global variables
 \# test18.c transpiled from test18.tpp for testing multiple class declaration and file generations<br />
 
-variable declaration for class types : declaration using normal and @decl is done, verification fo var types is still remaining<br />
-
-added assignment to class attrs, by separating varvals, which denote values which can be assigned to<br />
+Added assignment to class attrs, by separating varvals, which denote values which can be assigned to<br />
 Added let assignment for class type
-<strong>NOTE Still more checking is required</strong><br/>
-Currently in UNSTABLE STATE<br />
 
-add verification of class type and check for class in all var access, in expr<br />
-let statements for class type assignments?
+Added verification of class type and check for class in all var access, in expr<br />
+Added class support in exprs <br />
+let statements for class type assignments <br />
+
+\# test19.c transpiled from test19.tpp for testing multiple class declaration , method declarations, class variable declarations, class variable assignment, class variable declarations in let syntax, class variable declaration in decl syntax<br />
 
 ## Stage 7
 
-Add class support in exprs, add support for accessing their methods
-Static methods ?
-add class support as params
+how to create new class(struct), specifically those involving const elements?
+
+add support for classes in for statements
+add support for classes in params, fn return types
+add support for accessing their methods
 
 Maybe merge add_var and add_array method in single as crate_class_var has done
 DO some formatting and pretty-printing of the parser and lexer

@@ -54,4 +54,6 @@ method *find_method(char *classname, char *methodname);
 void create_class_var(modifier m, char *classname, char *name, bool is_array,
                       int line);
 
+bool is_assignable_class(char *name);
+
 #endif

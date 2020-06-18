@@ -1,0 +1,67 @@
+class t0{
+    // A simple class
+    int g;
+    // const float f; //something something
+    float f;
+}
+class t1{
+    int a;
+    t0 tc;
+    t0 ta[10];
+    //t0 ta[]; //should give error
+    //t1 tcc; //should give error
+    fn test_method(int a)->void{
+        // should have a t1 *this in generated definition
+        print("hello ",a);
+    }
+    @static fn test_static()->void{
+        // should not have a t1 *this in generated definition
+        print("testing static");
+    }
+}
+
+class t2{
+    float v;
+    t1 ta[5];
+    @static fn method_test()->bool{
+        // should not have a t2 *this in generated definition
+        bool val = true;
+        //commenting return or val or returning non bool should give error should give error
+        return val;
+    }
+}
+
+
+fn main () -> void{
+    let ival = 9; // should be int
+    let fval = 8.6; // should be float
+    t0 t0v1,t0v2;
+    t1 t1v1,t1v2;
+    // t1 t1v3 = t1v2; //should not give error
+    // t1 t1v3 = t0v1; //should give error
+    t2 t2v1,t2v2;
+    // int k = 5 + t1v1 +6; //should give error
+    // t1v1 = t2v1; //should give error
+    // t1v1 = t2v1.l; //should give error
+
+    //following three should give error if float f in t0 is declared as const float
+    // t1v1 = t2v1.ta; //should give error 
+    t1v1 = t2v1.ta[5];
+    // t1v1 = t2v1.v; should give error
+
+    let g1 = t1v1.ta[0];
+    let g2 = t2v1.ta[1];
+
+    //let k[] = { t1v1,t2v2};//should give error
+    let k[] = {t1v1,t1v2,t2v1.ta[0],t2v2.ta[3]}; //should not give any error
+    //float l1 = t1v1+t1v1; // should give error
+    float l1 = t1v1.tc.g + t1v2.tc.g; // should not give error
+
+    RAW<{t1 t1val,t1arr[5];}>
+    @decl t1 t1val,t1arr[];
+    float l2 = t1val.a;
+    let m1 = t1arr[1];
+
+
+}
+

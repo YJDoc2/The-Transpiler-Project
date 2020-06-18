@@ -88,3 +88,25 @@ void create_class_var(modifier m, char *classname, char *name, bool is_array,
   v->is_class = true;
   v->t.class = t->name;
 }
+
+bool is_assignable_class(char *name) {
+  Class *c = (Class *)hm_get(&classmap, name);
+
+  hashpair *iter = c->attr->start;
+  hashpair *end = iter + c->attr->size;
+  while (iter <= end) {
+    if (iter->key != NULL || iter->value != NULL) {
+      attr *a = (attr *)iter->value;
+      if (a->is_class) {
+        bool b = is_assignable_class(a->t.class);
+        if (!b) return false;
+      } else {
+        if (a->m == CONST_TYPE) {
+          return false;
+        }
+      }
+    }
+    ++iter;
+  }
+  return true;
+}

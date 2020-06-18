@@ -139,17 +139,17 @@ attrlist: /*nothing*/
     | attrlist modifier type IDENTIFIER ';' {if($2 == STATIC_TYPE){
                                                 yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
                                                 }add_attr(current_class,$2,$3,$4,false,yylineno);
-                                                printcode("%s %s %s;\n",mod_arr[$2],type_arr[$3],$4);free($4);}
+                                                printcode("%s %s %s;",mod_arr[$2],type_arr[$3],$4);free($4);}
     | attrlist modifier type IDENTIFIER '[' expr arraysizedummy ']' ';' {if($2 == STATIC_TYPE){
                                                                     yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
-                                                                    }add_attr(current_class,$2,$3,$4,true,yylineno);printcode("%s %s %s[%s];\n",mod_arr[$2],type_arr[$3],$4,$6);free($4);free($6);}
+                                                                    }add_attr(current_class,$2,$3,$4,true,yylineno);printcode("%s %s %s[%s];",mod_arr[$2],type_arr[$3],$4,$6);free($4);free($6);}
     | attrlist modifier CLASSNAME IDENTIFIER ';'  {if($2 == STATIC_TYPE){
                                                     yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
                                                     } 
                                                     if(strcmp($3,current_class->name)==0){
                                                         yyerror("cannot reference a class in itself");
                                                     }else{add_class_type_attr(current_class,$2,$3,$4,false,yylineno);
-                                                    printcode("%s %s %s;\n",mod_arr[$2],$3,$4);
+                                                    printcode("%s %s %s;",mod_arr[$2],$3,$4);
                                                     free($3);free($4);}}
     |attrlist modifier CLASSNAME IDENTIFIER '['expr arraysizedummy ']' ';'  {if($2 == STATIC_TYPE){
                                                     yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
@@ -157,7 +157,7 @@ attrlist: /*nothing*/
                                                     if(strcmp($3,current_class->name)==0){
                                                         yyerror("cannot reference a class in itself");
                                                     }else{add_class_type_attr(current_class,$2,$3,$4,true,yylineno);
-                                                    printcode("%s %s %s[%s];\n",mod_arr[$2],$3,$4,$6);
+                                                    printcode("%s %s %s[%s];",mod_arr[$2],$3,$4,$6);
                                                     free($3);free($4);free($6);}}
     | attrlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
     | attrlist DECL modifier type IDENTIFIER arraysign ';'  {if($3 == STATIC_TYPE){
@@ -166,6 +166,7 @@ attrlist: /*nothing*/
     | attrlist DECL modifier CLASSNAME IDENTIFIER arraysign ';'  {if($3 == STATIC_TYPE){
                                                             yyerror("Cannot use static on class attributes");$3 = NONE_TYPE;
                                                             }add_class_type_attr(current_class,$3,$4,$5,$6,yylineno);free($4);free($5);}
+    | attrlist comment
 
 arraysign : /*nothing*/ {$$= false;}
     | '[' ']'   {$$ = true;}
@@ -281,7 +282,7 @@ returnstmt : RETURN expr { if(expr_type != fn_type){
 
 vardeclaration : DECL modifier type {temp_type = $3;} decllist {temp_type = VOID_TYPE;}
     | DECL modifier CLASSNAME {temp_type = CLASS_TYPE;temp_class=$3;} classdecllist {temp_type = VOID_TYPE;temp_class=NULL;free($3);}
-    | modifier CLASSNAME {printcode("%s %s ",mod_arr[$1],$2);} classvarlist {printcode(" ;");free($2);}
+    | modifier CLASSNAME {printcode("%s %s ",mod_arr[$1],$2);arr_type=temp_type=CLASS_TYPE;temp_class=$2;} classvarlist {printcode(" ;");free($2);arr_type=temp_type=VOID_TYPE;temp_class= NULL;}
     | modifier type { printcode("%s %s ",mod_arr[$1],type_arr[$2]); arr_type = $2;} varlist {printcode(" ;");arr_type=VOID_TYPE;}
     | modifier CHARBUF {printcode("%s char ",mod_arr[$1]); char_buf_mod = $1;} chararrdecllist {printcode(" ;");char_buf_mod = NONE_TYPE;}
     | LET IDENTIFIER '=' expr {if(expr_type == VOID_TYPE){
@@ -296,13 +297,28 @@ vardeclaration : DECL modifier type {temp_type = $3;} decllist {temp_type = VOID
             }
             free($2);free($4);}
     | LET letarraydecl
-//! TODO add classes in let ???
 ;
 
 classvarlist : IDENTIFIER       {create_class_var($<m>-2,$<s>-1,$1,false,yylineno);printcode("%s",$1);free($1);}
-    | IDENTIFIER '[' expr arraysizedummy ']' {create_class_var($<m>-2,$<s>-1,$1,true,yylineno);printcode("%s[%s]",$1,$3);free($1);free($3);}
+    | IDENTIFIER '=' expr {if(expr_type != CLASS_TYPE){yyerror("cannot assign %s to class type variable",type_arr[expr_type]);}
+                            if(expr_class == NULL || strcmp(expr_class,temp_class) !=0){
+                                yyerror("cannot assign class %s to variable of class %s",expr_class,temp_class);   
+                            }else{
+                                printcode(" %s = %s",$1,$3);
+                            }free($1);free($3);}
+    | IDENTIFIER {/*nothing dummymust be kept to maintain arraydecl*/} arraydecl {create_class_var($<m>-2,$<s>-1,$1,true,yylineno);free($1);}
     | classvarlist ',' IDENTIFIER     {create_class_var($<m>-2,$<s>-1,$3,false,yylineno);printcode(", %s",$3);free($3);}
-    | classvarlist ',' IDENTIFIER '[' expr arraysizedummy ']' {create_class_var($<m>-2,$<s>-1,$3,true,yylineno);printcode(", %s[%s]",$3,$5);free($3);free($5);}
+    | classvarlist ',' IDENTIFIER '=' expr {if(expr_type != CLASS_TYPE){yyerror("cannot assign %s to class type variable",type_arr[expr_type]);}
+                            if(expr_class == NULL || strcmp(expr_class,temp_class) !=0){
+                                yyerror("cannot assign class %s to variable of class %s",expr_class,temp_class);   
+                            }else{
+                                printcode(" %s = %s",$3,$5);
+                            }free($3);free($5);}
+    | classvarlist ',' IDENTIFIER {printcode(", ");} arraydecl {create_class_var($<m>-2,$<s>-1,$3,true,yylineno);free($3);}
+
+;
+
+
 
 decllist: IDENTIFIER {add_var($<m>-1,temp_type,$1,yylineno); free($1); }
     | IDENTIFIER '[' ']' {add_array($<m>-1,temp_type,$1,yylineno);free($1);}
@@ -321,7 +337,7 @@ varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno);
                                 add_var($<m>-2,$<t>-1,$1,yylineno);
                                 printcode("%s = %s",$1,$3);
                                 free($1);free($3);}
-    |IDENTIFIER {add_array($<m>-2,  $<t>-1, $1, yylineno);} arraydecl {free($1);}
+    |IDENTIFIER {/*nothing dummy*/} arraydecl {add_array($<m>-2,  $<t>-1, $1, yylineno);free($1);}
     | varlist ',' IDENTIFIER {add_var($<m>-2,$<t>-1,$3,yylineno); 
                                 printcode(",%s ",$3);
                                 free($3);}
@@ -330,7 +346,7 @@ varlist : IDENTIFIER {add_var($<m>-2,$<t>-1,$1,yylineno);
                                         add_var($<m>-2,$<t>-1,$3,yylineno);
                                         printcode(",%s = %s",$3,$5);
                                         free($3);free($5);}
-    | varlist ',' IDENTIFIER {add_array($<m>-2,  $<t>-1, $3, yylineno);} arraydecl {free($3);}
+    | varlist ',' IDENTIFIER {printcode(", ");} arraydecl {add_array($<m>-2,  $<t>-1, $3, yylineno);free($3);}
 ;
 
 arraydecl: '[' expr ']'      {if(expr_type != INT_TYPE){yyerror("Array size must be an int type got %s.",type_arr[expr_type]);
@@ -403,6 +419,7 @@ strdecl :'[' expr ']'  arraysizedummy {printcode("[%s]",$2);add_var(char_buf_mod
 
 
 arrayvallist : expr { if(verify_types(arr_type,expr_type)){yyerror("Invalid assignment : %s type cannot be stored in array of type %s",type_arr[expr_type],type_arr[arr_type]);}
+
                         expr_type = VOID_TYPE;
                         printcode("%s ",$1);
                         free($1);
@@ -468,6 +485,8 @@ assignstmt : varvals assigndummy assgtype expr {
                                             yyerror("cannot assign class %s value to class %s variable",expr_class,temp_class);
                                         }else if(strcmp($3,"=") != 0){
                                             yyerror("cannot perform compund operations on class type variables");
+                                        }else if(!is_assignable_class(temp_class)){
+                                            yyerror("cannot perform assignment as class or class members contains constant members");
                                         }
                                     }else if(verify_types(temp_type,expr_type)){
                                         yyerror("cannot assign type %s to variable of type %s",type_arr[temp_type],type_arr[expr_type]);
@@ -623,15 +642,15 @@ varvals : IDENTIFIER { Variable *_t = lookup_var($1);
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$1);
                     }else {
-                        is_assignable = _t->m != CONST_TYPE;
-                    if(_t->is_class){
+                    is_assignable = _t->m != CONST_TYPE;
+                     if(_t->is_arr && !is_in_fncall){
+                        yyerror("cannot use arrray without subscript.");
+                    }else if(_t->is_class){
                         if(expr_type == CLASS_TYPE){
                             yyerror("Cannot combine class type with anything else");
                         }
                         expr_type = CLASS_TYPE;
                         expr_class = _t->t.class;
-                    }else if(_t->is_arr && !is_in_fncall){
-                        yyerror("cannot use arrray without subscript.");
                     }else if(expr_type == STRING_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[_t->t.t],type_arr[expr_type]);;
                     }else if(_t->t.t ==COMPLEX_TYPE){
@@ -668,16 +687,17 @@ varvals : IDENTIFIER { Variable *_t = lookup_var($1);
                                                                 expr_type = v->t.t;
                                                             }
                                                         }free($1);free($4);}
-    | varvals '.' classcheckdummy IDENTIFIER { attr* a = find_attr(expr_class,$4);    
+    | varvals '.' classcheckdummy IDENTIFIER { attr* a = NULL;
+                                        if(expr_type == CLASS_TYPE)a = find_attr(expr_class,$4);
                                         if(a== NULL){
                                             yyerror("No attribute %s declared on class %s",$1,$4);
                                         }else{
                                             is_assignable = a->m != CONST_TYPE;
-                                            if(a->is_class){
+                                            if(a->is_arr && !is_in_fncall){
+                                                yyerror("cannot use arrray without subscript.");
+                                            }else if(a->is_class){
                                                 expr_type = CLASS_TYPE;
                                                 expr_class = a->t.class;
-                                            }else if(a->is_arr && !is_in_fncall){
-                                                yyerror("cannot use arrray without subscript.");
                                             }else if(a->t.t ==COMPLEX_TYPE){
                                                 expr_type = COMPLEX_TYPE;
                                             }else if(a->t.t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
@@ -688,33 +708,34 @@ varvals : IDENTIFIER { Variable *_t = lookup_var($1);
                                         }
                                         $$ = join($1,".",$4);free($1);free($4);
                                     }
-    | varvals '.' classcheckdummy IDENTIFIER '[' {push_expr_and_args();} expr  arraysizedummy']'  { attr* a = find_attr(expr_class,$4);  
-                                                                                                pop_expr_and_args();  
-                                                                                    if(a== NULL){
-                                                                                        yyerror("No attribute %s declared on class %s",$1,$4);
-                                                                                    }else{
-                                                                                        is_assignable = a->m != CONST_TYPE;
-                                                                                        if(!a->is_arr){
-                                                                                            yyerror("Subscripted object must be of array.");
-                                                                                        }else if(a->is_class){
-                                                                                            expr_type = CLASS_TYPE;
-                                                                                            expr_class = a->t.class;
-                                                                                        }else if( expr_type == STRING_TYPE){
-                                                                                           yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[a->t.t],type_arr[expr_type]);
-                                                                                        }else if(a->t.t ==COMPLEX_TYPE){
-                                                                                            expr_type = COMPLEX_TYPE;
-                                                                                        }else if(a->t.t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
-                                                                                            expr_type = FLOAT_TYPE;
-                                                                                        }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
-                                                                                            expr_type = a->t.t;
+    | varvals '.' classcheckdummy IDENTIFIER '[' {push_expr_and_args();} expr  arraysizedummy']'  { attr* a = NULL;
+                                                                                                pop_expr_and_args();
+                                                                                            if(expr_type == CLASS_TYPE)a = find_attr(expr_class,$4);    
+                                                                                            if(a== NULL){
+                                                                                                yyerror("No attribute %s declared on class %s",$1,$4);
+                                                                                            }else{
+                                                                                                is_assignable = a->m != CONST_TYPE;
+                                                                                                if(!a->is_arr){
+                                                                                                    yyerror("Subscripted object must be of array.");
+                                                                                                }else if(a->is_class){
+                                                                                                    expr_type = CLASS_TYPE;
+                                                                                                    expr_class = a->t.class;
+                                                                                                }else if( expr_type == STRING_TYPE){
+                                                                                                yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[a->t.t],type_arr[expr_type]);
+                                                                                                }else if(a->t.t ==COMPLEX_TYPE){
+                                                                                                    expr_type = COMPLEX_TYPE;
+                                                                                                }else if(a->t.t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
+                                                                                                    expr_type = FLOAT_TYPE;
+                                                                                                }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
+                                                                                                    expr_type = a->t.t;
+                                                                                                }
+                                                                                            }
+                                                                                            char * t = join($1,".",$4);
+                                                                                            char *tt = join(t,"[",$7);
+                                                                                            $$ = join(tt,"]","");
+                                                                                            free(t);free(tt);
+                                                                                            free($1);free($4);free($7);
                                                                                         }
-                                                                                    }
-                                                                                    char * t = join($1,".",$4);
-                                                                                    char *tt = join(t,"[",$7);
-                                                                                    $$ = join(tt,"]","");
-                                                                                    free(t);free(tt);
-                                                                                    free($1);free($4);free($7);
-                                                                                }
 ;
 classcheckdummy : /*nothing*/ {if(expr_type != CLASS_TYPE){yyerror("attribute or methods can only be accessed on class type objects found %s",type_arr[expr_type]);}}
 ;
