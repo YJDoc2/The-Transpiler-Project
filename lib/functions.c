@@ -31,6 +31,9 @@ char* fncall_incorrect_const_type_msg =
  */
 void __paramlist_del_fn__(void* a) {
   Param* p = (Param*)a;
+  if (p->is_class) {
+    free(p->t.class);
+  }
   free(p->name);
   free(a);
 }
@@ -89,8 +92,37 @@ void add_param(modifier m, type t, bool is_arr, char* param_name) {
     *temp_list = make_linkedlist();
   }
   Param* p = calloc(1, sizeof(Param));
+  p->is_class = false;
   p->m = m;
-  p->t = t;
+  p->t.t = t;
+  p->name = strdup(param_name);
+  p->is_arr = is_arr;
+  ll_add(temp_list, p);
+  return;
+}
+
+/*
+ * Adds function definition parameter of class type
+ * Params :
+ * m : modifier of paramis duplicated inside so can be freed outside
+ * classname : name of the class, is duplicated inside so can be freed outside
+ * is_arr : is the param of array type
+ * param_name : name of param, is duplicated inside so can be freed outside
+ *
+ * returns : void
+ */
+void add_class_param(modifier m, char* classname, bool is_arr,
+                     char* param_name) {
+  // in case this is the first parameter of the function, temp_list will be null
+  // so allocate memory and make the LL
+  if (temp_list == NULL) {
+    temp_list = calloc(1, sizeof(Linked_list));
+    *temp_list = make_linkedlist();
+  }
+  Param* p = calloc(1, sizeof(Param));
+  p->m = m;
+  p->is_class = true;
+  p->t.class = strdup(classname);
   p->name = strdup(param_name);
   p->is_arr = is_arr;
   ll_add(temp_list, p);
@@ -138,7 +170,8 @@ void add_function(modifier m, type t, char* fnname, char* printname,
 
 // Helper function to print a single Param in function declaration
 static inline void print_param(Param* p) {
-  printcode("%s %s %s", mod_arr[p->m], type_arr[p->t], p->name);
+  printcode("%s %s %s", mod_arr[p->m],
+            p->is_class ? p->t.class : type_arr[p->t.t], p->name);
   if (p->is_arr) {
     printcode("[] ");
   } else {
@@ -241,7 +274,8 @@ int verify_call(char* fnname, Function* fn, int lineno) {
             fn->declaration, arglist->size);
     return 1;
   }
-  // if no param the the call is correct
+  // if no param the the call is correct, as we have checked for correct number
+  // of args
   if (arglist->size == 0) return 0;
   // check type of each argument
   int argnum = 1;
@@ -255,16 +289,43 @@ int verify_call(char* fnname, Function* fn, int lineno) {
 
     // if types are different incorrect call but check for rest of arg types
     // anyway
-    if (p->t != arg->t.t) {
-      yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, type_arr[p->t],
-              fn->declaration, type_arr[arg->t.t]);
+    if (p->is_class) {
+      // param expects class type
+      if (arg->is_class) {
+        // we got class type arg
+        if (strcmp(p->t.class, arg->t.class) != 0) {
+          // the classes of both are not same
+          yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, p->t.class,
+                  fn->declaration, arg->t.class);
+        }
+      } else {
+        // we got non-class type
+        yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, p->t.class,
+                fn->declaration, type_arr[arg->t.t]);
+      }
+    } else {
+      // Param expects non-class type
+      if (arg->is_class) {
+        // we got class type
+        yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, type_arr[p->t.t],
+                fn->declaration, arg->t.class);
+      } else {
+        // we got non-class type
+        if (p->t.t != arg->t.t) {
+          // we got mis-matching types
+          yyerror(fncall_incorrect_arg_type_msg, lineno, argnum,
+                  type_arr[p->t.t], fn->declaration, type_arr[arg->t.t]);
+        }
+      }
     }
     if (p->is_arr != arg->is_arr) {
-      yyerror(fncall_incorrect_arr_msg, lineno, argnum, type_arr[p->t],
-              p->is_arr ? "array" : "", fn->declaration, type_arr[arg->t.t],
+      yyerror(fncall_incorrect_arr_msg, lineno, argnum,
+              p->is_class ? p->t.class : type_arr[p->t.t],
+              p->is_arr ? "array" : "", fn->declaration,
+              arg->is_class ? arg->t.class : type_arr[arg->t.t],
               arg->is_arr ? "array" : "");
     }
-    if (arg->t.t == CONST_TYPE && p->t != CONST_TYPE) {
+    if (arg->m == CONST_TYPE && p->m != CONST_TYPE) {
       yyerror(fncall_incorrect_const_type_msg, lineno, argnum, fn->declaration);
     }
 

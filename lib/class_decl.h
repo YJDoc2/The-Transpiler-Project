@@ -62,16 +62,27 @@ Class* add_class(char* name, int line);
  * NOTE the modifier must only be NONE_TYPE of CONST_TYPE, static must not be
  * used.
  *  Params :
- * class : pointer to the class m : modifier of the attribute
+ * class : pointer to the class
  * m : modifier of the attr, must be either NONE_TYPE or CONST_TYPE
  * name : name of the attribute, duplicated inside so can be freed after call
  * is_array : is the attribute an array
+ * line : line number on which the attribute is declared
  *
  * Returns : void
  */
 void add_attr(Class* class, modifier m, type t, char* name, bool is_arr,
               int line);
 
+/*
+ * A function to add class attributes, which themselves are of class type
+ *
+ * Params :
+ * class : Pointer to class to which the attribute is to be added
+ * m : modifier of attribute,must be either NONE_TYPE or CONST_TYPE
+ * name : name of the attribute, duplicated inside so can be freed after call
+ * is_array : is the attribute an array
+ * line : line number on which the attribute is declared
+ */
 void add_class_type_attr(Class* class, modifier m, char* classname, char* name,
                          bool is_arr, int line);
 

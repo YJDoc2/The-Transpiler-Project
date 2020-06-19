@@ -4,6 +4,9 @@
 #include "forloop.h"
 
 #include "tempvar.h"
+
+extern char *expr_class;
+
 /*
  * This function print loop of the format : for i in a..b{...}
  * increments loopvar in steps of 1
@@ -64,7 +67,8 @@ void print_array_loop(char *loopvar, char *array, type t) {
   printcode(
       "for(int %s = 0; %s < (sizeof(%s)/sizeof(%s[0]));++%s){\n\t%s %s = "
       "%s[%s];",
-      temp, temp, array, array, temp, type_arr[t], loopvar, array, temp);
+      temp, temp, array, array, temp,
+      t == CLASS_TYPE ? expr_class : type_arr[t], loopvar, array, temp);
   free(temp);
 }
 
@@ -85,6 +89,6 @@ void print_enumeration_loop(char *indexvar, char *valvar, char *array, type t) {
   printcode(
       "for(int %s = 0 ; %s < (sizeof(%s)/sizeof(%s[0]));++%s){\n\t%s %s = "
       "%s[%s];",
-      indexvar, indexvar, array, array, indexvar, type_arr[t], valvar, array,
-      indexvar);
+      indexvar, indexvar, array, array, indexvar,
+      t == CLASS_TYPE ? expr_class : type_arr[t], valvar, array, indexvar);
 }

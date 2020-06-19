@@ -110,9 +110,14 @@ let statements for class type assignments <br />
 
 how to create new class(struct), specifically those involving const elements?
 
-add support for classes in for statements
-add support for classes in params, fn return types
+Added support for classes in for statements
+Added support for classes in params
+\# test20.c transpiled from test20.tpp for testing class type function params
+
+add support for classes in fn return types
 add support for accessing their methods
 
+add use syntax ?
+change action input and print to accommodate classes
 Maybe merge add_var and add_array method in single as crate_class_var has done
 DO some formatting and pretty-printing of the parser and lexer

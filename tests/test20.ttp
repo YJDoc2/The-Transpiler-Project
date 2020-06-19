@@ -1,0 +1,31 @@
+class t0{
+    int g;
+    float f;
+}
+class t1{
+    int a;
+    t0 tc;
+    t0 ta[10];
+    fn test_method(int a,t0 b)->void{
+        print("hello ",b.g+6+3);
+    }
+    @static fn test_static()->void{
+        print("testing static");
+    }
+}
+
+
+
+fn main () -> void{
+    t1 arr[10];
+    for j in arr {
+        print(j.a);
+        t0 t;
+        test_class_params(t,j);
+    }
+}
+
+fn test_class_params(t0 test0,t1 test1)->void{
+    print(test0.f);
+    print(test1.ta[1].f);
+}

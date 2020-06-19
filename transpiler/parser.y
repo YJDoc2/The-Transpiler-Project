@@ -20,7 +20,9 @@
 
     extern char *type_arr[],*mod_arr[];
     extern Linked_list *temp_list;
-    
+    extern Hashmap pre_class_map;
+    void pre_class_clean(void*,void*);
+
     bool is_in_fn = false;
     bool has_returned = false;
     
@@ -172,7 +174,7 @@ arraysign : /*nothing*/ {$$= false;}
     | '[' ']'   {$$ = true;}
 
 methodlist : /*nothing*/
-    | methodlist FNDECL IDENTIFIER '(' {pushscope();} methodparamlist ')' "->" type methoddummy '{' stmtlist'}' {printcode("}");
+    | methodlist FNDECL IDENTIFIER '(' {pushscope();} paramlist ')' "->" type methoddummy '{' stmtlist'}' {printcode("}");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",$3,type_arr[fn_type]);
                                                                                                     }
@@ -182,7 +184,7 @@ methodlist : /*nothing*/
                                                                                                     clear_literals();
                                                                                                     is_static_method = false;
                                                                                                     }
-    | methodlist staticdummy FNDECL IDENTIFIER '(' {pushscope();} methodparamlist ')' "->" type methoddummy'{' stmtlist'}' {printcode("}");
+    | methodlist staticdummy FNDECL IDENTIFIER '(' {pushscope();} paramlist ')' "->" type methoddummy'{' stmtlist'}' {printcode("}");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",$4,type_arr[fn_type]);
                                                                                                     }
@@ -194,13 +196,6 @@ methodlist : /*nothing*/
                                                                                                     }
 
 ;
-
-methodparamlist : /*nothing*/
-    | methodparamlist methodparam
-    | methodparamlist ',' methodparam 
-
-methodparam : modifier type IDENTIFIER  {add_param($1,$2,false,$3); add_var($1,$2,$3,yylineno);free($3);/*duplicated as paramlist does not create var*/}
-    | modifier type IDENTIFIER '[' ']'  {add_param($1,$2,true,$3); add_array($1,$2,$3,yylineno);free($3);}
 
 staticdummy : STATICMETHOD {is_static_method = true;}
 
@@ -235,6 +230,8 @@ paramlist : /* nothing */
 
 param : modifier type IDENTIFIER    {add_param($1,$2,false,$3);add_var($1,$2,$3,yylineno); free($3);}
     | modifier type IDENTIFIER '[' ']' {add_param($1,$2,true,$3);add_array($1,$2,$3,yylineno); free($3);}
+    | modifier CLASSNAME IDENTIFIER     {add_class_param($1, $2, false,$3);create_class_var($1, $2, $3, false,yylineno);free($2);free($3);}
+    | modifier CLASSNAME IDENTIFIER '[' ']' {add_class_param($1, $2, true,$3);create_class_var($1, $2, $3, true,yylineno);free($2);free($3);}
 
 stmtlist :/* nothing */
     | stmtlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
@@ -549,8 +546,16 @@ simplearraydummy : /*nothing*/ {Variable *v = lookup_var($<s>0);
                                     }else if(!(v->is_arr)){
                                         yyerror("Cannot iterate over non-array Variables");
                                     }else{
-                                        add_var(NONE_TYPE,v->t.t,$<s>-2,yylineno);
-                                        print_array_loop($<s>-2,$<s>0,v->t.t);
+                                        if(v->is_class){
+                                            expr_class = v->t.class;
+                                            print_array_loop($<s>-2,$<s>0,CLASS_TYPE);
+                                            create_class_var(NONE_TYPE, expr_class, $<s>-2, false,yylineno);
+                                            expr_class = NULL;
+                                        }else{
+                                            add_var(NONE_TYPE,v->t.t,$<s>-2,yylineno);
+                                            print_array_loop($<s>-2,$<s>0,v->t.t);
+                                        }
+                                        
                                     }
                                 }
 
@@ -564,8 +569,16 @@ iterarraydummy : /*nothing*/ {Variable *v = lookup_var($<s>0);
                                         yyerror("Cannot iterate over non-array Variables");
                                     }else{
                                         add_var(NONE_TYPE,INT_TYPE,$<s>-4,yylineno);
-                                        add_var(NONE_TYPE,v->t.t,$<s>-2,yylineno);
-                                        print_enumeration_loop($<s>-4,$<s>-2,$<s>0,v->t.t);
+                                        if(v->is_class){
+                                            expr_class = v->t.class;
+                                            create_class_var(NONE_TYPE, expr_class, $<s>-2, false,yylineno);
+                                            print_enumeration_loop($<s>-4,$<s>-2,$<s>0,CLASS_TYPE);
+                                            expr_class = NULL;
+                                        }else{
+                                            add_var(NONE_TYPE,v->t.t,$<s>-2,yylineno);
+                                            print_enumeration_loop($<s>-4,$<s>-2,$<s>0,v->t.t);
+                                        }
+                                        
                                     }}
 
 ;
@@ -690,7 +703,7 @@ varvals : IDENTIFIER { Variable *_t = lookup_var($1);
     | varvals '.' classcheckdummy IDENTIFIER { attr* a = NULL;
                                         if(expr_type == CLASS_TYPE)a = find_attr(expr_class,$4);
                                         if(a== NULL){
-                                            yyerror("No attribute %s declared on class %s",$1,$4);
+                                            yyerror("No attribute %s declared on class %s",$4,expr_class);
                                         }else{
                                             is_assignable = a->m != CONST_TYPE;
                                             if(a->is_arr && !is_in_fncall){
@@ -752,7 +765,10 @@ void main(int argc , char **argv){
     __init_expr__();
     __init_classes__();
 
+    pre_class_map = make_hashmap(20, __hash_str__, __compair__str__);
     preparse();
+    hm_delete(pre_class_map, pre_class_clean);
+    
     printcode("\n#line 1 \"%s\"\n\n","./test.ttp");
     yyparse();
     print_code_header();

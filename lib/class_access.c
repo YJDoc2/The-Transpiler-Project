@@ -89,15 +89,32 @@ void create_class_var(modifier m, char *classname, char *name, bool is_array,
   v->t.class = t->name;
 }
 
+/*
+ * Function to find if a declared variable of a class is assignable or not.
+ * value cannot be assigned to a struct if it or any of its members contains
+ * const values This recursively checks for any const attributes and if found
+ * any, returns false
+ *
+ * Param :
+ * name : name of the class to find if its variable is assignable or not
+ *
+ * returns : true, if the class variables can be assigned after declaration
+ *           false, if the class or its members contain any const members
+ */
+
 bool is_assignable_class(char *name) {
   Class *c = (Class *)hm_get(&classmap, name);
 
   hashpair *iter = c->attr->start;
   hashpair *end = iter + c->attr->size;
+  // check for each attribute
   while (iter <= end) {
     if (iter->key != NULL || iter->value != NULL) {
       attr *a = (attr *)iter->value;
       if (a->is_class) {
+        // if its a class type attribute check recursively for that class type
+        // as we do not allow for variable of a class in itself, this should not
+        // go in infinite loop
         bool b = is_assignable_class(a->t.class);
         if (!b) return false;
       } else {
@@ -108,5 +125,7 @@ bool is_assignable_class(char *name) {
     }
     ++iter;
   }
+  // as we have checked all attributes, and found none which are const type
+  // this is assignable
   return true;
 }

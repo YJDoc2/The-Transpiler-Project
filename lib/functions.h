@@ -15,7 +15,8 @@ extern Hashmap fnmap;  // maps function names to function structs
 // Structure to store parameter to function in function definition
 typedef struct {
   modifier m;
-  type t;
+  bool is_class;
+  type_u t;
   char* name;
   bool is_arr;
 } Param;
@@ -55,6 +56,19 @@ void __cleanup_functions__();
  * Returns : void
  */
 void add_param(modifier m, type t, bool is_arr, char* param_name);
+
+/*
+ * Adds function definition parameter of class type
+ * Params :
+ * m : modifier of paramis duplicated inside so can be freed outside
+ * classname : name of the class, is duplicated inside so can be freed outside
+ * is_arr : is the param of array type
+ * param_name : name of param, is duplicated inside so can be freed outside
+ *
+ * returns : void
+ */
+void add_class_param(modifier m, char* classname, bool is_arr,
+                     char* param_name);
 
 /*
  * Function to add a function structure in fnmap

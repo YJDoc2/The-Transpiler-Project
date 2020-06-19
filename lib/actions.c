@@ -24,9 +24,8 @@ char* bool_format = "%s ? \"true\":\"false\"";
 */
 
 // Array containing type format specifiers corresponding to the data types
-char* type_str_arr[] = {
-    "%d", "%f", "%lf", "%s", "%f %s %fi", "%ld", "%hd", "%s", "void",
-};
+char* type_str_arr[] = {"%d",  "%f",  "%lf", "%s",   "%f %s %fi",
+                        "%ld", "%hd", "%s",  "void", "class"};
 //* Internal Functions
 
 /*

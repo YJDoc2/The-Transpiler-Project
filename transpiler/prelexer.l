@@ -8,6 +8,8 @@
     int nbrack = 0;
     extern int errs;
     extern bool pre_in_class;
+    Hashmap pre_class_map;
+    static bool pre_is_class(char *);
 %}
 
 %option noyywrap nodefault yylineno
@@ -66,20 +68,25 @@ static                              { prelval.m = STATIC_TYPE; if(!in_fn && !pre
 \"(\\.|[^\"\n])*\"                      {}
 \"(\\.|[^\"\n])*$                       {preerror("unterminated string ");}
 
-__temp[0-9]+                                        {preerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
+__temp[0-9]+                            {preerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
 
-[_a-zA-Z][_a-zA-Z0-9]*           {if(!in_fn && !pre_in_class){prelval.s = yytext;return IDENTIFIER;}}
+[_a-zA-Z][_a-zA-Z0-9]*           {if(!in_fn && !pre_in_class){prelval.s = yytext;if(pre_is_class(yytext)){return CLASSNAME;}else{return IDENTIFIER;}}}
 
 .                                   {}
 
 %%
 
+static bool pre_is_class(char *name){
+    void* v = hm_get(&pre_class_map,name);
+    return v != NULL;
+}
+
 int preerror(char *s){
     ++errs;
     if(s == NULL)return 0;
-    if(in_fn){
+    
         fprintf(stderr,"Syntax error on line %d",prelineno);
-    }
+    
     return 0;
 
 }

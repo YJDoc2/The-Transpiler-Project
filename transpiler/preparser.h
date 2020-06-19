@@ -71,7 +71,8 @@ extern int predebug;
     FNDECL = 269,
     RETTYPE = 270,
     IDENTIFIER = 271,
-    CLASS = 272
+    CLASS = 272,
+    CLASSNAME = 273
   };
 #endif
 
@@ -79,13 +80,13 @@ extern int predebug;
 #if ! defined PRESTYPE && ! defined PRESTYPE_IS_DECLARED
 union PRESTYPE
 {
-#line 20 "preparser.y"
+#line 22 "preparser.y"
 
     char *s;
     type t;
     modifier m;
 
-#line 89 "preparser.tab.h"
+#line 90 "preparser.tab.h"
 
 };
 typedef union PRESTYPE PRESTYPE;

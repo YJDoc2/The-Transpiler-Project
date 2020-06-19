@@ -54,6 +54,18 @@ method *find_method(char *classname, char *methodname);
 void create_class_var(modifier m, char *classname, char *name, bool is_array,
                       int line);
 
+/*
+ * Function to find if a declared variable of a class is assignable or not.
+ * value cannot be assigned to a struct if it or any of its members contains
+ * const values This recursively checks for any const attributes and if found
+ * any, returns false
+ *
+ * Param :
+ * name : name of the class to find if its variable is assignable or not
+ *
+ * returns : true, if the class variables can be assigned after declaration
+ *           false, if the class or its members contain any const members
+ */
 bool is_assignable_class(char *name);
 
 #endif
