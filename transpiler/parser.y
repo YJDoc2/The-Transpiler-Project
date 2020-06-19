@@ -442,9 +442,16 @@ fncall : IDENTIFIER '(' {push_expr_and_args();if(find_action($1)==0)is_in_fncall
                                             $$ = get_fncall_str($1);
                                             ll_clear(arglist);
                                             pop_expr_and_args();
-                                            type fn_ret = fn->ret_t;
+                                            type fn_ret = fn->ret_t.t;
                                             if(expr_type == VOID_TYPE){
-                                                expr_type = fn_ret;
+                                                if(fn->is_ret_class){
+                                                    expr_type = CLASS_TYPE;
+                                                    expr_class = fn->ret_t.class;
+                                                }else{
+                                                    expr_type = fn_ret;
+                                                }
+                                            }else if(fn->is_ret_class){
+                                                //? print error or allow?
                                             }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
                                                 yyerror("Cannot combine string type with any type.");
                                             }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
@@ -582,37 +589,70 @@ iterarraydummy : /*nothing*/ {Variable *v = lookup_var($<s>0);
                                     }}
 
 ;
-expr: expr '+' expr  { $$=join($1,"+",$3); free($1);free($3); is_composite_val =false;}
-    | expr '-' expr  {$$=join($1,"-",$3); free($1);free($3); is_composite_val =false;}
-    | expr '*' expr  {$$=join($1,"*",$3); free($1);free($3); is_composite_val =false;}
-    | expr '/' expr  {$$=join($1,"/",$3); free($1);free($3); is_composite_val =false;}
-    | expr MOD expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == CLASS_TYPE){
-                        yyerror("Cannot use mod on %s type",type_arr[expr_type]);
-                        }
-                        $$=join($1,"%",$3); free($1);free($3); is_composite_val =false;}
+expr: expr '+' {push_expr_type();} expr  { $$=join($1,"+",$4); free($1);free($4); 
+                                            type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            is_composite_val =false;}
+    | expr '-' {push_expr_type();} expr  {$$=join($1,"-",$4); free($1);free($4); 
+                                            type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;}
+    | expr '*' {push_expr_type();} expr  {$$=join($1,"*",$4); free($1);free($4); 
+                                            type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;}
+    | expr '/' {push_expr_type();} expr  {$$=join($1,"/",$4); free($1);free($4); 
+                                            type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;}
+    | expr MOD {push_expr_type();} expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use mod on %s type",type_arr[expr_type]);} 
+                                            type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            $$=join($1,"%",$4); free($1);free($4); is_composite_val =false;}
     | '(' type ')' expr  %prec UMINUS    {
+                                if(expr_type == CLASS_TYPE){yyerror("cannot typecast class values");}
                                 void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
                                 sprintf(v,"(%s) ",type_arr[$2]);
                                 char * t = join("(",$4,")");
                                 $$ = join(v,"",t);
-                                 is_composite_val =false;
+                                is_composite_val =false;
                                 free(v);
                                 free(t);
                                 free($4);
                                 expr_type = $2;
                             }
     | '(' expr ')'   {$$=join("( ",$2," )"); free($2); is_composite_val =false;}
-    | '-' expr  %prec UMINUS {$$=join("-","",$2); free($2); is_composite_val =false;}
-    | expr '<' expr   {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use < with %s type",type_arr[expr_type]);}$$= join($1,"<",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr '>' expr   {if(expr_type == COMPLEX_TYPE ){yyerror("Cannot use > with %s type",type_arr[expr_type]);}$$= join($1,">",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr LTE expr         {if(expr_type == COMPLEX_TYPE ){yyerror("Cannot use <= with %s type",type_arr[expr_type]);}$$= join($1,"<=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr GTE expr          {if(expr_type == COMPLEX_TYPE){yyerror("Cannot use >= with %s type",type_arr[expr_type]);}$$= join($1,">=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr EQL expr  %prec LEAST        {$$= join($1,"==",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr NOT EQL expr  %prec LEAST     {$$= join($1,"!=",$4);free($1);free($4);expr_type = BOOL_TYPE;}
-    | expr AND expr  {$$= join($1," && ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr OR expr    {$$= join($1," || ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | NOT expr   {char * t =join("(",$2,")");
-                            $$ = join("!",t,"");free(t);free($2);expr_type = BOOL_TYPE;}
+    | '-' expr  %prec UMINUS {$$=join("-","",$2);if(expr_type == CLASS_TYPE){yyerror("Cannot use negetive on class type");}  
+                                            type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}free($2); is_composite_val =false;}
+    | expr '<'{push_expr_type();}  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use < with %s type",type_arr[expr_type]);} 
+                                            type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            $$= join($1,"<",$4);free($1);free($4);expr_type = BOOL_TYPE;}
+    | expr '>'{push_expr_type();}  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use > with %s type",type_arr[expr_type]);} 
+                                            type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            $$= join($1,">",$4);free($1);free($4);expr_type = BOOL_TYPE;}
+    | expr LTE{push_expr_type();}  expr         {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use <= with %s type",type_arr[expr_type]);} 
+                                            type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            $$= join($1,"<=",$4);free($1);free($4);expr_type = BOOL_TYPE;}
+    | expr GTE{push_expr_type();}  expr          {if(expr_type == COMPLEX_TYPE|| expr_type == CLASS_TYPE){yyerror("Cannot use >= with %s type",type_arr[expr_type]);} 
+                                            type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            $$= join($1,">=",$4);free($1);free($4);expr_type = BOOL_TYPE;}
+    | expr EQL{push_expr_type();}  expr  %prec LEAST        { type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            $$= join($1,"==",$4);free($1);free($4);expr_type = BOOL_TYPE;}
+    | expr NOT EQL{push_expr_type();} expr  %prec LEAST     { type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            $$= join($1,"!=",$5);free($1);free($5);expr_type = BOOL_TYPE;}
+    | expr AND{push_expr_type();}  expr  { type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            $$= join($1," && ",$4);free($1);free($4);expr_type = BOOL_TYPE;}
+    | expr OR {push_expr_type();} expr    { type t = pop_expr_type();
+                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            $$= join($1," || ",$4);free($1);free($4);expr_type = BOOL_TYPE;}
+    | NOT expr   { type _t = pop_expr_type();
+                    if(verify_types(_t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[_t],type_arr[expr_type]);}char * t =join("(",$2,")");
+                    $$ = join("!",t,"");free(t);free($2);expr_type = BOOL_TYPE;}
     | value
 ;
 

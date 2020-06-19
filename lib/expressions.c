@@ -76,6 +76,17 @@ void pop_expr_and_args() {
   arglist = (Linked_list *)st_pop(&args_st);
 }
 
+void push_expr_type() {
+  st_push(&exprt_st, (void *)expr_type);  // push the current expr_type
+}
+
+type pop_expr_type() {
+  void *_t = st_pop(&exprt_st);  // get last expr_type from stack
+  return _t == (void *)-1
+             ? VOID_TYPE
+             : (type)_t;  // if stack was empty set type as VOID_TYPE
+}
+
 /*
  * Joins all three of given strings.
  * Note that this does not modify or free the input strings, and allocates

@@ -23,12 +23,14 @@ typedef struct {
 
 // Structure to store information about the function such as function name, its
 // printname, its ret type and its params
-//! TODO explain why printname is required
+// printname is kept separate from name, similar to methods in class, in case
+// (shouldn't occur) when printing name is different than calling name
 typedef struct {
   char* print_name;
   Linked_list* param_list;
   int declaration;
-  type ret_t;
+  bool is_ret_class;
+  type_u ret_t;
   modifier ret_m;
 } Function;
 
@@ -90,6 +92,28 @@ void add_class_param(modifier m, char* classname, bool is_arr,
  */
 void add_function(modifier m, type t, char* fnname, char* printname,
                   int lineno);
+
+/*
+ * Function to add a function with return type of class
+ *
+ * calls yyerror if function is already declared
+ *
+ * Params :
+ * m : function return modifer eg static in static int a(){}
+ * classname: name of class the function returns, duplicated inside, so can be
+ *            freed after call
+ *
+ * fnname : name to map the function structure, duplicated in function so can be
+ *          freed outside
+ * printname : name of function that is to be actually printed in generated
+ *             code, duplicated in function so can be freed outside
+ * lineno : line on which
+ * the function is defined
+ *
+ * Returns : void
+ */
+void add_class_ret_function(modifier m, char* classname, char* fnname,
+                            char* printname, int lineno);
 
 /*
  * A function to print the stating of function definition including the params

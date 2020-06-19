@@ -159,7 +159,8 @@ void printcode(char *s, ...) {
 
 // Helper function to print a single Param in function declaration
 static inline void print_param(Param *p) {
-  fprintf(header, "%s %s %s", mod_arr[p->m], type_arr[p->t], p->name);
+  fprintf(header, "%s %s %s", mod_arr[p->m],
+          p->is_class ? p->t.class : type_arr[p->t.t], p->name);
   if (p->is_arr) {
     fprintf(header, "[] ");
   } else {
@@ -211,7 +212,8 @@ void print_code_header() {
   while (iter <= end) {
     if (iter->key != NULL || iter->value != NULL) {
       Function *f = (Function *)iter->value;
-      fprintf(header, "%s %s %s(", mod_arr[f->ret_m], type_arr[f->ret_t],
+      fprintf(header, "%s %s %s(", mod_arr[f->ret_m],
+              f->is_ret_class ? f->ret_t.class : type_arr[f->ret_t.t],
               f->print_name);
       print_params(f->param_list);
       fprintf(header, " );\n\n");

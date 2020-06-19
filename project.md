@@ -114,6 +114,8 @@ Added support for classes in for statements
 Added support for classes in params
 \# test20.c transpiled from test20.tpp for testing class type function params
 
+test for making sure expr combing works as expected on class types
+
 add support for classes in fn return types
 add support for accessing their methods
 
