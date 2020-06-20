@@ -48,7 +48,7 @@ void __delete_method__(void* key, void* value) {
   free(key);
   method* fn = (method*)value;
   free(fn->print_name);
-  fn->is_class_ret ? free(fn->ret_t.class) : NULL;
+  fn->is_ret_class ? free(fn->ret_t.class) : NULL;
   fn->param_list == NULL ? /*nothing*/
                          : ll_delete(fn->param_list, __delete_paramlist__);
   free(fn->param_list);
@@ -190,10 +190,10 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
                            3);  // 2 ofr _ before and after classname, 1 for \0
   sprintf(printname, class_method_format, class->name, keyname);
   method* fn = (method*)calloc(1, sizeof(method));
-  fn->is_static_method = is_static;
+  fn->is_static = is_static;
   fn->param_list = paramlist;
   fn->print_name = printname;
-  fn->is_class_ret = false;
+  fn->is_ret_class = false;
   fn->ret_t.t = ret_t;
   fn->declaration = line;
   hm_add(class->methods, keyname, fn);
@@ -229,10 +229,10 @@ void add_class_ret_method(Class* class, char* name, char* ret_class,
                            3);  // 2 ofr _ before and after classname, 1 for \0
   sprintf(printname, class_method_format, class->name, keyname);
   method* fn = (method*)calloc(1, sizeof(method));
-  fn->is_static_method = is_static;
+  fn->is_static = is_static;
   fn->param_list = paramlist;
   fn->print_name = printname;
-  fn->is_class_ret = true;
+  fn->is_ret_class = true;
   fn->ret_t.class = strdup(ret_class);
   fn->declaration = line;
   hm_add(class->methods, keyname, fn);
@@ -241,11 +241,11 @@ void add_class_ret_method(Class* class, char* name, char* ret_class,
 // Helper function to print method start
 void print_method_start(Class* class, method* fn) {
   printcode("%s %s ( ",
-            fn->is_class_ret ? fn->ret_t.class : type_arr[fn->ret_t.t],
+            fn->is_ret_class ? fn->ret_t.class : type_arr[fn->ret_t.t],
             fn->print_name);
 
   ll_link* iter = fn->param_list == NULL ? NULL : fn->param_list->start;
-  if (!fn->is_static_method) {
+  if (!fn->is_static) {
     printcode("%s *this", class->name);
     if (iter != NULL) printcode(" , ");
   }

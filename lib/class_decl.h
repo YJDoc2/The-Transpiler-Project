@@ -31,8 +31,8 @@ typedef struct {
   char* print_name;
   Linked_list* param_list;
   type_u ret_t;
-  bool is_class_ret;
-  bool is_static_method;
+  bool is_ret_class;
+  bool is_static;
   int declaration;
 } method;
 

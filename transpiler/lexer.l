@@ -28,6 +28,7 @@
 "<"|">"|"."                                         {return yytext[0];}
 "<="                                        {return LTE;}
 ">="                                        {return GTE;}
+"::"                                        {return DCOLON;}
 
                                 /* RULES FOR RAW input*/
                                 /* In code, this expects Syntax RAW <{...}>

@@ -68,4 +68,35 @@ void create_class_var(modifier m, char *classname, char *name, bool is_array,
  */
 bool is_assignable_class(char *name);
 
+/*
+ * Function to verify types of argument with method definition.
+ *
+ * calls yyerror if number of params is any param type is
+ * incorrect
+ *
+ * Params :
+ * mname : name of the method to verify
+ * m : method structure pointer corresponding to the function
+ * lineno : line on which the functioncall is done
+ *
+ * Returns : 0 if all argument types match
+ *           1 : if there is any error in argument type
+ */
+int verify_method_call(char *mname, method *m, int lineno);
+
+/*
+ * A function that return string of the method call with all the arguments etc
+ * in it. This is used to get the string to be printed without semicolon
+ * Does not clear the arglist
+ * yyerrors internal, error if call_var in NULL for non-static method call
+ * Params :
+ * m: pointer to the fn that is to be printed
+ * call_var :in case of non-static method, char * to variable/ value on which
+ *            the method is called
+ *          can be NULL for static methods
+ * Returns : string , memory allocated of the complete
+ * function call.
+ */
+char *get_methodcall_str(method *m, char *call_var);
+
 #endif

@@ -5,7 +5,27 @@
  */
 #include "class_access.h"
 
+#include "functions.h"
+
+char *mcall_incorrect_arg_num_msg =
+    "incorrect %s method call on line %d :\n\texpected %d params as "
+    "per method delcaration on line %d,but got %d\n\n ";
+
+char *mcall_incorrect_arg_type_msg =
+    "incorrect argument type in method call on line %d :\n\tfor "
+    "argument %d expected type %s as per declaration on line %d, got %s\n\n";
+char *mcall_incorrect_arr_msg =
+    "incorrect argument type in method call on line %d :\n\tfor "
+    "argument %d expected type %s %s as per declaration on line %d, got %s "
+    "%s\n\n";
+
+char *mcall_incorrect_const_type_msg =
+    "incorrect argument type in method call on line %d :\n\tfor "
+    "argument %d expected non-const argument as per declaration on line %d, "
+    "got const.\n\n";
+
 extern Hashmap classmap;
+extern char *type_arr[];
 /*
  * Checks if the class with given name exits or not
  * Params :
@@ -128,4 +148,152 @@ bool is_assignable_class(char *name) {
   // as we have checked all attributes, and found none which are const type
   // this is assignable
   return true;
+}
+
+/*
+ * Function to verify types of argument with method definition.
+ *
+ * calls yyerror if number of params is any param type is
+ * incorrect
+ *
+ * Params :
+ * mname : name of the method to verify
+ * m : method structure pointer corresponding to the function
+ * lineno : line on which the functioncall is done
+ *
+ * Returns : 0 if all argument types match
+ *           1 : if there is any error in argument type
+ */
+int verify_method_call(char *mname, method *m, int lineno) {
+  int params =
+      m->param_list == NULL
+          ? 0
+          : m->param_list->size;  // if no param_list , no arg is needed
+
+  // different number of arguments means incorrect call
+  if (arglist->size != params) {
+    yyerror(mcall_incorrect_arg_num_msg, mname, lineno, params, m->declaration,
+            arglist->size);
+    return 1;
+  }
+  // if no param the the call is correct, as we have checked for correct number
+  // of args
+  if (arglist->size == 0) return 0;
+  // check type of each argument
+  int argnum = 1;
+
+  ll_link *m_params_itr = m->param_list->start;
+  ll_link *arglist_itr = arglist->start;
+
+  while (arglist_itr != NULL) {
+    Variable *arg = (Variable *)arglist_itr->data;
+    Param *p = (Param *)m_params_itr->data;
+
+    // if types are different incorrect call but check for rest of arg types
+    // anyway
+    if (p->is_class) {
+      // param expects class type
+      if (arg->is_class) {
+        // we got class type arg
+        if (strcmp(p->t.class, arg->t.class) != 0) {
+          // the classes of both are not same
+          yyerror(mcall_incorrect_arg_type_msg, lineno, argnum, p->t.class,
+                  m->declaration, arg->t.class);
+        }
+      } else {
+        // we got non-class type
+        yyerror(mcall_incorrect_arg_type_msg, lineno, argnum, p->t.class,
+                m->declaration, type_arr[arg->t.t]);
+      }
+    } else {
+      // Param expects non-class type
+      if (arg->is_class) {
+        // we got class type
+        yyerror(mcall_incorrect_arg_type_msg, lineno, argnum, type_arr[p->t.t],
+                m->declaration, arg->t.class);
+      } else {
+        // we got non-class type
+        if (p->t.t != arg->t.t) {
+          // we got mis-matching types
+          yyerror(mcall_incorrect_arg_type_msg, lineno, argnum,
+                  type_arr[p->t.t], m->declaration, type_arr[arg->t.t]);
+        }
+      }
+    }
+    if (p->is_arr != arg->is_arr) {
+      yyerror(mcall_incorrect_arr_msg, lineno, argnum,
+              p->is_class ? p->t.class : type_arr[p->t.t],
+              p->is_arr ? "array" : "", m->declaration,
+              arg->is_class ? arg->t.class : type_arr[arg->t.t],
+              arg->is_arr ? "array" : "");
+    }
+    if (arg->m == CONST_TYPE && p->m != CONST_TYPE) {
+      yyerror(mcall_incorrect_const_type_msg, lineno, argnum, m->declaration);
+    }
+
+    m_params_itr = m_params_itr->next;
+    arglist_itr = arglist_itr->next;
+
+    ++argnum;
+  }
+  // correct fncall
+  return 0;
+}
+
+/*
+ * A function that return string of the method call with all the arguments etc
+ * in it. This is used to get the string to be printed without semicolon
+ * Does not clear the arglist
+ * yyerrors internal, error if call_var in NULL for non-static method call
+ * Params :
+ * m: pointer to the fn that is to be printed
+ * call_var :in case of non-static method, char * to variable/ value on which
+ *            the method is called
+ *          can be NULL for static methods
+ * Returns : string , memory allocated of the complete
+ * function call.
+ */
+char *get_methodcall_str(method *m, char *call_var) {
+  ll_link *iter = arglist->start;
+  Variable *var;
+  int len = strlen(m->print_name) + 2;  // one for '(' and one for end of string
+  // We initially calculate the space required for arr arguments so we can get
+  // it in a single calloc call
+  while (iter != NULL) {
+    var = (Variable *)iter->data;
+    len += strlen(var->name) + 1;  // one extra for possible ','
+    iter = iter->next;
+  }
+  if (!m->is_static && call_var == NULL) {
+    yyerror(
+        "Internal error, trying to print non-static method without the calling "
+        "variable");
+  }
+  if (!m->is_static) {
+    len += strlen(call_var) + 2;  // 1 for & and 1 for possible ','
+  }
+  void *ret =
+      calloc(1, len + 2);  // one extra for end of string and one for ')'
+
+  strcat(ret, m->print_name);
+  strcat(ret, "(");
+  iter = arglist->start;
+  if (!m->is_static) {
+    strcat(ret, "&");
+    strcat(ret, call_var);
+    if (iter != NULL) {
+      strcat(ret, ",");
+    }
+  }
+  // Actually copy the argument string to call string
+  while (iter != NULL) {
+    var = (Variable *)iter->data;
+    strcat(ret, var->name);
+    if (iter->next != NULL) {  // if there is another arg, put a ','
+      strcat(ret, ",");
+    }
+    iter = iter->next;
+  }
+  strcat(ret, ")");  // put the closing ')'
+  return ret;
 }

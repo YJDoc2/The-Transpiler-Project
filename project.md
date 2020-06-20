@@ -108,8 +108,6 @@ let statements for class type assignments <br />
 
 ## Stage 7
 
-how to create new class(struct), specifically those involving const elements?<br />
-
 Added support for classes in for statements<br />
 Added support for classes in params<br />
 \# test20.c transpiled from test20.tpp for testing class type function params<br />
@@ -118,9 +116,13 @@ Added support for classes in fn and method return types<br />
 test for making sure expr combing works as expected on class types and other types<br />
 \# test21.c transpiled from test21.tpp for testing class type function return type and expr type verification<br />
 
-add support for accessing their methods, add support fot 'this', maybe use :: for method access<br />
+Added support for accessing static and non-static methods, testing is remaining<br />
+test for fn with void return types;
+how to create new class(struct), specifically those involving const elements?<br />
+
+add support fot 'this', maybe use :: for method access<br />
 
 add use syntax along with something like pragma once?<br />
 change action input and print to accommodate classes<br />
-Maybe merge add_var and add_array method in single as crate_class_var has done<br />
+Maybe merge add_var and add_array method in single as create_class_var has done<br />
 DO some formatting and pretty-printing of the parser and lexer<br />
