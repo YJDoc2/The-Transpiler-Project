@@ -114,12 +114,13 @@ Added support for classes in for statements
 Added support for classes in params
 \# test20.c transpiled from test20.tpp for testing class type function params
 
+Added support for classes in fn and method return types
+STILL UNSTABLE
 test for making sure expr combing works as expected on class types
 
-add support for classes in fn return types
-add support for accessing their methods
+add support for accessing their methods, add support fot 'this', maybe use :: for method access
 
-add use syntax ?
+add use syntax along with something like pragma once?
 change action input and print to accommodate classes
 Maybe merge add_var and add_array method in single as crate_class_var has done
 DO some formatting and pretty-printing of the parser and lexer

@@ -48,7 +48,9 @@ void __delete_method__(void* key, void* value) {
   free(key);
   method* fn = (method*)value;
   free(fn->print_name);
-  fn->param_list == NULL ?: ll_delete(fn->param_list, __delete_paramlist__);
+  fn->is_class_ret ? free(fn->ret_t.class) : NULL;
+  fn->param_list == NULL ? /*nothing*/
+                         : ll_delete(fn->param_list, __delete_paramlist__);
   free(fn->param_list);
   free(fn);
 }
@@ -191,14 +193,56 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
   fn->is_static_method = is_static;
   fn->param_list = paramlist;
   fn->print_name = printname;
-  fn->ret_t = ret_t;
+  fn->is_class_ret = false;
+  fn->ret_t.t = ret_t;
+  fn->declaration = line;
+  hm_add(class->methods, keyname, fn);
+}
+
+/*
+ * A function to add a method to the class
+ *
+ * Params :
+ * class : pointer to the class
+ * name : name of the method to be added, duplicated inside
+ *        so can be freed after call
+ * ret_class : name of the returning class, duplicated inside, so can be freed
+ * is_static : is the method static
+ * paramlist : linedlist pointer of the parmalist of methods,
+ *              must persist after call till end of program
+ *              will be freed in __cleanup_classes__
+ *
+ * Returns : void
+ */
+void add_class_ret_method(Class* class, char* name, char* ret_class,
+                          bool is_static, Linked_list* paramlist, int line) {
+  void* find = hm_get(class->methods, name);
+  if (find != NULL) {
+    yyerror("method %s is already declared for class %s on line %d", name,
+            class->name, ((method*)find)->declaration);
+    return;
+  }
+  char* keyname = strdup(name);
+
+  char* printname =
+      (char*)calloc(1, strlen(keyname) + strlen(class->name) +
+                           3);  // 2 ofr _ before and after classname, 1 for \0
+  sprintf(printname, class_method_format, class->name, keyname);
+  method* fn = (method*)calloc(1, sizeof(method));
+  fn->is_static_method = is_static;
+  fn->param_list = paramlist;
+  fn->print_name = printname;
+  fn->is_class_ret = true;
+  fn->ret_t.class = strdup(ret_class);
   fn->declaration = line;
   hm_add(class->methods, keyname, fn);
 }
 
 // Helper function to print method start
 void print_method_start(Class* class, method* fn) {
-  printcode("%s %s ( ", type_arr[fn->ret_t], fn->print_name);
+  printcode("%s %s ( ",
+            fn->is_class_ret ? fn->ret_t.class : type_arr[fn->ret_t.t],
+            fn->print_name);
 
   ll_link* iter = fn->param_list == NULL ? NULL : fn->param_list->start;
   if (!fn->is_static_method) {

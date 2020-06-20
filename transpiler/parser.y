@@ -38,6 +38,7 @@
     
     Class * current_class = NULL;
     char *expr_class;
+    char * fn_ret_class;
     type temp_type;
     char * temp_class;
     bool is_assignable = false;
@@ -174,7 +175,7 @@ arraysign : /*nothing*/ {$$= false;}
     | '[' ']'   {$$ = true;}
 
 methodlist : /*nothing*/
-    | methodlist FNDECL IDENTIFIER '(' {pushscope();} paramlist ')' "->" type methoddummy '{' stmtlist'}' {printcode("}");
+    | methodlist FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" type methoddummy '{' stmtlist'}' {printcode("}");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",$3,type_arr[fn_type]);
                                                                                                     }
@@ -182,9 +183,8 @@ methodlist : /*nothing*/
                                                                                                     is_in_fn = false;
                                                                                                     popscope();
                                                                                                     clear_literals();
-                                                                                                    is_static_method = false;
-                                                                                                    }
-    | methodlist staticdummy FNDECL IDENTIFIER '(' {pushscope();} paramlist ')' "->" type methoddummy'{' stmtlist'}' {printcode("}");
+                                                                                                    is_static_method = false;}
+    | methodlist staticdummy FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" type methoddummy'{' stmtlist'}' {printcode("}");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",$4,type_arr[fn_type]);
                                                                                                     }
@@ -192,8 +192,21 @@ methodlist : /*nothing*/
                                                                                                     is_in_fn = false;
                                                                                                     popscope();
                                                                                                     clear_literals();
-                                                                                                    is_static_method = false;
-                                                                                                    }
+                                                                                                    is_static_method = false;}
+    | methodlist FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" CLASSNAME clsretmethoddummy '{' stmtlist'}' {printcode("}");
+                                                                                                    if(fn_type != VOID_TYPE && !has_returned){yyerror("function %s require %s return type, corresponding return statement not found",$3,type_arr[fn_type]);}
+                                                                                                    free($3);free($9);
+                                                                                                    is_in_fn = false;fn_ret_class = NULL;
+                                                                                                    popscope();
+                                                                                                    clear_literals();
+                                                                                                    is_static_method = false;}
+    | methodlist staticdummy FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" CLASSNAME clsretmethoddummy'{' stmtlist'}' {printcode("}");
+                                                                                                    if(fn_type != VOID_TYPE && !has_returned){yyerror("function %s require %s return type, corresponding return statement not found",$4,type_arr[fn_type]);}
+                                                                                                    free($4);free($10);
+                                                                                                    is_in_fn = false;fn_ret_class = NULL;
+                                                                                                    popscope();
+                                                                                                    clear_literals();
+                                                                                                    is_static_method = false;}
 
 ;
 
@@ -209,7 +222,15 @@ methoddummy : /*nothing*/ {add_method(current_class, $<s>-6, $<t>0, is_static_me
                             has_returned = false;}
 ;
 
-fndeclaration : FNDECL IDENTIFIER '(' {pushscope();} paramlist ')' "->" modifier type fndecldummy'{' stmtlist'}' {printcode("}");
+clsretmethoddummy : /*nothing*/ {add_class_ret_method(current_class, $<s>-6, $<s>0, is_static_method,temp_list, yylineno);
+                            print_method(current_class,$<s>-6);
+                            temp_list = NULL;
+                            fn_type = CLASS_TYPE;
+                            fn_ret_class = $<s>0;
+                            is_in_fn = true;
+                            has_returned = false;}
+
+fndeclaration : FNDECL IDENTIFIER '('pushscopedummy paramlist ')' "->" modifier type fndecldummy'{' stmtlist'}' {printcode("}");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",$2,type_arr[fn_type]);
                                                                                                     }
@@ -218,11 +239,26 @@ fndeclaration : FNDECL IDENTIFIER '(' {pushscope();} paramlist ')' "->" modifier
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     }
-
+            | FNDECL IDENTIFIER '('pushscopedummy paramlist ')' "->" modifier CLASSNAME classfndecldummy'{' stmtlist'}' {printcode("}");
+                                                                                                    if(fn_type != VOID_TYPE && !has_returned){
+                                                                                                        yyerror("function %s require class %s return type, corresponding return statement not found",$2,$9);
+                                                                                                    }
+                                                                                                    free($2);free($9);
+                                                                                                    is_in_fn = false;fn_ret_class = NULL;
+                                                                                                    popscope();
+                                                                                                    clear_literals();
+                                                                                                    }
+pushscopedummy : /*nothing*/    {pushscope();}
 fndecldummy : /* nothing */ {print_fn_delc($<s>-7);
                             fn_type = $<t>0;
                             is_in_fn = true;
                             has_returned = false;} 
+
+classfndecldummy : /*nothing*/  {print_fn_delc($<s>-7);
+                                fn_type = CLASS_TYPE;
+                                fn_ret_class =$<s>0;
+                                is_in_fn = true;
+                                has_returned = false;}
 
 paramlist : /* nothing */
     | paramlist param
@@ -262,6 +298,8 @@ commentlist : /*nothing*/
 
 returnstmt : RETURN expr { if(expr_type != fn_type){
                                 yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[expr_type]);
+                            }else if(fn_type == CLASS_TYPE && strcmp(expr_class,fn_ret_class) !=0){
+                                yyerror("invalid return type : expected class %s found class %s",fn_ret_class,expr_class);
                             }else{
                                 printcode("return %s;",$2);
                                 has_returned = true;
@@ -451,7 +489,8 @@ fncall : IDENTIFIER '(' {push_expr_and_args();if(find_action($1)==0)is_in_fncall
                                                     expr_type = fn_ret;
                                                 }
                                             }else if(fn->is_ret_class){
-                                                //? print error or allow?
+                                                expr_type = CLASS_TYPE;
+                                                //!TODO DO we need these clauses now, yeah....we'll see?
                                             }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
                                                 yyerror("Cannot combine string type with any type.");
                                             }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
@@ -589,23 +628,27 @@ iterarraydummy : /*nothing*/ {Variable *v = lookup_var($<s>0);
                                     }}
 
 ;
-expr: expr '+' {push_expr_type();} expr  { $$=join($1,"+",$4); free($1);free($4); 
-                                            type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+expr: expr '+'  expr  { $$=join($1,"+",$3); free($1);free($3); 
+                                            //type t = pop_expr_type();
+                                            //if(expr_typ0e == CLASS_TYPE){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            if(expr_type == CLASS_TYPE){yyerror("cannot combine classes");}
                                             is_composite_val =false;}
-    | expr '-' {push_expr_type();} expr  {$$=join($1,"-",$4); free($1);free($4); 
-                                            type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;}
-    | expr '*' {push_expr_type();} expr  {$$=join($1,"*",$4); free($1);free($4); 
-                                            type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;}
-    | expr '/' {push_expr_type();} expr  {$$=join($1,"/",$4); free($1);free($4); 
-                                            type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;}
-    | expr MOD {push_expr_type();} expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use mod on %s type",type_arr[expr_type]);} 
-                                            type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
-                                            $$=join($1,"%",$4); free($1);free($4); is_composite_val =false;}
+    | expr '-'  expr  {$$=join($1,"-",$3); free($1);free($3); 
+                                            //type t = pop_expr_type();
+                                            //if(expr_type == CLASS_TYPE){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;
+                                            }
+    | expr '*'  expr  {$$=join($1,"*",$3); free($1);free($3); 
+                                            //type t = pop_expr_type();
+                                            //if(t == CLASS_TYPE || expr_type == CLASS_TYPE){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;
+                                            }
+    | expr '/'  expr  {$$=join($1,"/",$3); free($1);free($3);
+                                            //type t = pop_expr_type();
+                                            //if(t == CLASS_TYPE || expr_type == CLASS_TYPE){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;
+                                            }
+    | expr MOD  expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use mod on %s type",type_arr[expr_type]);} 
+                                            //type t = pop_expr_type();
+                                            //if(t == CLASS_TYPE || expr_type == CLASS_TYPE){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
+                                            $$=join($1,"%",$3); free($1);free($3); is_composite_val =false;}
     | '(' type ')' expr  %prec UMINUS    {
                                 if(expr_type == CLASS_TYPE){yyerror("cannot typecast class values");}
                                 void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
@@ -619,9 +662,8 @@ expr: expr '+' {push_expr_type();} expr  { $$=join($1,"+",$4); free($1);free($4)
                                 expr_type = $2;
                             }
     | '(' expr ')'   {$$=join("( ",$2," )"); free($2); is_composite_val =false;}
-    | '-' expr  %prec UMINUS {$$=join("-","",$2);if(expr_type == CLASS_TYPE){yyerror("Cannot use negetive on class type");}  
-                                            type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}free($2); is_composite_val =false;}
+    | '-' expr  %prec UMINUS {$$=join("-","",$2);if(expr_type == CLASS_TYPE){yyerror("Cannot use negetive on class type");}
+                                    if(expr_type == CLASS_TYPE){yyerror("Cannot apply negetion on class type");}}
     | expr '<'{push_expr_type();}  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use < with %s type",type_arr[expr_type]);} 
                                             type t = pop_expr_type();
                                             if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}

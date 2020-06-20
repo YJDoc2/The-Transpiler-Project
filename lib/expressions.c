@@ -78,6 +78,7 @@ void pop_expr_and_args() {
 
 void push_expr_type() {
   st_push(&exprt_st, (void *)expr_type);  // push the current expr_type
+  expr_type = VOID_TYPE;
 }
 
 type pop_expr_type() {

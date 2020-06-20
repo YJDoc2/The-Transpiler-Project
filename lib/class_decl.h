@@ -30,7 +30,8 @@ typedef struct {
 typedef struct {
   char* print_name;
   Linked_list* param_list;
-  type ret_t;
+  type_u ret_t;
+  bool is_class_ret;
   bool is_static_method;
   int declaration;
 } method;
@@ -104,6 +105,23 @@ void add_class_type_attr(Class* class, modifier m, char* classname, char* name,
 void add_method(Class* class, char* name, type ret_t, bool is_static,
                 Linked_list* paramlist, int line);
 
+/*
+ * A function to add a method to the class
+ *
+ * Params :
+ * class : pointer to the class
+ * name : name of the method to be added, duplicated inside
+ *        so can be freed after call
+ * ret_class : name of the returning class, duplicated inside, so can be freed
+ * is_static : is the method static
+ * paramlist : linedlist pointer of the parmalist of methods,
+ *              must persist after call till end of program
+ *              will be freed in __cleanup_classes__
+ *
+ * Returns : void
+ */
+void add_class_ret_method(Class* class, char* name, char* ret_class,
+                          bool is_static, Linked_list* paramlist, int line);
 /*
  * Prints a method declaration to code file
  * print in format : type print_name (parmalist){

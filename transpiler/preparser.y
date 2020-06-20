@@ -57,6 +57,7 @@ stmtlist :/*nothing*/
 classdecl : CLASS ident '{' {pre_add_class($2);pre_in_class = true;} '}' {pre_in_class = false;free($2);}
 
 fndeclaration : FNDECL ident '(' paramlist ')' "->" modifier type {fnlineno=prelineno;}'{'{in_fn = true;}'}' {if(!pre_in_class)add_function($7,$8,$2,$2,fnlineno);free($2);in_fn=false;}
+    |FNDECL ident '(' paramlist ')' "->" modifier clsname {fnlineno=prelineno;}'{'{in_fn = true;}'}' {if(!pre_in_class)add_class_ret_function($7, $8, $2,$2,fnlineno);free($2);free($8);in_fn=false;}
 
 vardecl: modifier type IDENTIFIER 
     | modifier CLASSNAME IDENTIFIER 
