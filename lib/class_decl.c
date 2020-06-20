@@ -351,7 +351,7 @@ void print_class_header(char* name) {
     if (iter->key != NULL || iter->value != NULL) {
       method* fn = (method*)iter->value;
       print_method_start(current_class, fn);
-      printcode(" );\n");
+      printcode(" );\n\n");
     }
     ++iter;
   }
@@ -383,5 +383,5 @@ void end_attr_list(char* name) {
   FILE* t = header;
   header = code;
   code = t;
-  printcode("#include \"class_%s.h\"\n", name);
+  printcode("#include \"class_%s.h\"\n\n", name);
 }

@@ -175,7 +175,7 @@ arraysign : /*nothing*/ {$$= false;}
     | '[' ']'   {$$ = true;}
 
 methodlist : /*nothing*/
-    | methodlist FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" type methoddummy '{' stmtlist'}' {printcode("}");
+    | methodlist FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" type methoddummy '{' stmtlist'}' {printcode("}\n");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",$3,type_arr[fn_type]);
                                                                                                     }
@@ -184,7 +184,7 @@ methodlist : /*nothing*/
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     is_static_method = false;}
-    | methodlist staticdummy FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" type methoddummy'{' stmtlist'}' {printcode("}");
+    | methodlist staticdummy FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" type methoddummy'{' stmtlist'}' {printcode("}\n");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",$4,type_arr[fn_type]);
                                                                                                     }
@@ -193,14 +193,14 @@ methodlist : /*nothing*/
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     is_static_method = false;}
-    | methodlist FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" CLASSNAME clsretmethoddummy '{' stmtlist'}' {printcode("}");
+    | methodlist FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" CLASSNAME clsretmethoddummy '{' stmtlist'}' {printcode("}\n");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){yyerror("function %s require %s return type, corresponding return statement not found",$3,type_arr[fn_type]);}
                                                                                                     free($3);free($9);
                                                                                                     is_in_fn = false;fn_ret_class = NULL;
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     is_static_method = false;}
-    | methodlist staticdummy FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" CLASSNAME clsretmethoddummy'{' stmtlist'}' {printcode("}");
+    | methodlist staticdummy FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" CLASSNAME clsretmethoddummy'{' stmtlist'}' {printcode("}\n");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){yyerror("function %s require %s return type, corresponding return statement not found",$4,type_arr[fn_type]);}
                                                                                                     free($4);free($10);
                                                                                                     is_in_fn = false;fn_ret_class = NULL;
@@ -465,46 +465,47 @@ arrayvallist : expr { if(verify_types(arr_type,expr_type)){yyerror("Invalid assi
                         free($3);}
 
 fncall : IDENTIFIER '(' {push_expr_and_args();if(find_action($1)==0)is_in_fncall=true;} arglist ')' {if(!is_in_fn){
-                                        yyerror("Function call is not allowed outside a function.");
-                                        $$ = strdup("");
-                                    }else if(find_action($1)){
-                                        perform_action($1);
-                                        $$ = strdup("");
-                                    }else{
-                                        Function *fn = find_fn($1);
-                                        if(fn == NULL){
-                                            $$ = get_fncall_str($1);
-                                            ll_clear(arglist);
-                                        }else{
-                                            verify_call($1,fn,yylineno);
-                                            $$ = get_fncall_str($1);
-                                            ll_clear(arglist);
-                                            pop_expr_and_args();
-                                            type fn_ret = fn->ret_t.t;
-                                            if(expr_type == VOID_TYPE){
-                                                if(fn->is_ret_class){
-                                                    expr_type = CLASS_TYPE;
-                                                    expr_class = fn->ret_t.class;
-                                                }else{
-                                                    expr_type = fn_ret;
-                                                }
-                                            }else if(fn->is_ret_class){
-                                                expr_type = CLASS_TYPE;
-                                                //!TODO DO we need these clauses now, yeah....we'll see?
-                                            }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
-                                                yyerror("Cannot combine string type with any type.");
-                                            }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
-                                                (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){
-                                                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
-                                            }else if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
-                                                expr_type = COMPLEX_TYPE;
-                                            }else if(expr_type == FLOAT_TYPE || fn_ret == FLOAT_TYPE || fn_ret == DOUBLE_TYPE){
-                                                expr_type = FLOAT_TYPE;
-                                            }
-                                        }
-                                    }
-                                    is_in_fncall = false;
-                                    free($1);}
+                                                                                                    yyerror("Function call is not allowed outside a function.");
+                                                                                                    $$ = strdup("");
+                                                                                                }else if(find_action($1)){
+                                                                                                    perform_action($1);
+                                                                                                    $$ = strdup("");
+                                                                                                }else{
+                                                                                                    Function *fn = find_fn($1);
+                                                                                                    if(fn == NULL){
+                                                                                                        $$ = get_fncall_str($1);
+                                                                                                        ll_clear(arglist);
+                                                                                                    }else{
+                                                                                                        verify_call($1,fn,yylineno);
+                                                                                                        $$ = get_fncall_str($1);
+                                                                                                        ll_clear(arglist);
+                                                                                                        pop_expr_and_args();
+                                                                                                        type fn_ret = fn->ret_t.t;
+                                                                                                        if(expr_type == VOID_TYPE){
+                                                                                                            if(fn->is_ret_class){
+                                                                                                                expr_type = CLASS_TYPE;
+                                                                                                                expr_class = fn->ret_t.class;
+                                                                                                            }else{
+                                                                                                                expr_type = fn_ret;
+                                                                                                            }
+                                                                                                        }else if(fn->is_ret_class){
+                                                                                                            expr_type = CLASS_TYPE;
+                                                                                                            expr_class = fn->ret_t.class;
+                                                                                                            //!TODO DO we need these clauses now, yeah....we'll see?
+                                                                                                        }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
+                                                                                                            yyerror("Cannot combine string type with any type.");
+                                                                                                        }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
+                                                                                                            (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){
+                                                                                                                yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
+                                                                                                        }else if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
+                                                                                                            expr_type = COMPLEX_TYPE;
+                                                                                                        }else if(expr_type == FLOAT_TYPE || fn_ret == FLOAT_TYPE || fn_ret == DOUBLE_TYPE){
+                                                                                                            expr_type = FLOAT_TYPE;
+                                                                                                        }
+                                                                                                    }
+                                                                                                }
+                                                                                                is_in_fncall = false;
+                                                                                                free($1);}
 ;
 
 arglist : /* nothing */ 
@@ -629,25 +630,18 @@ iterarraydummy : /*nothing*/ {Variable *v = lookup_var($<s>0);
 
 ;
 expr: expr '+'  expr  { $$=join($1,"+",$3); free($1);free($3); 
-                                            //type t = pop_expr_type();
-                                            //if(expr_typ0e == CLASS_TYPE){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
-                                            if(expr_type == CLASS_TYPE){yyerror("cannot combine classes");}
+                                            if(expr_type == CLASS_TYPE){yyerror("cannot use + operation on classes");}
                                             is_composite_val =false;}
     | expr '-'  expr  {$$=join($1,"-",$3); free($1);free($3); 
-                                            //type t = pop_expr_type();
-                                            //if(expr_type == CLASS_TYPE){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;
+                                            if(expr_type == CLASS_TYPE){yyerror("cannot use + operation on classes");}
                                             }
     | expr '*'  expr  {$$=join($1,"*",$3); free($1);free($3); 
-                                            //type t = pop_expr_type();
-                                            //if(t == CLASS_TYPE || expr_type == CLASS_TYPE){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;
+                                            if(expr_type == CLASS_TYPE){yyerror("cannot use + operation on classes");}
                                             }
     | expr '/'  expr  {$$=join($1,"/",$3); free($1);free($3);
-                                            //type t = pop_expr_type();
-                                            //if(t == CLASS_TYPE || expr_type == CLASS_TYPE){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);} is_composite_val =false;
+                                            if(expr_type == CLASS_TYPE){yyerror("cannot use + operation on classes");}
                                             }
     | expr MOD  expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use mod on %s type",type_arr[expr_type]);} 
-                                            //type t = pop_expr_type();
-                                            //if(t == CLASS_TYPE || expr_type == CLASS_TYPE){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
                                             $$=join($1,"%",$3); free($1);free($3); is_composite_val =false;}
     | '(' type ')' expr  %prec UMINUS    {
                                 if(expr_type == CLASS_TYPE){yyerror("cannot typecast class values");}
@@ -662,39 +656,25 @@ expr: expr '+'  expr  { $$=join($1,"+",$3); free($1);free($3);
                                 expr_type = $2;
                             }
     | '(' expr ')'   {$$=join("( ",$2," )"); free($2); is_composite_val =false;}
-    | '-' expr  %prec UMINUS {$$=join("-","",$2);if(expr_type == CLASS_TYPE){yyerror("Cannot use negetive on class type");}
-                                    if(expr_type == CLASS_TYPE){yyerror("Cannot apply negetion on class type");}}
-    | expr '<'{push_expr_type();}  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use < with %s type",type_arr[expr_type]);} 
-                                            type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
-                                            $$= join($1,"<",$4);free($1);free($4);expr_type = BOOL_TYPE;}
-    | expr '>'{push_expr_type();}  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use > with %s type",type_arr[expr_type]);} 
-                                            type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
-                                            $$= join($1,">",$4);free($1);free($4);expr_type = BOOL_TYPE;}
-    | expr LTE{push_expr_type();}  expr         {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use <= with %s type",type_arr[expr_type]);} 
-                                            type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
-                                            $$= join($1,"<=",$4);free($1);free($4);expr_type = BOOL_TYPE;}
-    | expr GTE{push_expr_type();}  expr          {if(expr_type == COMPLEX_TYPE|| expr_type == CLASS_TYPE){yyerror("Cannot use >= with %s type",type_arr[expr_type]);} 
-                                            type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
-                                            $$= join($1,">=",$4);free($1);free($4);expr_type = BOOL_TYPE;}
-    | expr EQL{push_expr_type();}  expr  %prec LEAST        { type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
-                                            $$= join($1,"==",$4);free($1);free($4);expr_type = BOOL_TYPE;}
-    | expr NOT EQL{push_expr_type();} expr  %prec LEAST     { type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
-                                            $$= join($1,"!=",$5);free($1);free($5);expr_type = BOOL_TYPE;}
-    | expr AND{push_expr_type();}  expr  { type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
-                                            $$= join($1," && ",$4);free($1);free($4);expr_type = BOOL_TYPE;}
-    | expr OR {push_expr_type();} expr    { type t = pop_expr_type();
-                                            if(verify_types(t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[t],type_arr[expr_type]);}
-                                            $$= join($1," || ",$4);free($1);free($4);expr_type = BOOL_TYPE;}
-    | NOT expr   { type _t = pop_expr_type();
-                    if(verify_types(_t,expr_type)){yyerror("cannot combine %s type with %s type",type_arr[_t],type_arr[expr_type]);}char * t =join("(",$2,")");
-                    $$ = join("!",t,"");free(t);free($2);expr_type = BOOL_TYPE;}
+    | '-' expr  %prec UMINUS {$$=join("-","",$2);if(expr_type == CLASS_TYPE){yyerror("Cannot use negetive on class type");}}
+    | expr '<'  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use < with %s type",type_arr[expr_type]);} 
+                                            $$= join($1,"<",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr '>'  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use > with %s type",type_arr[expr_type]);} 
+                                            $$= join($1,">",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr LTE expr         {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use <= with %s type",type_arr[expr_type]);} 
+                                            $$= join($1,"<=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr GTE expr          {if(expr_type == COMPLEX_TYPE|| expr_type == CLASS_TYPE){yyerror("Cannot use >= with %s type",type_arr[expr_type]);} 
+                                            $$= join($1,">=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr EQL expr  %prec LEAST        {if(expr_type == CLASS_TYPE){yyerror("cannot compare classes directly");}
+                                            $$= join($1,"==",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr NOT EQL expr %prec LEAST     {if(expr_type == CLASS_TYPE){yyerror("cannot compare classes directly");}
+                                        $$= join($1,"!=",$4);free($1);free($4);expr_type = BOOL_TYPE;}
+    | expr AND expr  {if(expr_type == CLASS_TYPE){yyerror("cannot use logical operators on classes directly");}
+                            $$= join($1," && ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | expr OR expr    {if(expr_type == CLASS_TYPE){yyerror("cannot use logical operators on classes directly");} 
+                        $$= join($1," || ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
+    | NOT expr   {if(expr_type == CLASS_TYPE){yyerror("cannot use logical operators on classes directly");}
+                    char * t =join("(",$2,")");$$ = join("!",t,"");free(t);free($2);expr_type = BOOL_TYPE;}
     | value
 ;
 
@@ -719,8 +699,7 @@ value : cmplxnum {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                 }else if(expr_type == STRING_TYPE|| expr_type == CLASS_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
                 }}
-    | STRINGVAL {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
-    | fncall    
+    | STRINGVAL {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}    
     | varvals
 ;
 
@@ -733,7 +712,8 @@ cmplxnum : '(' expr ',' expr ')' {void* _t = calloc(1, strlen($2) + strlen($4) +
                                             $$ = (char*)_t;free($2);free($4);}
 ;
 
-varvals : IDENTIFIER { Variable *_t = lookup_var($1);
+varvals :fncall
+    | IDENTIFIER { Variable *_t = lookup_var($1);
                     if(_t == NULL){
                         yyerror("Undefined variable %s",$1);
                     }else {

@@ -28,3 +28,13 @@ for index,val in array {...} <br />
 There must be a space before and after '..' , and NOTE that loops with arrays can only be used if the array is declared in either same scope, or in global scope. Arrays received as function params cannot be used for this, as in generated for loop (sizeof(arr)/sizeof(arr[0])) is used, which gives size of array only if the array is declared in the said ways. When array is passed as fn param, it decays to a pointer, after wich the sizeof cannot give its size. <br />
 
 Note that variables declared with let must have a expression value with concrete type assigned to it. Also they will alway be of no special modifier, i.e. neither const or static, for using any modifier, one must use declaration with explicit type.<br />
+
+Note that one cannot access the fields of class if brackets are put around the variable, i.e. if class var A has a field B one can access by A.B but not by (A).B . Same applies for fn / method calls, if fn F returns Class type var, which has a field B, one can access it by
+
+<ul>
+<li> F().B </li>
+<li>classname A = F();<br />
+    A.B</li>
+</ul>
+but cannot access as (F()).B
+<br />

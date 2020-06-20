@@ -1,0 +1,56 @@
+class t0{
+    int g;
+    float f;
+}
+class t1{
+    int a;
+    t0 tc;
+    t0 ta[10];
+    fn test_method(int a)->t0{
+        t0 t;
+        print("hello ",a);
+        // return 5.6 +t; // this should give error
+        return t;// commenting this should give error
+    }
+    @static fn test_static()->t1{
+        t1 t;
+        print("testing static");
+        return t;
+    }
+}
+
+
+fn main()->void{
+    t0 t01,t02;
+    t1 t11,t12;
+    int a=5+6,b=6+6,c=8+6;
+    a = (int)6.89+5; // should not give error
+    // a = 5+ 6.86 +5 //should give error
+    bool d = 6 < 6.5; // should not give error
+    t0 t02 = t01; // should not give error
+    // t0 t03 = 6+ t01; //should give error
+    t11 = test_fn(); // should not give any error
+    t02 = test_fn().tc; // should not give error
+    //t02 = test_fn().ta; // should give error
+    t02 = test_fn().ta[2]; // should not give error
+    // t12 = t11<4; // should give error
+    // t12 = 5< t11; // should give error
+    //bool b = t11 eql t12; // should give error
+    bool k = t11.tc.g < test_fn().a; // should not give error;
+    int g = (int)test_fn().tc.f;// should not give error
+
+    //t11 = test_fn2(); // should give error
+    //t01 = test_fn(); // should give error
+    t01 = test_fn2(); // should not give error
+
+}
+
+fn test_fn () -> t1{
+    t1 t;
+    return t;
+}
+
+fn test_fn2()->t0{
+    t0 t;
+    return t;
+}
