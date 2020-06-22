@@ -1,0 +1,23 @@
+class t0{
+    int g;
+    float f;
+    @static fn new_with_defaults() -> t0{
+        t0 ret = {g = 0,f=0};
+        return ret;
+    }
+    @static fn new_with_given(int g, float f)->t0{
+        t0 ret = {g = g,f=f};
+        return ret;
+    }
+}
+
+
+
+fn main()->void{
+    t0 t01 = ::t0::new_with_defaults();
+    print("testing defaults, should be 0 = ",t01.g," 0 = ",t01.f);
+    print("\n");
+    t0 t02 = ::t0::new_with_given(5,5.0);
+    print("testing givens, should be  5 = ",t02.g," 5.0 = ",t02.f);
+    print("\n");
+}

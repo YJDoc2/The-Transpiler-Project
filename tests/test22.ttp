@@ -1,0 +1,43 @@
+class t0{
+    int g;
+    float f;
+    fn test_method(int a, int b)->void{
+        //nothing
+    }
+}
+class t1{
+    int a;
+    t0 tc;
+    t0 ta[10];
+    fn test_method(int a)->t0{
+        t0 t;
+        print("hello ",a);
+        return t;
+    }
+    @static fn test_static(int s)->t1{
+        t1 t;
+        print("testing static");
+        return t;
+    }
+}
+
+
+fn main()->void{
+    t0 t01,t02;
+    t1 t11,t12;
+
+    t11 = ::t1::test_static(5+5);
+    // ::t1::test_static(5+5).a::test_method(5); // should give error
+    t11.ta[0]::test_method(5,5);
+
+}
+
+fn test_fn () -> t1{
+    t1 t;
+    return t;
+}
+
+fn test_fn2()->t0{
+    t0 t;
+    return t;
+}

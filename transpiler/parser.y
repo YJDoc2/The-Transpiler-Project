@@ -42,7 +42,7 @@
     type temp_type;
     char * temp_class;
     bool is_assignable = false;
-    bool is_callable = false;
+    bool is_callable = true;
     bool is_static_method;
 
 %}
@@ -285,7 +285,7 @@ stmtlist :/* nothing */
 ;
 
 stmt : vardeclaration
-    | fncall {printcode("%s",$1);if(strcmp($1,"")!=0)printcode(";");free($1);}
+    | varvals {printcode("%s",$1);if(strcmp($1,"")!=0)printcode(";");free($1);}
     | returnstmt
     | assignstmt
     | BREAK {printcode("break;");}
@@ -342,20 +342,55 @@ classvarlist : IDENTIFIER       {create_class_var($<m>-2,$<s>-1,$1,false,yylinen
                                 yyerror("cannot assign class %s to variable of class %s",expr_class,temp_class);   
                             }else{
                                 printcode(" %s = %s",$1,$3);
-                            }free($1);free($3);}
+                            }create_class_var($<m>-2,$<s>-1,$1,false,yylineno);
+                            free($1);free($3);}
+    | IDENTIFIER '='  '{' {printcode("%s = { ",$1);} classvals '}'  {printcode(" }");create_class_var($<m>-2,$<s>-1,$1,false,yylineno);free($1);}
     | IDENTIFIER {/*nothing dummymust be kept to maintain arraydecl*/} arraydecl {create_class_var($<m>-2,$<s>-1,$1,true,yylineno);free($1);}
     | classvarlist ',' IDENTIFIER     {create_class_var($<m>-2,$<s>-1,$3,false,yylineno);printcode(", %s",$3);free($3);}
     | classvarlist ',' IDENTIFIER '=' expr {if(expr_type != CLASS_TYPE){yyerror("cannot assign %s to class type variable",type_arr[expr_type]);}
                             if(expr_class == NULL || strcmp(expr_class,temp_class) !=0){
                                 yyerror("cannot assign class %s to variable of class %s",expr_class,temp_class);   
                             }else{
-                                printcode(" %s = %s",$3,$5);
-                            }free($3);free($5);}
+                                printcode(" ,%s = %s",$3,$5);
+                            }create_class_var($<m>-2,$<s>-1,$3,false,yylineno);
+                            free($3);free($5);}
     | classvarlist ',' IDENTIFIER {printcode(", ");} arraydecl {create_class_var($<m>-2,$<s>-1,$3,true,yylineno);free($3);}
 
 ;
 
-
+classvals : /*nothing*/
+    | classvals IDENTIFIER '=' expr {attr * a = find_attr(temp_class,$2);
+                                            if(a==NULL){yyerror("No attribute named %s defined on class %s",$2,temp_class);
+                                            }else{
+                                                if(a->is_class){
+                                                    if(expr_type != CLASS_TYPE){
+                                                        yyerror("Cannont assign non-class value to class type attribute");
+                                                    }else if(strcmp(expr_class,a->t.class) !=0){
+                                                        yyerror("value of class %s cannot be assigned to attribute of type class %s",expr_class,a->t.class);
+                                                    }else{
+                                                        printcode(".%s = %s,",$2,$4);
+                                                    }
+                                                }else  if(verify_types(a->t.t,expr_type)){
+                                                    yyerror("cannot assign type %s to variable of type %s",type_arr[a->t.t],type_arr[expr_type]);
+                                                }else{
+                                                    printcode(".%s = %s,",$2,$4);
+                                                }}}
+    | classvals ',' IDENTIFIER '=' expr {attr * a = find_attr(temp_class,$3);
+                                            if(a==NULL){yyerror("No attribute named %s defined on class %s",$3,temp_class);
+                                            }else{
+                                                if(a->is_class){
+                                                    if(expr_type != CLASS_TYPE){
+                                                        yyerror("Cannont assign non-class value to class type attribute");
+                                                    }else if(strcmp(expr_class,a->t.class) !=0){
+                                                        yyerror("value of class %s cannot be assigned to attribute of type class %s",expr_class,a->t.class);
+                                                    }else{
+                                                        printcode(".%s = %s,",$3,$5);
+                                                    }
+                                                }else  if(verify_types(a->t.t,expr_type)){
+                                                    yyerror("cannot assign type %s to variable of type %s",type_arr[a->t.t],type_arr[expr_type]);
+                                                }else{
+                                                    printcode(".%s = %s,",$3,$5);
+                                                }}}
 
 decllist: IDENTIFIER {add_var($<m>-1,temp_type,$1,yylineno); free($1); }
     | IDENTIFIER '[' ']' {add_array($<m>-1,temp_type,$1,yylineno);free($1);}
@@ -811,7 +846,6 @@ varvals :fncall
                                             yyerror("No attribute %s declared on class %s",$4,expr_class);
                                         }else{
                                             is_assignable = a->m != CONST_TYPE;
-                                            is_callable = true;
                                             if(a->is_arr && !is_in_fncall){
                                                 yyerror("cannot use arrray without subscript.");
                                             }else if(a->is_class){
@@ -834,7 +868,6 @@ varvals :fncall
                                                                                                 yyerror("No attribute %s declared on class %s",$1,$4);
                                                                                             }else{
                                                                                                 is_assignable = a->m != CONST_TYPE;
-                                                                                                is_callable = true;
                                                                                                 if(!a->is_arr){
                                                                                                     yyerror("Subscripted object must be of array.");
                                                                                                 }else if(a->is_class){
@@ -862,7 +895,7 @@ varvals :fncall
                                                                                                         yyerror("No method named %s found in class %s",$3,expr_class);
                                                                                                         $$ = strdup("");
                                                                                                     }else if(!is_callable){
-                                                                                                        yyerror("methods can only be called on class type variables or members");
+                                                                                                        yyerror("methods can only be called directly on class type variables or members");
                                                                                                         $$ = strdup("");
                                                                                                     }else{
                                                                                                     verify_method_call($3,m,yylineno);

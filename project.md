@@ -116,13 +116,20 @@ Added support for classes in fn and method return types<br />
 test for making sure expr combing works as expected on class types and other types<br />
 \# test21.c transpiled from test21.tpp for testing class type function return type and expr type verification<br />
 
-Added support for accessing static and non-static methods, testing is remaining<br />
-test for fn with void return types;
-how to create new class(struct), specifically those involving const elements?<br />
+Added support for accessing static and non-static methods<br />
+\# test22.c transpiled from test22.tpp for testing method access<br />
+
+Added support for creating new class(struct), including those involving const elements , testing is remaining<br />
+
+\# test23.c transpiled from test23.tpp for testing creating new classes<br />
+
+gives error if tried to pass int in place of float arg...Should keep this?<br />
 
 add support fot 'this', maybe use :: for method access<br />
 
+test for fn with void return types, maybe just let it be...<br />
 add use syntax along with something like pragma once?<br />
+make fileds and methods private for classes...?<br />
 change action input and print to accommodate classes<br />
 Maybe merge add_var and add_array method in single as create_class_var has done<br />
 DO some formatting and pretty-printing of the parser and lexer<br />

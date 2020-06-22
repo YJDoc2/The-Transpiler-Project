@@ -7,6 +7,7 @@
 #include <libgen.h>
 #include <string.h>
 
+#include "class_decl.h"
 #include "functions.h"
 
 extern char *type_arr[], *mod_arr[];
@@ -207,8 +208,18 @@ void print_code_header() {
   fprintf(header, "#ifndef __%s__ \n", name);
   fprintf(header, "#define __%s__ \n", name);
 
-  hashpair *iter = fnmap.start;
-  hashpair *end = fnmap.start + fnmap.size;
+  hashpair *iter = classmap.start;
+  hashpair *end = classmap.start + classmap.size;
+
+  while (iter <= end) {
+    if (iter->key != NULL || iter->value != NULL) {
+      Class *c = iter->value;
+      fprintf(header, "#include \"class_%s.h\"\n", c->name);
+    }
+    ++iter;
+  }
+  iter = fnmap.start;
+  end = fnmap.start + fnmap.size;
   while (iter <= end) {
     if (iter->key != NULL || iter->value != NULL) {
       Function *f = (Function *)iter->value;
@@ -220,6 +231,7 @@ void print_code_header() {
     }
     ++iter;
   }
+
   iter = varmap.start;
   end = varmap.start + varmap.size;
   while (iter <= end) {

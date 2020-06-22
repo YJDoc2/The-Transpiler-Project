@@ -270,7 +270,8 @@ char *get_methodcall_str(method *m, char *call_var) {
         "variable");
   }
   if (!m->is_static) {
-    len += strlen(call_var) + 2;  // 1 for & and 1 for possible ','
+    len += strlen(call_var) + 2 +
+           2;  // 1 for & and 1 for possible ',', 2 for '(' and  ')'
   }
   void *ret =
       calloc(1, len + 2);  // one extra for end of string and one for ')'
@@ -279,8 +280,9 @@ char *get_methodcall_str(method *m, char *call_var) {
   strcat(ret, "(");
   iter = arglist->start;
   if (!m->is_static) {
-    strcat(ret, "&");
+    strcat(ret, "&(");
     strcat(ret, call_var);
+    strcat(ret, ")");
     if (iter != NULL) {
       strcat(ret, ",");
     }
