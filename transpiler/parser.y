@@ -251,6 +251,7 @@ fndeclaration : FNDECL IDENTIFIER '('pushscopedummy paramlist ')' "->" modifier 
                                                                                                     clear_literals();
                                                                                                     }
 pushscopedummy : /*nothing*/    {pushscope();}
+
 fndecldummy : /* nothing */ {print_fn_delc($<s>-7);
                             fn_type = $<t>0;
                             is_in_fn = true;
@@ -840,8 +841,97 @@ varvals :fncall
                                                                 expr_type = v->t.t;
                                                             }
                                                         }free($1);free($4);}
+    | THIS '.' IDENTIFIER   {attr* a = NULL;
+                                        a = (attr*)hm_get(current_class->attr,$3);
+                                        if(a== NULL){
+                                            yyerror("No attribute %s declared on class %s",$3,current_class->name);
+                                        }else{
+                                            is_assignable = a->m != CONST_TYPE;
+                                            is_callable = true;
+                                            if(a->is_arr && !is_in_fncall){
+                                                yyerror("cannot use arrray without subscript.");
+                                            }else if(a->is_class){
+                                                expr_type = CLASS_TYPE;
+                                                expr_class = a->t.class;
+                                            }else if(a->t.t ==COMPLEX_TYPE){
+                                                expr_type = COMPLEX_TYPE;
+                                            }else if(a->t.t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
+                                                expr_type = FLOAT_TYPE;
+                                            }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
+                                                expr_type = a->t.t;
+                                            }
+                                        }$$ = join("this","->",$3);free($3);}
+    | THIS '.' IDENTIFIER '[' {push_expr_and_args();} expr arraysizedummy ']'  { attr* a = NULL;
+                                                                            pop_expr_and_args();
+                                                                            a = (attr*)hm_get(current_class->attr,$3);
+                                                                            if(a== NULL){
+                                                                                yyerror("No attribute %s declared on class %s",$3,current_class->name);
+                                                                            }else{
+                                                                                is_assignable = a->m != CONST_TYPE;
+                                                                                is_callable = true;
+                                                                                if(!a->is_arr){
+                                                                                    yyerror("Subscripted object must be of array.");
+                                                                                }else if(a->is_class){
+                                                                                    expr_type = CLASS_TYPE;
+                                                                                    expr_class = a->t.class;
+                                                                                }else if( expr_type == STRING_TYPE){
+                                                                                    yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[a->t.t],type_arr[expr_type]);
+                                                                                }else if(a->t.t ==COMPLEX_TYPE){
+                                                                                    expr_type = COMPLEX_TYPE;
+                                                                                }else if(a->t.t == FLOAT_TYPE && expr_type != COMPLEX_TYPE){
+                                                                                    expr_type = FLOAT_TYPE;
+                                                                                }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
+                                                                                    expr_type = a->t.t;}}
+                                                                            char * t = join("this","->",$3);
+                                                                            char *tt = join(t,"[",$6);
+                                                                            $$ = join(tt,"]","");
+                                                                            free(t);free(tt);
+                                                                            free($3);free($6);}
+    |THIS "::" IDENTIFIER '(' {push_expr_and_args();is_in_fncall=true;} arglist ')' {if(!is_in_fn){yyerror("Function call is not allowed outside a function.");
+                                                                                                    $$ = strdup("");
+                                                                                                }else {
+                                                                                                    method * m =(method*)hm_get(current_class->methods,$3);
+                                                                                                    if(m == NULL){
+                                                                                                        yyerror("No method named %s found in class %s",$3,current_class->name);
+                                                                                                        $$ = strdup("");
+                                                                                                    }else if(!is_callable){
+                                                                                                        yyerror("methods can only be called directly on class type variables or members");
+                                                                                                        $$ = strdup("");
+                                                                                                    }else{
+                                                                                                        verify_method_call($3,m,yylineno);
+                                                                                                        $$ = get_methodcall_str(m,"*this");
+                                                                                                        ll_clear(arglist);
+                                                                                                        pop_expr_and_args();
+                                                                                                        type fn_ret = m->ret_t.t;
+                                                                                                        if(expr_type == VOID_TYPE){
+                                                                                                            if(m->is_ret_class){
+                                                                                                                expr_type = CLASS_TYPE;
+                                                                                                                expr_class = m->ret_t.class;
+                                                                                                            }else{
+                                                                                                                expr_type = fn_ret;
+                                                                                                            }
+                                                                                                        }else if(m->is_ret_class){
+                                                                                                            expr_type = CLASS_TYPE;
+                                                                                                            expr_class = m->ret_t.class;
+                                                                                                            //!TODO DO we need these clauses now, yeah....we'll see?
+                                                                                                        }else if(m->ret_t.t == VOID_TYPE){
+                                                                                                            expr_type = VOID_TYPE;
+                                                                                                        }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
+                                                                                                            yyerror("Cannot combine string type with any type.");
+                                                                                                        }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
+                                                                                                            (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){
+                                                                                                                yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
+                                                                                                        }else if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
+                                                                                                            expr_type = COMPLEX_TYPE;
+                                                                                                        }else if(expr_type == FLOAT_TYPE || fn_ret == FLOAT_TYPE || fn_ret == DOUBLE_TYPE){
+                                                                                                            expr_type = FLOAT_TYPE;
+                                                                                                        }}}
+                                                                                                is_callable = false;free($3);is_in_fncall = false;}
     | varvals '.' classcheckdummy IDENTIFIER { attr* a = NULL;
-                                        if(expr_type == CLASS_TYPE)a = find_attr(expr_class,$4);
+                                        if(expr_type == CLASS_TYPE){a = find_attr(expr_class,$4);
+                                        }else{
+                                            yyerror("Members can only be accessed on Class type variables");
+                                        }
                                         if(a== NULL){
                                             yyerror("No attribute %s declared on class %s",$4,expr_class);
                                         }else{
@@ -863,7 +953,10 @@ varvals :fncall
                                     }
     | varvals '.' classcheckdummy IDENTIFIER '[' {push_expr_and_args();} expr  arraysizedummy']'  { attr* a = NULL;
                                                                                                 pop_expr_and_args();
-                                                                                            if(expr_type == CLASS_TYPE)a = find_attr(expr_class,$4);    
+                                                                                            if(expr_type == CLASS_TYPE){a = find_attr(expr_class,$4);
+                                                                                                }else{
+                                                                                                    yyerror("Members can only be accessed on Class type variables");
+                                                                                                }
                                                                                             if(a== NULL){
                                                                                                 yyerror("No attribute %s declared on class %s",$1,$4);
                                                                                             }else{
@@ -928,7 +1021,7 @@ varvals :fncall
                                                                                                     }}
                                                                                                     }
 
-                                                                                                    free($1);free($3);
+                                                                                                is_callable = false;free($1);free($3);
                                                                                                 is_in_fncall = false;}
     
 ;

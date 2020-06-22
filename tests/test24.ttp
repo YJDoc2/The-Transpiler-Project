@@ -1,0 +1,30 @@
+class t0{
+    int g;
+    float f;
+    @static fn new_with_defaults() -> t0{
+        t0 ret = {g = 0,f=0};
+        return ret;
+    }
+    @static fn new_with_given(int g, float f)->t0{
+        t0 ret = {g = g,f=f};
+        return ret;
+    }
+    fn switch_vals(int g, float f)->t0{
+        int temp_g = this.g;
+        float temp_f = this.f;
+        this.g = g;
+        this.f = f;
+        return this::new_with_given(temp_g,temp_f);
+    }
+}
+
+
+
+fn main()->void{
+    t0 t01 = ::t0::new_with_defaults();
+    print("testing with defaults : 0 = ",t01.g," 0 = ",t01.f);
+    t0 t02 = t01::switch_vals(5,5.0);
+    print("testing returned from method : 0 = ",t02.g," 0 = ",t02.f);
+    print("testing after switching : 5 = ",t01.g," 5.0 = ",t01.f);
+}
+

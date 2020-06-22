@@ -1121,7 +1121,7 @@ YY_RULE_SETUP
 case 25:
 YY_RULE_SETUP
 #line 80 "lexer.l"
-{if(current_class == NULL || is_static_method){yyerror("Canot use this outside class mthods or inside static methods.");}else{return THIS;}}
+{if(current_class == NULL || is_static_method){yyerror("Canot use 'this' outside class mthods or inside static methods.");}else{return THIS;}}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP

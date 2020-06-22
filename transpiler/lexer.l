@@ -76,7 +76,7 @@ fn                                  {return FNDECL;}
 class                               {return CLASS;}
 @static                             {return STATICMETHOD;}
 
-this                                {if(current_class == NULL || is_static_method){yyerror("Canot use this outside class mthods or inside static methods.");}else{return THIS;}}
+this                                {if(current_class == NULL || is_static_method){yyerror("Canot use 'this' outside class mthods or inside static methods.");}else{return THIS;}}
 
 bool                                { yylval.t = BOOL_TYPE; return BOOL; }
 complex                             { yylval.t = COMPLEX_TYPE; return COMPLEX; }

@@ -123,13 +123,17 @@ Added support for creating new class(struct), including those involving const el
 
 \# test23.c transpiled from test23.tpp for testing creating new classes<br />
 
+Added support fot 'this'<br />
+\# test24.c transpiled from test24.tpp for testing field and method access using 'this'<br />
+
+add use syntax along with something like pragma once?<br />
+make fields and methods private for classes...?<br />
+
 gives error if tried to pass int in place of float arg...Should keep this?<br />
 
-add support fot 'this', maybe use :: for method access<br />
+test for fn with void return types, maybe just let it be...?<br />
 
-test for fn with void return types, maybe just let it be...<br />
-add use syntax along with something like pragma once?<br />
-make fileds and methods private for classes...?<br />
 change action input and print to accommodate classes<br />
 Maybe merge add_var and add_array method in single as create_class_var has done<br />
+
 DO some formatting and pretty-printing of the parser and lexer<br />
