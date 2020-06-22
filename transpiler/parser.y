@@ -43,7 +43,8 @@
     char * temp_class;
     bool is_assignable = false;
     bool is_callable = true;
-    bool is_static_method;
+    bool is_static_method = false;
+    bool is_private_method =false;
 
 %}
 
@@ -87,7 +88,7 @@
 %token BEGINCOMMENT ENDCOMMENT 
 %token <s> COMMENTLINE
 
-%token CLASS STATICMETHOD THIS
+%token CLASS STATICMETHOD THIS PRIVATE
 %token DCOLON "::"
 %token <s> CLASSNAME
 
@@ -98,6 +99,7 @@
 %type <s> letarrvals
 %type <b> arraysign
 %type <s> varvals
+%type <b> pvt
 
 %%
 program : topstmtlist
@@ -141,47 +143,47 @@ classdef : CLASS IDENTIFIER '{' {current_class = add_class($2,yylineno);start_cl
 
 attrlist: /*nothing*/
     | attrlist error ';'
-    | attrlist modifier type IDENTIFIER ';' {if($2 == STATIC_TYPE){
-                                                yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
-                                                }add_attr(current_class,$2,$3,$4,false,yylineno);
-                                                printcode("%s %s %s;",mod_arr[$2],type_arr[$3],$4);free($4);}
-    | attrlist modifier type IDENTIFIER '[' expr arraysizedummy ']' ';' {if($2 == STATIC_TYPE){
-                                                                    yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
-                                                                    }add_attr(current_class,$2,$3,$4,true,yylineno);printcode("%s %s %s[%s];",mod_arr[$2],type_arr[$3],$4,$6);free($4);free($6);}
-    | attrlist modifier CLASSNAME IDENTIFIER ';'  {if($2 == STATIC_TYPE){
-                                                    yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
-                                                    } 
-                                                    if(strcmp($3,current_class->name)==0){
-                                                        yyerror("cannot reference a class in itself");
-                                                    }else{add_class_type_attr(current_class,$2,$3,$4,false,yylineno);
-                                                    printcode("%s %s %s;",mod_arr[$2],$3,$4);
-                                                    free($3);free($4);}}
-    |attrlist modifier CLASSNAME IDENTIFIER '['expr arraysizedummy ']' ';'  {if($2 == STATIC_TYPE){
-                                                    yyerror("Cannot use static on class attributes");$2 = NONE_TYPE;
-                                                    }
-                                                    if(strcmp($3,current_class->name)==0){
-                                                        yyerror("cannot reference a class in itself");
-                                                    }else{add_class_type_attr(current_class,$2,$3,$4,true,yylineno);
-                                                    printcode("%s %s %s[%s];",mod_arr[$2],$3,$4,$6);
-                                                    free($3);free($4);free($6);}}
-    | attrlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
-    | attrlist DECL modifier type IDENTIFIER arraysign ';'  {if($3 == STATIC_TYPE){
+    | attrlist pvt modifier type IDENTIFIER ';' {if($3 == STATIC_TYPE){
                                                 yyerror("Cannot use static on class attributes");$3 = NONE_TYPE;
-                                                }add_attr(current_class,$3,$4,$5,$6,yylineno);free($5);}
-    | attrlist DECL modifier CLASSNAME IDENTIFIER arraysign ';'  {if($3 == STATIC_TYPE){
-                                                            yyerror("Cannot use static on class attributes");$3 = NONE_TYPE;
-                                                            }add_class_type_attr(current_class,$3,$4,$5,$6,yylineno);free($4);free($5);}
+                                                }add_attr(current_class,$3,$4,$5,false,$2,yylineno);
+                                                printcode("%s %s %s;",mod_arr[$3],type_arr[$4],$5);free($5);}
+    | attrlist pvt modifier type IDENTIFIER '[' expr arraysizedummy ']' ';' {if($3 == STATIC_TYPE){
+                                                                    yyerror("Cannot use static on class attributes");$3 = NONE_TYPE;
+                                                                    }add_attr(current_class,$3,$4,$5,true,$2,yylineno);printcode("%s %s %s[%s];",mod_arr[$3],type_arr[$4],$5,$7);free($5);free($7);}
+    | attrlist pvt modifier CLASSNAME IDENTIFIER ';'  {if($3 == STATIC_TYPE){
+                                                    yyerror("Cannot use static on class attributes");$3 = NONE_TYPE;
+                                                    } 
+                                                    if(strcmp($4,current_class->name)==0){
+                                                        yyerror("cannot reference a class in itself");
+                                                    }else{add_class_type_attr(current_class,$3,$4,$5,false,$2,yylineno);
+                                                    printcode("%s %s %s;",mod_arr[$3],$4,$5);
+                                                    free($4);free($5);}}
+    |attrlist pvt modifier CLASSNAME IDENTIFIER '['expr arraysizedummy ']' ';'  {if($3 == STATIC_TYPE){
+                                                    yyerror("Cannot use static on class attributes");$3 = NONE_TYPE;
+                                                    }
+                                                    if(strcmp($4,current_class->name)==0){
+                                                        yyerror("cannot reference a class in itself");
+                                                    }else{add_class_type_attr(current_class,$3,$4,$5,true,$2,yylineno);
+                                                    printcode("%s %s %s[%s];",mod_arr[$3],$4,$5,$7);
+                                                    free($4);free($5);free($7);}}
+    | attrlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
+    | attrlist DECL pvt modifier type IDENTIFIER arraysign ';'  {if($4 == STATIC_TYPE){
+                                                yyerror("Cannot use static on class attributes");$4 = NONE_TYPE;
+                                                }add_attr(current_class,$4,$5,$6,$7,$3,yylineno);free($6);}
+    | attrlist DECL pvt modifier CLASSNAME IDENTIFIER arraysign ';'  {if($4 == STATIC_TYPE){
+                                                            yyerror("Cannot use static on class attributes");$4 = NONE_TYPE;
+                                                            }add_class_type_attr(current_class,$4,$5,$6,$7,$3,yylineno);free($5);free($6);}
     | attrlist comment
 
 arraysign : /*nothing*/ {$$= false;}
     | '[' ']'   {$$ = true;}
 
 methodlist : /*nothing*/
-    | methodlist FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" type methoddummy '{' stmtlist'}' {printcode("}\n");
+    | methodlist pvtmethoddummy FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" type methoddummy '{' stmtlist'}' {printcode("}\n");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
-                                                                                                        yyerror("function %s require %s return type, corresponding return statement not found",$3,type_arr[fn_type]);
+                                                                                                        yyerror("function %s require %s return type, corresponding return statement not found",$4,type_arr[fn_type]);
                                                                                                     }
-                                                                                                    free($3);
+                                                                                                    free($4);
                                                                                                     is_in_fn = false;
                                                                                                     popscope();
                                                                                                     clear_literals();
@@ -195,9 +197,9 @@ methodlist : /*nothing*/
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     is_static_method = false;}
-    | methodlist FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" CLASSNAME clsretmethoddummy '{' stmtlist'}' {printcode("}\n");
-                                                                                                    if(fn_type != VOID_TYPE && !has_returned){yyerror("function %s require %s return type, corresponding return statement not found",$3,type_arr[fn_type]);}
-                                                                                                    free($3);free($9);
+    | methodlist pvtmethoddummy FNDECL IDENTIFIER '(' pushscopedummy paramlist ')' "->" CLASSNAME clsretmethoddummy '{' stmtlist'}' {printcode("}\n");
+                                                                                                    if(fn_type != VOID_TYPE && !has_returned){yyerror("function %s require %s return type, corresponding return statement not found",$4,type_arr[fn_type]);}
+                                                                                                    free($4);free($10);
                                                                                                     is_in_fn = false;fn_ret_class = NULL;
                                                                                                     popscope();
                                                                                                     clear_literals();
@@ -212,11 +214,17 @@ methodlist : /*nothing*/
 
 ;
 
-staticdummy : STATICMETHOD {is_static_method = true;}
+pvtmethoddummy : /**/    {is_private_method = false;}
+    | PRIVATE   {is_private_method = true;}
+
+staticdummy : STATICMETHOD {is_static_method = true;is_private_method = false;}
 
 ;
 
-methoddummy : /*nothing*/ {add_method(current_class, $<s>-6, $<t>0, is_static_method,temp_list, yylineno);
+pvt : /**/   {$$ = false;}
+    | PRIVATE       {$$ = true;}
+
+methoddummy : /*nothing*/ {add_method(current_class, $<s>-6, $<t>0, is_static_method,temp_list, is_private_method,yylineno);
                             print_method(current_class,$<s>-6);
                             temp_list = NULL;
                             fn_type = $<t>0;
@@ -224,7 +232,7 @@ methoddummy : /*nothing*/ {add_method(current_class, $<s>-6, $<t>0, is_static_me
                             has_returned = false;}
 ;
 
-clsretmethoddummy : /*nothing*/ {add_class_ret_method(current_class, $<s>-6, $<s>0, is_static_method,temp_list, yylineno);
+clsretmethoddummy : /*nothing*/ {add_class_ret_method(current_class, $<s>-6, $<s>0, is_static_method,temp_list,is_private_method, yylineno);
                             print_method(current_class,$<s>-6);
                             temp_list = NULL;
                             fn_type = CLASS_TYPE;
@@ -935,6 +943,9 @@ varvals :fncall
                                         if(a== NULL){
                                             yyerror("No attribute %s declared on class %s",$4,expr_class);
                                         }else{
+                                            if(a->is_pvt){
+                                                yyerror("Cannot access the private attribute %s outside the class",$4);
+                                            }
                                             is_assignable = a->m != CONST_TYPE;
                                             if(a->is_arr && !is_in_fncall){
                                                 yyerror("cannot use arrray without subscript.");
@@ -960,6 +971,9 @@ varvals :fncall
                                                                                             if(a== NULL){
                                                                                                 yyerror("No attribute %s declared on class %s",$1,$4);
                                                                                             }else{
+                                                                                                if(a->is_pvt){
+                                                                                                    yyerror("Cannot access the private attribute %s outside the class",$4);
+                                                                                                }
                                                                                                 is_assignable = a->m != CONST_TYPE;
                                                                                                 if(!a->is_arr){
                                                                                                     yyerror("Subscripted object must be of array.");
@@ -989,6 +1003,9 @@ varvals :fncall
                                                                                                         $$ = strdup("");
                                                                                                     }else if(!is_callable){
                                                                                                         yyerror("methods can only be called directly on class type variables or members");
+                                                                                                        $$ = strdup("");
+                                                                                                    }else if(m->is_pvt){
+                                                                                                        yyerror("Cannot call private method %s outside the class",$3);
                                                                                                         $$ = strdup("");
                                                                                                     }else{
                                                                                                     verify_method_call($3,m,yylineno);

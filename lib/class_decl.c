@@ -108,11 +108,12 @@ Class* add_class(char* name, int line) {
  * m : modifier of the attr, must be either NONE_TYPE or CONST_TYPE
  * name : name of the attribute, duplicated inside so can be freed after call
  * is_array : is the attribute an array
- *
+ * is_pvt : is the attribute private
+ * line : line number on which the attribute is declared
  * Returns : void
  */
 void add_attr(Class* class, modifier m, type t, char* name, bool is_arr,
-              int line) {
+              bool is_pvt, int line) {
   void* find = hm_get(class->attr, name);
   if (find != NULL) {
     yyerror("Attribute %s is already declared for class %s on line %d", name,
@@ -125,6 +126,7 @@ void add_attr(Class* class, modifier m, type t, char* name, bool is_arr,
   a->m = m;
   a->is_class = false;
   a->t.t = t;
+  a->is_pvt = is_pvt;
   a->name = temp;
   a->declaration = line;
   hm_add(class->attr, temp, a);
@@ -138,10 +140,11 @@ void add_attr(Class* class, modifier m, type t, char* name, bool is_arr,
  * m : modifier of attribute,must be either NONE_TYPE or CONST_TYPE
  * name : name of the attribute, duplicated inside so can be freed after call
  * is_array : is the attribute an array
+ * is_pvt : is the attribute private
  * line : line number on which the attribute is declared
  */
 void add_class_type_attr(Class* class, modifier m, char* classname, char* name,
-                         bool is_arr, int line) {
+                         bool is_arr, bool is_pvt, int line) {
   void* find = hm_get(class->attr, name);
   if (find != NULL) {
     yyerror("Attribute %s is already declared for class %s on line %d", name,
@@ -156,6 +159,7 @@ void add_class_type_attr(Class* class, modifier m, char* classname, char* name,
   a->is_class = true;
   a->t.class = c->name;
   a->name = temp;
+  a->is_pvt = is_pvt;
   a->declaration = line;
   hm_add(class->attr, temp, a);
 }
@@ -172,11 +176,12 @@ void add_class_type_attr(Class* class, modifier m, char* classname, char* name,
  * paramlist : linedlist pointer of the parmalist of methods,
  *              must persist after call till end of program
  *              will be freed in __cleanup_classes__()
- *
+ * is_pvt : is the method private
+ * line : line number on which the attribute is declared
  * Returns : void
  */
 void add_method(Class* class, char* name, type ret_t, bool is_static,
-                Linked_list* paramlist, int line) {
+                Linked_list* paramlist, bool is_pvt, int line) {
   void* find = hm_get(class->methods, name);
   if (find != NULL) {
     yyerror("method %s is already declared for class %s on line %d", name,
@@ -195,6 +200,7 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
   fn->print_name = printname;
   fn->is_ret_class = false;
   fn->ret_t.t = ret_t;
+  fn->is_pvt = is_pvt;
   fn->declaration = line;
   hm_add(class->methods, keyname, fn);
 }
@@ -211,11 +217,13 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
  * paramlist : linedlist pointer of the parmalist of methods,
  *              must persist after call till end of program
  *              will be freed in __cleanup_classes__
- *
+ * is_pvt : is the method private
+ * line : line number on which the attribute is declared
  * Returns : void
  */
 void add_class_ret_method(Class* class, char* name, char* ret_class,
-                          bool is_static, Linked_list* paramlist, int line) {
+                          bool is_static, Linked_list* paramlist, bool is_pvt,
+                          int line) {
   void* find = hm_get(class->methods, name);
   if (find != NULL) {
     yyerror("method %s is already declared for class %s on line %d", name,
@@ -234,6 +242,7 @@ void add_class_ret_method(Class* class, char* name, char* ret_class,
   fn->print_name = printname;
   fn->is_ret_class = true;
   fn->ret_t.class = strdup(ret_class);
+  fn->is_pvt = is_pvt;
   fn->declaration = line;
   hm_add(class->methods, keyname, fn);
 }

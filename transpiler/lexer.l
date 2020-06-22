@@ -75,6 +75,7 @@ fn                                  {return FNDECL;}
 
 class                               {return CLASS;}
 @static                             {return STATICMETHOD;}
+private                             {return PRIVATE;}
 
 this                                {if(current_class == NULL || is_static_method){yyerror("Canot use 'this' outside class mthods or inside static methods.");}else{return THIS;}}
 

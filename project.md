@@ -126,8 +126,9 @@ Added support for creating new class(struct), including those involving const el
 Added support fot 'this'<br />
 \# test24.c transpiled from test24.tpp for testing field and method access using 'this'<br />
 
+Added support for making fields and methods private for classes, testing is remaining<br />
+
 add use syntax along with something like pragma once?<br />
-make fields and methods private for classes...?<br />
 
 gives error if tried to pass int in place of float arg...Should keep this?<br />
 

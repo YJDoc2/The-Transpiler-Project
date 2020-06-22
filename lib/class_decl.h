@@ -17,6 +17,7 @@ typedef struct {
   char* name;
   bool is_arr;
   bool is_class;
+  bool is_pvt;
   int declaration;
 } attr;
 
@@ -33,6 +34,7 @@ typedef struct {
   type_u ret_t;
   bool is_ret_class;
   bool is_static;
+  bool is_pvt;
   int declaration;
 } method;
 
@@ -67,12 +69,13 @@ Class* add_class(char* name, int line);
  * m : modifier of the attr, must be either NONE_TYPE or CONST_TYPE
  * name : name of the attribute, duplicated inside so can be freed after call
  * is_array : is the attribute an array
+ * is_pvt : is the attribute private
  * line : line number on which the attribute is declared
  *
  * Returns : void
  */
 void add_attr(Class* class, modifier m, type t, char* name, bool is_arr,
-              int line);
+              bool is_pvt, int line);
 
 /*
  * A function to add class attributes, which themselves are of class type
@@ -82,10 +85,11 @@ void add_attr(Class* class, modifier m, type t, char* name, bool is_arr,
  * m : modifier of attribute,must be either NONE_TYPE or CONST_TYPE
  * name : name of the attribute, duplicated inside so can be freed after call
  * is_array : is the attribute an array
+ * is_pvt : is the attribute private
  * line : line number on which the attribute is declared
  */
 void add_class_type_attr(Class* class, modifier m, char* classname, char* name,
-                         bool is_arr, int line);
+                         bool is_arr, bool is_pvt, int line);
 
 /*
  * A function to add a method to the class
@@ -99,11 +103,12 @@ void add_class_type_attr(Class* class, modifier m, char* classname, char* name,
  * paramlist : linedlist pointer of the parmalist of methods,
  *              must persist after call till end of program
  *              will be freed in __cleanup_classes__
- *
+ * is_pvt : is the method private
+ * line : line number on which the attribute is declared
  * Returns : void
  */
 void add_method(Class* class, char* name, type ret_t, bool is_static,
-                Linked_list* paramlist, int line);
+                Linked_list* paramlist, bool is_pvt, int line);
 
 /*
  * A function to add a method to the class
@@ -117,11 +122,13 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
  * paramlist : linedlist pointer of the parmalist of methods,
  *              must persist after call till end of program
  *              will be freed in __cleanup_classes__
- *
+ * is_pvt : is the method private
+ *line : line number on which the attribute is declared
  * Returns : void
  */
 void add_class_ret_method(Class* class, char* name, char* ret_class,
-                          bool is_static, Linked_list* paramlist, int line);
+                          bool is_static, Linked_list* paramlist, bool is_pvt,
+                          int line);
 /*
  * Prints a method declaration to code file
  * print in format : type print_name (parmalist){

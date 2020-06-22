@@ -97,8 +97,9 @@ extern int yydebug;
     CLASS = 303,
     STATICMETHOD = 304,
     THIS = 305,
-    DCOLON = 306,
-    CLASSNAME = 307
+    PRIVATE = 306,
+    DCOLON = 307,
+    CLASSNAME = 308
   };
 #endif
 
@@ -106,14 +107,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 50 "parser.y"
+#line 51 "parser.y"
 
     char *s;
     type t;
     modifier m;
     bool b;
 
-#line 117 "parser.tab.h"
+#line 118 "parser.tab.h"
 
 };
 typedef union YYSTYPE YYSTYPE;
