@@ -68,8 +68,7 @@ int __init_io__(char *infile, char *outfile) {
     }
   }
 
-  // code = fopen(codename, "w");
-  code = stdout;
+  code = fopen(codename, "w");
   if (code == NULL) {
     perror("cannot create new file for compiling");
     __cleanup_io__();

@@ -2425,11 +2425,12 @@ static int push_file(char *name){
         crrbs->bs = YY_CURRENT_BUFFER;
         crrbs->f = yyin;
     }
+    if(crrbs)crrbs->lineno = yylineno;
     bs->prev = crrbs;
     bs->bs = yy_create_buffer(f,YY_BUF_SIZE);
     bs->f = f;
     bs->filename = crr_file_name;
-    crr_file_name = name;
+    crr_file_name = strdup(name);
     yy_switch_to_buffer(bs->bs);
     crrbs = bs;
     yylineno = 1;
@@ -2441,7 +2442,10 @@ static int pop_file(){
     if(!bs)return 0;
     struct bufstack *prev = crrbs->prev;
     if(prev == NULL)return 0;
-    if(prev->prev != NULL)fclose(bs->f);
+    if(prev->prev != NULL){
+        fclose(bs->f);
+        free(bs->filename);
+    }
     yy_delete_buffer(bs->bs);
     free(bs);
     yy_switch_to_buffer(prev->bs);

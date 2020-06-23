@@ -1,9 +1,4 @@
 use "./test1.ttp"
-
-
-
-
-
 fn test(int k)->void{
 
 }

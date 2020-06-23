@@ -16,7 +16,7 @@
 
     void preparse(); // as preparse is a macro from preparser.l must be given here
     
-    bool print_lineno = true;
+    bool print_lineno = false;
 
     extern char *type_arr[],*mod_arr[];
     extern Linked_list *temp_list;
