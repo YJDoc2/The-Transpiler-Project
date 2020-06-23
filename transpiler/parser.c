@@ -85,7 +85,7 @@
 
     void preparse(); // as preparse is a macro from preparser.l must be given here
     
-    bool print_lineno = false;
+    bool print_lineno = true;
 
     extern char *type_arr[],*mod_arr[];
     extern Linked_list *temp_list;
@@ -2203,7 +2203,7 @@ yyreduce:
 
   case 53:
 #line 243 "parser.y"
-                                                                                                                {printcode("}");
+                                                                                                                 {printcode("}"); 
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",(yyvsp[-11].s),type_arr[fn_type]);
                                                                                                     }
@@ -3982,7 +3982,7 @@ void main(int argc , char **argv){
     preparse();
     hm_delete(pre_class_map, pre_class_clean);
     
-    printcode("\n#line 1 \"%s\"\n\n","./test.ttp");
+    printcode("\n#line 1 \"%s\"\n\n",crr_file_name);
     yyparse();
     print_code_header();
 

@@ -13,12 +13,27 @@
     extern Class *current_class;
     extern bool is_static_method;
     bool is_class(char *);
+
+
+    struct bufstack{
+        struct bufstack *prev;
+        YY_BUFFER_STATE bs;
+        int lineno;
+        char * filename;
+        FILE *f;
+    };
+    static struct bufstack *crrbs = NULL;
+
+    static int push_file(char*name);
+    static int pop_file();
+
 %}
 
 %option noyywrap nodefault yylineno
 
 %x RAWSTATE
 %x COMMENT
+%x USE
 
 %%
                         /* GENERAL SYMBOL LIST */
@@ -59,10 +74,16 @@ RAW                               { return RAW; } /* Start of the RAW direction,
 "/*"                                {lastState = YY_START; BEGIN COMMENT;return BEGINCOMMENT;}
 <COMMENT>"*/"                       {BEGIN lastState; return ENDCOMMENT;}
 <COMMENT>([^*]|\n)+|.              {yylval.s = strdup(yytext);return COMMENTLINE;}
-<COMMENT><<EOF>>                    {yyerror("Unterminated multiline comment.");return 0;}
+<COMMENT><<EOF>>                    {yyerror("Unterminated multiline comment.");if(!pop_file()){yyterminate();}}
 
 "//".*$                         {yylval.s = strdup(yytext);return COMMENTLINE;}
 
+
+use                                     {BEGIN USE;}
+<USE>[ \n\t"]*                           {}
+<USE>(\\.|[^\"\n])*                      {if(!push_file(yytext)){yyterminate();}BEGIN INITIAL;}
+
+<<EOF>>                             {if(!pop_file()){yyterminate();}input();}
 
 [ \t]*                              {}
 [\n]*                               {printcode("\n");if(print_lineno)printcode("\n#line %d \"%s\"\n",yylineno,crr_file_name);}
@@ -133,3 +154,44 @@ __temp[0-9]+                                        {yyerror("Invalid variable n
 
 .                               {fprintf(stderr,"unknown token '%s'\n",yytext);}
 %%
+
+static int push_file(char *name){
+    FILE * f=fopen(name,"r");
+    struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
+    if(f == NULL){
+        yyerror("cannot open file %s",name);
+        return 0;
+    }
+    if(crrbs == NULL){
+        crrbs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
+        crrbs->prev = NULL;
+        crrbs->lineno = yylineno;
+        crrbs->filename = crr_file_name;
+        crrbs->bs = YY_CURRENT_BUFFER;
+        crrbs->f = yyin;
+    }
+    bs->prev = crrbs;
+    bs->bs = yy_create_buffer(f,YY_BUF_SIZE);
+    bs->f = f;
+    bs->filename = crr_file_name;
+    crr_file_name = name;
+    yy_switch_to_buffer(bs->bs);
+    crrbs = bs;
+    yylineno = 1;
+    return 1;
+}
+
+static int pop_file(){
+    struct bufstack *bs = crrbs;
+    if(!bs)return 0;
+    struct bufstack *prev = crrbs->prev;
+    if(prev == NULL)return 0;
+    if(prev->prev != NULL)fclose(bs->f);
+    yy_delete_buffer(bs->bs);
+    free(bs);
+    yy_switch_to_buffer(prev->bs);
+    crrbs = prev;
+    yylineno = crrbs->lineno;
+    crr_file_name = crrbs->filename;
+    return 1;
+}

@@ -17,11 +17,11 @@ liblib :
 	cd ../lib && make
 
 lexer.o : lexer.l
-	flex -t lexer.l > lexer.c
+	flex -st lexer.l > lexer.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) lexer.c
 
 prelexer.o : prelexer.l
-	flex -t prelexer.l > prelexer.c
+	flex -st prelexer.l > prelexer.c
 	$(CC) $(CPPFLAGS) $(CFLAGS) prelexer.c
 
 parser.o: parser.y

@@ -68,7 +68,8 @@ int __init_io__(char *infile, char *outfile) {
     }
   }
 
-  code = fopen(codename, "w");
+  // code = fopen(codename, "w");
+  code = stdout;
   if (code == NULL) {
     perror("cannot create new file for compiling");
     __cleanup_io__();
@@ -121,7 +122,7 @@ int __cleanup_io__() {
 void yyerror(char *s, ...) {
   // if the error is on same line as previously given, and is equal to
   //'syntax error',return without adoing anything
-  if (last_err == yylineno && strcmp(s, "syntax error") == 0) return;
+  // if (last_err == yylineno && strcmp(s, "syntax error") == 0) return;
 
   last_err = yylineno;
   ++errs;

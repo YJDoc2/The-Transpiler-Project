@@ -16,7 +16,7 @@
 
     void preparse(); // as preparse is a macro from preparser.l must be given here
     
-    bool print_lineno = false;
+    bool print_lineno = true;
 
     extern char *type_arr[],*mod_arr[];
     extern Linked_list *temp_list;
@@ -240,7 +240,7 @@ clsretmethoddummy : /*nothing*/ {add_class_ret_method(current_class, $<s>-6, $<s
                             is_in_fn = true;
                             has_returned = false;}
 
-fndeclaration : FNDECL IDENTIFIER '('pushscopedummy paramlist ')' "->" modifier type fndecldummy'{' stmtlist'}' {printcode("}");
+fndeclaration : FNDECL IDENTIFIER '('pushscopedummy paramlist ')' "->" modifier type fndecldummy'{' stmtlist '}' {printcode("}"); 
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",$2,type_arr[fn_type]);
                                                                                                     }
@@ -280,7 +280,7 @@ param : modifier type IDENTIFIER    {add_param($1,$2,false,$3);add_var($1,$2,$3,
     | modifier CLASSNAME IDENTIFIER     {add_class_param($1, $2, false,$3);create_class_var($1, $2, $3, false,yylineno);free($2);free($3);}
     | modifier CLASSNAME IDENTIFIER '[' ']' {add_class_param($1, $2, true,$3);create_class_var($1, $2, $3, true,yylineno);free($2);free($3);}
 
-stmtlist :/* nothing */
+stmtlist :/* nothing */ 
     | stmtlist RAW "<{" rawlist "}>" {printcode("%s",$5);}
     | stmtlist error ';' {yyerror("error on token %s",yytext);expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
     | stmtlist error '}' {yyerror("error on token %s",yytext);expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
@@ -1061,7 +1061,7 @@ void main(int argc , char **argv){
     preparse();
     hm_delete(pre_class_map, pre_class_clean);
     
-    printcode("\n#line 1 \"%s\"\n\n","./test.ttp");
+    printcode("\n#line 1 \"%s\"\n\n",crr_file_name);
     yyparse();
     print_code_header();
 

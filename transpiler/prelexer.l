@@ -9,7 +9,21 @@
     extern int errs;
     extern bool pre_in_class;
     Hashmap pre_class_map;
+    extern char * crr_file_name;
+
     static bool pre_is_class(char *);
+
+    struct bufstack{
+        struct bufstack *prev;
+        YY_BUFFER_STATE bs;
+        int lineno;
+        char * filename;
+        FILE *f;
+    };
+    static struct bufstack *crrbs = NULL;
+
+    static int push_file(char*name);
+    static int pop_file();
 %}
 
 %option noyywrap nodefault yylineno
@@ -18,6 +32,7 @@
 
 %x RAWSTATE
 %x COMMENT
+%x USE
 
 %%
 
@@ -34,10 +49,14 @@ RAW                               { }
 <RAWSTATE>[^}]*       	            { }
 
 
+use                                     {BEGIN USE;}
+<USE>[ \n\t"]*                                 {}
+<USE>(\\.|[^\"\n])*                      {if(!push_file(pretext)){yyterminate();}BEGIN 0;}
+
 "/*"                                { BEGIN COMMENT;}
 <COMMENT>"*/"                       {BEGIN 0;}
 <COMMENT>([^*]|\n)+|.               {}
-<COMMENT><<EOF>>                    {preerror("Unterminated multiline comment.");return 0;}
+<COMMENT><<EOF>>                    {preerror("Unterminated multiline comment.");if(!pop_file()){yyterminate();}}
 
 "//".*\n                            {}
 
@@ -64,6 +83,7 @@ let                                 {}
 const                               { prelval.m = CONST_TYPE; if(!in_fn && !pre_in_class)return CONST; }
 static                              { prelval.m = STATIC_TYPE; if(!in_fn && !pre_in_class)return STATIC; }
 
+<<EOF>>                             {if(!pop_file()){yyterminate();}input();}
 
 \"(\\.|[^\"\n])*\"                      {}
 \"(\\.|[^\"\n])*$                       {preerror("unterminated string ");}
@@ -84,9 +104,48 @@ static bool pre_is_class(char *name){
 int preerror(char *s){
     ++errs;
     if(s == NULL)return 0;
-    
-        fprintf(stderr,"Syntax error on line %d",prelineno);
-    
+    fprintf(stderr,"Syntax error on line %d : %s\n",prelineno,s);
     return 0;
+}
 
+static int push_file(char *name){
+    FILE * f=fopen(name,"r");
+    struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
+    if(f == NULL){
+        ++errs;
+        fprintf(stderr,"cannot open file %s",name);
+        return 0;
+    }
+    if(crrbs == NULL){
+        crrbs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
+        crrbs->prev = NULL;
+        crrbs->lineno = prelineno;
+        crrbs->filename = crr_file_name;
+        crrbs->bs = YY_CURRENT_BUFFER;
+        crrbs->f = prein;
+    }
+    bs->prev = crrbs;
+    bs->bs = yy_create_buffer(f,YY_BUF_SIZE);
+    bs->f = f;
+    bs->filename = crr_file_name;
+    crr_file_name = name;
+    yy_switch_to_buffer(bs->bs);
+    crrbs = bs;
+    prelineno = 1;
+    return 1;
+}
+
+static int pop_file(){
+    struct bufstack *bs = crrbs;
+    if(!bs)return 0;
+    struct bufstack *prev = crrbs->prev;
+    if(prev == NULL)return 0;
+    if(prev->prev != NULL)fclose(bs->f);
+    yy_delete_buffer(bs->bs);
+    free(bs);
+    yy_switch_to_buffer(prev->bs);
+    crrbs = prev;
+    prelineno = crrbs->lineno;
+    crr_file_name = crrbs->filename;
+    return 1;
 }
