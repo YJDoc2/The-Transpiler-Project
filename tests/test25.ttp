@@ -1,0 +1,34 @@
+class t0{
+    private int g;
+    float f;
+    @static fn new_with_defaults() -> t0{
+        t0 ret = {g = 0,f=0};
+        return ret;
+    }
+    @static fn new_with_given(int g, float f)->t0{
+        t0 ret = {g = g,f=f};
+        return ret;
+    }
+    private fn set_g(int g)->void{
+        this.g = g;
+    }
+    fn switch_vals(int g, float f)->t0{
+        int temp_g = this.g;
+        float temp_f = this.f;
+        set_g(g);
+        this.f = f;
+        return this::new_with_given(temp_g,temp_f);
+    }
+}
+
+
+
+fn main()->void{
+    t0 t01 = ::t0::new_with_defaults();
+    // print(t01.g); //should give error
+    print(t01.f); // should not give error;
+    // t01::set_g(6); // should give error
+    t01::switch_vals(5,5); // should not give errors;
+
+}
+

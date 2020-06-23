@@ -3687,7 +3687,7 @@ yyreduce:
                                                                                                         yyerror("methods can only be called directly on class type variables or members");
                                                                                                         (yyval.s) = strdup("");
                                                                                                     }else if(m->is_pvt){
-                                                                                                        yyerror("Cannot acces private method %s outside the class",(yyvsp[-4].s));
+                                                                                                        yyerror("Cannot call private method %s outside the class",(yyvsp[-4].s));
                                                                                                         (yyval.s) = strdup("");
                                                                                                     }else{
                                                                                                     verify_method_call((yyvsp[-4].s),m,yylineno);

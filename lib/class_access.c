@@ -5,6 +5,7 @@
  */
 #include "class_access.h"
 
+#include "expressions.h"
 #include "functions.h"
 
 char *mcall_incorrect_arg_num_msg =
@@ -213,7 +214,7 @@ int verify_method_call(char *mname, method *m, int lineno) {
                 m->declaration, arg->t.class);
       } else {
         // we got non-class type
-        if (p->t.t != arg->t.t) {
+        if (p->t.t != arg->t.t && verify_types(p->t.t, arg->t.t)) {
           // we got mis-matching types
           yyerror(mcall_incorrect_arg_type_msg, lineno, argnum,
                   type_arr[p->t.t], m->declaration, type_arr[arg->t.t]);
