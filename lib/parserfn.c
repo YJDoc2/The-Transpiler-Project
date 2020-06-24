@@ -9,10 +9,16 @@
 
 #include "class_decl.h"
 #include "functions.h"
+#include "globals.h"
+
+// number of errors after which to stop parsing and exit the program
+#define ERR_LIM 10
 
 extern char *type_arr[], *mod_arr[];
 extern Hashmap classmap;
 extern Hashmap varmap;
+
+bool remove_files = true;
 
 int errs = 0;  // number or errors in input, if non-zero at end of
                // parsing, delete the temp file
@@ -23,8 +29,6 @@ static int last_err = -1;
 char *crr_file_name;
 char *main_file_headname;
 
-//! TODO Both says current as for generating classes if implemented these
-//! can be switched to different files
 FILE *code = NULL;  // current file in generated code is to be written
 
 FILE *header = NULL;  // currenet file in which header stuff ( function
@@ -108,6 +112,30 @@ int __cleanup_io__() {
   return 0;
 }
 
+// helper function to delete created files
+void rm_files() {
+  // the only created files are of the classes and the main file
+  hashpair *iter = classmap.start;
+  hashpair *end = iter + classmap.size;
+  char *fname = NULL;
+  while (iter <= end) {
+    if (iter->key != NULL || iter->value != NULL) {
+      fname = (char *)calloc(
+          sizeof(char),
+          strlen(iter->key) + 5 + 1 + 2 +
+              1);  // 5 for class 1 for _ 2 for .c/.h 1 for ending \0
+      sprintf(fname, "class_%s.h", (char *)iter->key);
+      remove(fname);
+      sprintf(fname, "class_%s.c", (char *)iter->key);
+      remove(fname);
+    }
+    ++iter;
+  }
+  remove(main_file_headname);
+  main_file_headname[strlen(main_file_headname) - 1] = 'c';
+  remove(main_file_headname);
+}
+
 /*
  * A function to print errors to stderr according to given format string
  *
@@ -136,8 +164,12 @@ void yyerror(char *s, ...) {
   fprintf(stderr, "\n");
 
   if (errs > ERR_LIM) {
-    __cleanup_io__();  //! TODO change to GLOBAL_EXIT, which will call all
-                       //! cleanup functions
+    fprintf(stderr, "Aborting transpilation\n");
+    if (remove_files) {
+      fprintf(stderr, "removing created files\n");
+      rm_files();
+    }
+    global_cleanup();
     exit(EXIT_FAILURE);
   }
 }

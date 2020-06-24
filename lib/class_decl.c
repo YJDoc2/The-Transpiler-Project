@@ -9,11 +9,12 @@
 
 #include "common.h"
 #include "functions.h"
+#include "globals.h"
 #define CLASSMAP_INIT_SIZE 20
 #define ATTRMAP_INIT_SIZE 20
 #define METHODMAP_INIT_SIZE 20
 
-Hashmap classmap;
+Hashmap classmap;  // name -> Class pointer
 
 FILE* tempcode = NULL;
 FILE* temphead = NULL;
@@ -69,7 +70,15 @@ void __delete_classmap__(void* key, void* val) {
  * cleans up and frees the memory allocated in this module
  * Should be called before exiting the program
  */
-void __cleanup_classes__() { hm_delete(classmap, __delete_classmap__); }
+void __cleanup_classes__() {
+  hm_delete(classmap, __delete_classmap__);
+  if (tempcode != NULL) {
+    fclose(tempcode);
+  }
+  if (temphead != NULL) {
+    fclose(temphead);
+  }
+}
 
 /*
  * Function to create and add a class struct in classmap
@@ -343,7 +352,7 @@ void start_class_definition(char* name) {
   FILE* th = fopen(headname, "w");
   if (tc == NULL || th == NULL) {
     perror("cannot open file for writing.");
-    //! TODO GLOBAL EXIT
+    global_cleanup();
     exit(EXIT_FAILURE);
   }
   tempcode = code;

@@ -2421,7 +2421,8 @@ static int push_file(char *name){
         if(strcmp(name,crr_file_name) ==0){
             yyerror("File is included in itslef : %s",name);
         }else{
-            perror("cannot open file");
+            fprintf(stderr,"cannot open file %s :",name);
+            perror("");
         }
         return 0;
     }

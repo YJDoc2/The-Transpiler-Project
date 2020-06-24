@@ -42,6 +42,22 @@ void push_expr_and_args();
 void pop_expr_and_args();
 
 /*
+ * Function to push the current expr_type in stack and set it to VOID_TYPE
+ * Params : none
+ * Returns : void
+ */
+void push_expr_type();
+
+/*
+ * Function to pop expr_type from the stack and returns it
+ * if stack is empty, it returns VOID_TYPE
+ * Params : none
+ * Returns : topmost type in stack if not empty
+ *          VOID_TYPE is stack is empty
+ */
+type pop_expr_type();
+
+/*
  * Joins all three of given strings.
  * Note that this does not modify or free the input strings, and allocates
  * memory for joined string
@@ -69,10 +85,5 @@ char *join(char *, char *, char *);
  *
  */
 int verify_types(type combining_with, type combining_type);
-
-//! TODO
-void push_expr_type();
-
-type pop_expr_type();
 
 #endif

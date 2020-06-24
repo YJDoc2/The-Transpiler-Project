@@ -14,6 +14,7 @@
     #include "class_decl.h"
     #include "class_access.h"
     #include "filenames.h"
+    #include "globals.h"
     void preparse(); // as preparse is a macro from preparser.l must be given here
     
     bool print_lineno = false;
@@ -538,7 +539,6 @@ fncall : IDENTIFIER '(' {push_expr_and_args();if(find_action($1)==0)is_in_fncall
                                                                                                         }else if(fn->is_ret_class){
                                                                                                             expr_type = CLASS_TYPE;
                                                                                                             expr_class = fn->ret_t.class;
-                                                                                                            //!TODO DO we need these clauses now, yeah....we'll see?
                                                                                                         }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
                                                                                                             yyerror("Cannot combine string type with any type.");
                                                                                                         }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
@@ -579,7 +579,6 @@ fncall : IDENTIFIER '(' {push_expr_and_args();if(find_action($1)==0)is_in_fncall
                                                                                                     }else if(m->is_ret_class){
                                                                                                         expr_type = CLASS_TYPE;
                                                                                                         expr_class = m->ret_t.class;
-                                                                                                        //!TODO DO we need these clauses now, yeah....we'll see?
                                                                                                     }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
                                                                                                         yyerror("Cannot combine string type with any type.");
                                                                                                     }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
@@ -921,7 +920,6 @@ varvals :fncall
                                                                                                         }else if(m->is_ret_class){
                                                                                                             expr_type = CLASS_TYPE;
                                                                                                             expr_class = m->ret_t.class;
-                                                                                                            //!TODO DO we need these clauses now, yeah....we'll see?
                                                                                                         }else if(m->ret_t.t == VOID_TYPE){
                                                                                                             expr_type = VOID_TYPE;
                                                                                                         }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
@@ -1023,7 +1021,6 @@ varvals :fncall
                                                                                                     }else if(m->is_ret_class){
                                                                                                         expr_type = CLASS_TYPE;
                                                                                                         expr_class = m->ret_t.class;
-                                                                                                        //!TODO DO we need these clauses now, yeah....we'll see?
                                                                                                     }else if(m->ret_t.t == VOID_TYPE){
                                                                                                         expr_type = VOID_TYPE;
                                                                                                     }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
@@ -1048,14 +1045,7 @@ classcheckdummy : /*nothing*/ {if(expr_type != CLASS_TYPE){yyerror("attribute or
 
 void main(int argc , char **argv){
 
-    __init_io__("./test.ttp",NULL);
-    __init_literals__();
-    __init_vars__();
-    __init_actions__();
-    __init_functions__();
-    __init_scopes__();
-    __init_expr__();
-    __init_classes__();
+    global_init();
 
     pre_class_map = make_hashmap(20, __hash_str__, __compair__str__);
     preparse();
@@ -1066,12 +1056,7 @@ void main(int argc , char **argv){
     yyparse();
     print_code_header();
 
-    __cleanup_classes__();
-    __cleanup_expr__();
-    __cleanup_scopes__();
-    __cleanup_functions__();
-    __cleanup_actions__();
-    __cleanup_vars__();
-    __cleanup_literals__();
-    __cleanup_io__();
+    global_cleanup();
+
+    
 }

@@ -129,11 +129,15 @@ Added support fot 'this'<br />
 Added support for making fields and methods private for classes<br />
 \# test25.c transpiled from test25.tpp for testing private fields and methods<br />
 
+gives error if tried to pass int in place of float arg...Changed to allow<br />
+
 Added use syntax along with something like pragma once?<br />
 Added file of decl in all fn methods classes<br />
 \# test28.c transpiled from test26.tpp,test27.ttp and test28.ttp for testing use syntax<br />
 
-gives error if tried to pass int in place of float arg...Changed to allow<br />
+Cleared up TODOs' , and added a function to remove created files according to a switch variable
+if number of errors cross limit <br />
+add fn to remove files if any error has occurred according to switch<br />
 
 test for fn with void return types, maybe just let it be...?<br />
 

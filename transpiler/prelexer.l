@@ -118,7 +118,8 @@ static int push_file(char *name){
     struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
     if(f == NULL){
         ++errs;
-        perror("cannot open file :");
+        fprintf(stderr,"cannot open file %s :",name);
+        perror("");
         return 0;
     }
     if(crrbs == NULL){

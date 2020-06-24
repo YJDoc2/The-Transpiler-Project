@@ -76,11 +76,23 @@ void pop_expr_and_args() {
   arglist = (Linked_list *)st_pop(&args_st);
 }
 
+/*
+ * Function to push the current expr_type in stack and set it to VOID_TYPE
+ * Params : none
+ * Returns : void
+ */
 void push_expr_type() {
   st_push(&exprt_st, (void *)expr_type);  // push the current expr_type
   expr_type = VOID_TYPE;
 }
 
+/*
+ * Function to pop expr_type from the stack and returns it
+ * if stack is empty, it returns VOID_TYPE
+ * Params : none
+ * Returns : topmost type in stack if not empty
+ *          VOID_TYPE is stack is empty
+ */
 type pop_expr_type() {
   void *_t = st_pop(&exprt_st);  // get last expr_type from stack
   return _t == (void *)-1

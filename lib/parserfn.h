@@ -8,9 +8,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-// number of errors after which to stop parsing and exit the program
-#define ERR_LIM 10
-
 extern FILE *yyin, *prein;  // Flex - Bison file pointers
                             // yyin is for main parser, prein is for pre-parser
                             // which scans the file for function declarations
