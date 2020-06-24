@@ -840,8 +840,10 @@ char *yytext;
 #line 2 "prelexer.l"
     #include<stdio.h>
     #include <stdbool.h>
+    #include <errno.h>
     #include "variables.h"
     #include "preparser.h"
+    #include "filenames.h"
     int preerror(char *);
     extern bool in_fn;
     int nbrack = 0;
@@ -863,9 +865,9 @@ char *yytext;
 
     static int push_file(char*name);
     static int pop_file();
-#line 867 "prelex.c"
-
 #line 869 "prelex.c"
+
+#line 871 "prelex.c"
 
 #define INITIAL 0
 #define RAWSTATE 1
@@ -1085,10 +1087,10 @@ YY_DECL
 		}
 
 	{
-#line 37 "prelexer.l"
+#line 39 "prelexer.l"
 
 
-#line 1092 "prelex.c"
+#line 1094 "prelex.c"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1157,182 +1159,182 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 39 "prelexer.l"
+#line 41 "prelexer.l"
 {if(!in_fn && !pre_in_class)return pretext[0]; ++nbrack;}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 40 "prelexer.l"
+#line 42 "prelexer.l"
 {if(nbrack ==0)return pretext[0]; --nbrack;}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 41 "prelexer.l"
+#line 43 "prelexer.l"
 {if(!in_fn && !pre_in_class)return pretext[0];}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 44 "prelexer.l"
+#line 46 "prelexer.l"
 { } 
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 45 "prelexer.l"
+#line 47 "prelexer.l"
 { BEGIN RAWSTATE;  } 
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 46 "prelexer.l"
+#line 48 "prelexer.l"
 { BEGIN 0; } 
 	YY_BREAK
 case 7:
 YY_RULE_SETUP
-#line 47 "prelexer.l"
+#line 49 "prelexer.l"
 {}
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 48 "prelexer.l"
+#line 50 "prelexer.l"
 { char c = input(); if(c != '>'){}else{BEGIN 0;}}                                                                                           
 	YY_BREAK
 case 9:
 /* rule 9 can match eol */
 YY_RULE_SETUP
-#line 49 "prelexer.l"
+#line 51 "prelexer.l"
 { }
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 52 "prelexer.l"
+#line 54 "prelexer.l"
 {BEGIN USE;}
 	YY_BREAK
 case 11:
 /* rule 11 can match eol */
 YY_RULE_SETUP
-#line 53 "prelexer.l"
+#line 55 "prelexer.l"
 {}
 	YY_BREAK
 case 12:
 YY_RULE_SETUP
-#line 54 "prelexer.l"
+#line 56 "prelexer.l"
 {if(!push_file(pretext)){yyterminate();}BEGIN 0;}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
-#line 56 "prelexer.l"
+#line 58 "prelexer.l"
 { BEGIN COMMENT;}
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 57 "prelexer.l"
+#line 59 "prelexer.l"
 {BEGIN 0;}
 	YY_BREAK
 case 15:
 /* rule 15 can match eol */
 YY_RULE_SETUP
-#line 58 "prelexer.l"
+#line 60 "prelexer.l"
 {}
 	YY_BREAK
 case YY_STATE_EOF(COMMENT):
-#line 59 "prelexer.l"
+#line 61 "prelexer.l"
 {preerror("Unterminated multiline comment.");if(!pop_file()){yyterminate();}}
 	YY_BREAK
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 61 "prelexer.l"
+#line 63 "prelexer.l"
 {}
 	YY_BREAK
 case 17:
 YY_RULE_SETUP
-#line 63 "prelexer.l"
+#line 65 "prelexer.l"
 {return CLASS;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 65 "prelexer.l"
+#line 67 "prelexer.l"
 {if(!pre_in_class)return FNDECL;}
 	YY_BREAK
 case 19:
 YY_RULE_SETUP
-#line 67 "prelexer.l"
+#line 69 "prelexer.l"
 {if(!in_fn && !pre_in_class)return RETTYPE;}
 	YY_BREAK
 case 20:
 /* rule 20 can match eol */
 YY_RULE_SETUP
-#line 69 "prelexer.l"
+#line 71 "prelexer.l"
 {}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 71 "prelexer.l"
+#line 73 "prelexer.l"
 { prelval.t = BOOL_TYPE; if(!in_fn && !pre_in_class)return BOOL; }
 	YY_BREAK
 case 22:
 YY_RULE_SETUP
-#line 72 "prelexer.l"
+#line 74 "prelexer.l"
 { prelval.t = COMPLEX_TYPE; if(!in_fn && !pre_in_class)return COMPLEX; }
 	YY_BREAK
 case 23:
 YY_RULE_SETUP
-#line 73 "prelexer.l"
+#line 75 "prelexer.l"
 { prelval.t = INT_TYPE;if(!in_fn && !pre_in_class)return INT; }
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 74 "prelexer.l"
+#line 76 "prelexer.l"
 { prelval.t = DOUBLE_TYPE;if(!in_fn && !pre_in_class)return DOUBLE; }
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 75 "prelexer.l"
+#line 77 "prelexer.l"
 { prelval.t = FLOAT_TYPE;if(!in_fn && !pre_in_class)return FLOAT; }
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 76 "prelexer.l"
+#line 78 "prelexer.l"
 { prelval.t = LONG_TYPE;if(!in_fn && !pre_in_class)return LONG; }
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 77 "prelexer.l"
+#line 79 "prelexer.l"
 { prelval.t = SHORT_TYPE;if(!in_fn && !pre_in_class)return SHORT; }
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 78 "prelexer.l"
+#line 80 "prelexer.l"
 { prelval.t = VOID_TYPE;if(!in_fn && !pre_in_class)return VOID; }
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 79 "prelexer.l"
+#line 81 "prelexer.l"
 { prelval.t = STRING_TYPE; if(!in_fn && !pre_in_class)return STRING; }
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 81 "prelexer.l"
+#line 83 "prelexer.l"
 {}
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 83 "prelexer.l"
+#line 85 "prelexer.l"
 { prelval.m = CONST_TYPE; if(!in_fn && !pre_in_class)return CONST; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 84 "prelexer.l"
+#line 86 "prelexer.l"
 { prelval.m = STATIC_TYPE; if(!in_fn && !pre_in_class)return STATIC; }
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(RAWSTATE):
 case YY_STATE_EOF(USE):
-#line 86 "prelexer.l"
+#line 88 "prelexer.l"
 {if(!pop_file()){yyterminate();}input();}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 88 "prelexer.l"
+#line 90 "prelexer.l"
 {}
 	YY_BREAK
 case 34:
@@ -1340,30 +1342,30 @@ case 34:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 89 "prelexer.l"
+#line 91 "prelexer.l"
 {preerror("unterminated string ");}
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 91 "prelexer.l"
+#line 93 "prelexer.l"
 {preerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 93 "prelexer.l"
+#line 95 "prelexer.l"
 {if(!in_fn && !pre_in_class){prelval.s = yytext;if(pre_is_class(yytext)){return CLASSNAME;}else{return IDENTIFIER;}}}
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 95 "prelexer.l"
+#line 97 "prelexer.l"
 {}
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 97 "prelexer.l"
+#line 99 "prelexer.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1367 "prelex.c"
+#line 1369 "prelex.c"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2378,7 +2380,7 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 97 "prelexer.l"
+#line 99 "prelexer.l"
 
 
 static bool pre_is_class(char *name){
@@ -2389,16 +2391,19 @@ static bool pre_is_class(char *name){
 int preerror(char *s){
     ++errs;
     if(s == NULL)return 0;
-    fprintf(stderr,"Syntax error on line %d : %s\n",prelineno,s);
+    if(in_fn)fprintf(stderr,"Syntax error on line %d : %s\n",prelineno,s);
     return 0;
 }
 
 static int push_file(char *name){
+    if(is_visited(name)){
+        return 0;
+    }
     FILE * f=fopen(name,"r");
     struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
     if(f == NULL){
         ++errs;
-        fprintf(stderr,"cannot open file %s",name);
+        perror("cannot open file :");
         return 0;
     }
     if(crrbs == NULL){
@@ -2409,11 +2414,11 @@ static int push_file(char *name){
         crrbs->bs = YY_CURRENT_BUFFER;
         crrbs->f = prein;
     }
+    crr_file_name = insert_filename(name);
     bs->prev = crrbs;
     bs->bs = yy_create_buffer(f,YY_BUF_SIZE);
     bs->f = f;
     bs->filename = crr_file_name;
-    crr_file_name = strdup(name);
     yy_switch_to_buffer(bs->bs);
     crrbs = bs;
     prelineno = 1;
@@ -2427,7 +2432,6 @@ static int pop_file(){
     if(prev == NULL)return 0;
     if(prev->prev != NULL){
         fclose(bs->f);
-        free(bs->filename);
     }
     yy_delete_buffer(bs->bs);
     free(bs);

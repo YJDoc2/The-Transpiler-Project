@@ -130,8 +130,8 @@ Added support for making fields and methods private for classes<br />
 \# test25.c transpiled from test25.tpp for testing private fields and methods<br />
 
 add use syntax along with something like pragma once?<br />
-add file of decl in all fn methods classes etc?<br />
-UNSTABLE<br />
+add file of decl in all fn methods classes<br />
+Testing is remaining<br />
 
 gives error if tried to pass int in place of float arg...Changed to allow<br />
 

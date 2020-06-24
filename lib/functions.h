@@ -32,6 +32,7 @@ typedef struct {
   bool is_ret_class;
   type_u ret_t;
   modifier ret_m;
+  char* decl_file;
 } Function;
 
 /*

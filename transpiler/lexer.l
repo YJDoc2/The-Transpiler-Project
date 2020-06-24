@@ -4,6 +4,7 @@
     #include "variables.h"
     #include "parser.h"
     #include "class_decl.h"
+    #include "filenames.h"
     int lastState = 0;
     extern void printcode(char *,...);
     extern bool print_lineno;
@@ -156,10 +157,17 @@ __temp[0-9]+                                        {yyerror("Invalid variable n
 %%
 
 static int push_file(char *name){
+    if(is_visited(name)){
+        return 0;
+    }
     FILE * f=fopen(name,"r");
     struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
     if(f == NULL){
-        yyerror("cannot open file %s",name);
+        if(strcmp(name,crr_file_name) ==0){
+            yyerror("File is included in itslef : %s",name);
+        }else{
+            perror("cannot open file");
+        }
         return 0;
     }
     if(crrbs == NULL){
@@ -170,12 +178,12 @@ static int push_file(char *name){
         crrbs->bs = YY_CURRENT_BUFFER;
         crrbs->f = yyin;
     }
+    crr_file_name = insert_filename(name);
     if(crrbs)crrbs->lineno = yylineno;
     bs->prev = crrbs;
     bs->bs = yy_create_buffer(f,YY_BUF_SIZE);
     bs->f = f;
     bs->filename = crr_file_name;
-    crr_file_name = strdup(name);
     yy_switch_to_buffer(bs->bs);
     crrbs = bs;
     yylineno = 1;
@@ -189,7 +197,6 @@ static int pop_file(){
     if(prev == NULL)return 0;
     if(prev->prev != NULL){
         fclose(bs->f);
-        free(bs->filename);
     }
     yy_delete_buffer(bs->bs);
     free(bs);

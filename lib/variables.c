@@ -66,6 +66,9 @@ Variable* create_var(modifier m, type t, char* ident, int line) {
   v->declaration = line;
   v->is_raw = false;
   v->is_arr = false;
+  v->decl_file =
+      crr_file_name;  // as crr_file name pointes to entry in filenames, this
+                      // should be valid until end of program
   // If there is no current scope, variable is global so store in varamp, else
   // store it in the current scope
   Hashmap* hm = scopelist.top == NULL ? &varmap : (Hashmap*)scopelist.top->data;

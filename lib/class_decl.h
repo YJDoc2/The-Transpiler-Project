@@ -26,6 +26,7 @@ typedef struct {
   Hashmap* methods;
   Hashmap* attr;
   int declaration;
+  char* decl_file;
 } Class;
 
 typedef struct {
@@ -36,6 +37,7 @@ typedef struct {
   bool is_static;
   bool is_pvt;
   int declaration;
+  char* decl_file;
 } method;
 
 /*

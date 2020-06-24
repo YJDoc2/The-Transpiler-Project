@@ -10,19 +10,19 @@
 
 char *mcall_incorrect_arg_num_msg =
     "incorrect %s method call on line %d :\n\texpected %d params as "
-    "per method delcaration on line %d,but got %d\n\n ";
+    "per method delcaration in %s line %d,but got %d\n\n ";
 
 char *mcall_incorrect_arg_type_msg =
     "incorrect argument type in method call on line %d :\n\tfor "
-    "argument %d expected type %s as per declaration on line %d, got %s\n\n";
+    "argument %d expected type %s as per declaration in %s line %d, got %s\n\n";
 char *mcall_incorrect_arr_msg =
     "incorrect argument type in method call on line %d :\n\tfor "
-    "argument %d expected type %s %s as per declaration on line %d, got %s "
+    "argument %d expected type %s %s as per declaration in %s line %d, got %s "
     "%s\n\n";
 
 char *mcall_incorrect_const_type_msg =
     "incorrect argument type in method call on line %d :\n\tfor "
-    "argument %d expected non-const argument as per declaration on line %d, "
+    "argument %d expected non-const argument as per declaration in %s line %d, "
     "got const.\n\n";
 
 extern Hashmap classmap;
@@ -173,8 +173,8 @@ int verify_method_call(char *mname, method *m, int lineno) {
 
   // different number of arguments means incorrect call
   if (arglist->size != params) {
-    yyerror(mcall_incorrect_arg_num_msg, mname, lineno, params, m->declaration,
-            arglist->size);
+    yyerror(mcall_incorrect_arg_num_msg, mname, lineno, params, m->decl_file,
+            m->declaration, arglist->size);
     return 1;
   }
   // if no param the the call is correct, as we have checked for correct number
@@ -199,37 +199,39 @@ int verify_method_call(char *mname, method *m, int lineno) {
         if (strcmp(p->t.class, arg->t.class) != 0) {
           // the classes of both are not same
           yyerror(mcall_incorrect_arg_type_msg, lineno, argnum, p->t.class,
-                  m->declaration, arg->t.class);
+                  m->decl_file, m->declaration, arg->t.class);
         }
       } else {
         // we got non-class type
         yyerror(mcall_incorrect_arg_type_msg, lineno, argnum, p->t.class,
-                m->declaration, type_arr[arg->t.t]);
+                m->decl_file, m->declaration, type_arr[arg->t.t]);
       }
     } else {
       // Param expects non-class type
       if (arg->is_class) {
         // we got class type
         yyerror(mcall_incorrect_arg_type_msg, lineno, argnum, type_arr[p->t.t],
-                m->declaration, arg->t.class);
+                m->decl_file, m->declaration, arg->t.class);
       } else {
         // we got non-class type
         if (p->t.t != arg->t.t && verify_types(p->t.t, arg->t.t)) {
           // we got mis-matching types
           yyerror(mcall_incorrect_arg_type_msg, lineno, argnum,
-                  type_arr[p->t.t], m->declaration, type_arr[arg->t.t]);
+                  type_arr[p->t.t], m->decl_file, m->declaration,
+                  type_arr[arg->t.t]);
         }
       }
     }
     if (p->is_arr != arg->is_arr) {
       yyerror(mcall_incorrect_arr_msg, lineno, argnum,
               p->is_class ? p->t.class : type_arr[p->t.t],
-              p->is_arr ? "array" : "", m->declaration,
+              p->is_arr ? "array" : "", m->decl_file, m->declaration,
               arg->is_class ? arg->t.class : type_arr[arg->t.t],
               arg->is_arr ? "array" : "");
     }
     if (arg->m == CONST_TYPE && p->m != CONST_TYPE) {
-      yyerror(mcall_incorrect_const_type_msg, lineno, argnum, m->declaration);
+      yyerror(mcall_incorrect_const_type_msg, lineno, argnum, m->decl_file,
+              m->declaration);
     }
 
     m_params_itr = m_params_itr->next;

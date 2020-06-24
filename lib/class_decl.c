@@ -95,6 +95,8 @@ Class* add_class(char* name, int line) {
       make_hashmap(METHODMAP_INIT_SIZE, __hash_str__, __compair__str__);
   hm_add(&classmap, temp, c);
   c->declaration = line;
+  c->decl_file = crr_file_name;  // as this points to entry in filenames list,
+                                 // this should be valid until end of program
   return c;
 }
 
@@ -202,6 +204,8 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
   fn->ret_t.t = ret_t;
   fn->is_pvt = is_pvt;
   fn->declaration = line;
+  fn->decl_file = crr_file_name;  // as this points to entry in filenames list,
+                                  // this should be valid until end of program
   hm_add(class->methods, keyname, fn);
 }
 
@@ -244,6 +248,8 @@ void add_class_ret_method(Class* class, char* name, char* ret_class,
   fn->ret_t.class = strdup(ret_class);
   fn->is_pvt = is_pvt;
   fn->declaration = line;
+  fn->decl_file = crr_file_name;  // as this points to entry in filenames list,
+                                  // this should be valid until end of program
   hm_add(class->methods, keyname, fn);
 }
 
@@ -384,7 +390,7 @@ void end_class_definition(char* name) {
 /*
  * closes th '{' started in start_class_definition
  * Parmas :
- * name L name of the class
+ * name : name of the class
  */
 void end_attr_list(char* name) {
   fprintf(code, "\n} %s ;\n\n", name);

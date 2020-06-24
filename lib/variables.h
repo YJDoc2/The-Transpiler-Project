@@ -40,6 +40,7 @@ typedef struct {
   bool is_arr;
   bool is_class;
   int declaration;
+  char *decl_file;
 } Variable;
 
 extern Hashmap varmap;  // For global variables, other are stored in scopes

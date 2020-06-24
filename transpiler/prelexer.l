@@ -1,8 +1,10 @@
 %{
     #include<stdio.h>
     #include <stdbool.h>
+    #include <errno.h>
     #include "variables.h"
     #include "preparser.h"
+    #include "filenames.h"
     int preerror(char *);
     extern bool in_fn;
     int nbrack = 0;
@@ -104,16 +106,19 @@ static bool pre_is_class(char *name){
 int preerror(char *s){
     ++errs;
     if(s == NULL)return 0;
-    fprintf(stderr,"Syntax error on line %d : %s\n",prelineno,s);
+    if(in_fn)fprintf(stderr,"Syntax error on line %d : %s\n",prelineno,s);
     return 0;
 }
 
 static int push_file(char *name){
+    if(is_visited(name)){
+        return 0;
+    }
     FILE * f=fopen(name,"r");
     struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
     if(f == NULL){
         ++errs;
-        fprintf(stderr,"cannot open file %s",name);
+        perror("cannot open file :");
         return 0;
     }
     if(crrbs == NULL){
@@ -124,11 +129,11 @@ static int push_file(char *name){
         crrbs->bs = YY_CURRENT_BUFFER;
         crrbs->f = prein;
     }
+    crr_file_name = insert_filename(name);
     bs->prev = crrbs;
     bs->bs = yy_create_buffer(f,YY_BUF_SIZE);
     bs->f = f;
     bs->filename = crr_file_name;
-    crr_file_name = strdup(name);
     yy_switch_to_buffer(bs->bs);
     crrbs = bs;
     prelineno = 1;
@@ -142,7 +147,6 @@ static int pop_file(){
     if(prev == NULL)return 0;
     if(prev->prev != NULL){
         fclose(bs->f);
-        free(bs->filename);
     }
     yy_delete_buffer(bs->bs);
     free(bs);

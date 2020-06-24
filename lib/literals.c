@@ -1,7 +1,7 @@
 #include "literals.h"
 
 Linked_list literals;
-
+extern char *crr_file_name;
 /*
  * initializes all required DS and allocated memory in this module
  * Must be called before any other function call in this module
@@ -41,6 +41,7 @@ void *add_literal(modifier m, type t, char *ident) {
   v->t.t = t;
   v->declaration = 0;
   v->is_raw = true;
+  v->decl_file = crr_file_name;
   ll_add(&literals, v);
   return (void *)v;
 }

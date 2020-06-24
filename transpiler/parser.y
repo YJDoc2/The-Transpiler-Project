@@ -13,7 +13,7 @@
     #include "forloop.h"
     #include "class_decl.h"
     #include "class_access.h"
-
+    #include "filenames.h"
     void preparse(); // as preparse is a macro from preparser.l must be given here
     
     bool print_lineno = false;
@@ -1060,6 +1060,7 @@ void main(int argc , char **argv){
     pre_class_map = make_hashmap(20, __hash_str__, __compair__str__);
     preparse();
     hm_delete(pre_class_map, pre_class_clean);
+    switch_list();
     
     printcode("\n#line 1 \"%s\"\n\n",crr_file_name);
     yyparse();

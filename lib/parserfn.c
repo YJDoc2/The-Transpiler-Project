@@ -131,7 +131,7 @@ void yyerror(char *s, ...) {
   va_start(ap, s);
 
   // print ther error to stderr
-  fprintf(stderr, "line %d : error : ", yylineno);
+  fprintf(stderr, "%s : line %d : error : ", crr_file_name, yylineno);
   vfprintf(stderr, s, ap);
   fprintf(stderr, "\n");
 

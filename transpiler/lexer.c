@@ -695,6 +695,7 @@ char *yytext;
     #include "variables.h"
     #include "parser.h"
     #include "class_decl.h"
+    #include "filenames.h"
     int lastState = 0;
     extern void printcode(char *,...);
     extern bool print_lineno;
@@ -718,9 +719,9 @@ char *yytext;
     static int push_file(char*name);
     static int pop_file();
 
-#line 722 "<stdout>"
+#line 723 "<stdout>"
 
-#line 724 "<stdout>"
+#line 725 "<stdout>"
 
 #define INITIAL 0
 #define RAWSTATE 1
@@ -940,11 +941,11 @@ YY_DECL
 		}
 
 	{
-#line 38 "lexer.l"
+#line 39 "lexer.l"
 
-#line 40 "lexer.l"
+#line 41 "lexer.l"
                         /* GENERAL SYMBOL LIST */
-#line 948 "<stdout>"
+#line 949 "<stdout>"
 
 	while ( /*CONSTCOND*/1 )		/* loops until end-of-file is reached */
 		{
@@ -1013,32 +1014,32 @@ do_action:	/* This label is used only to access EOF actions. */
 
 case 1:
 YY_RULE_SETUP
-#line 41 "lexer.l"
+#line 42 "lexer.l"
 {return yytext[0];}
 	YY_BREAK
 case 2:
 YY_RULE_SETUP
-#line 43 "lexer.l"
+#line 44 "lexer.l"
 {return yytext[0];}
 	YY_BREAK
 case 3:
 YY_RULE_SETUP
-#line 44 "lexer.l"
+#line 45 "lexer.l"
 {return yytext[0];}
 	YY_BREAK
 case 4:
 YY_RULE_SETUP
-#line 45 "lexer.l"
+#line 46 "lexer.l"
 {return LTE;}
 	YY_BREAK
 case 5:
 YY_RULE_SETUP
-#line 46 "lexer.l"
+#line 47 "lexer.l"
 {return GTE;}
 	YY_BREAK
 case 6:
 YY_RULE_SETUP
-#line 47 "lexer.l"
+#line 48 "lexer.l"
 {return DCOLON;}
 	YY_BREAK
 /* RULES FOR RAW input*/
@@ -1049,7 +1050,7 @@ YY_RULE_SETUP
                                 */
 case 7:
 YY_RULE_SETUP
-#line 55 "lexer.l"
+#line 56 "lexer.l"
 { return RAW; } /* Start of the RAW direction, but we do not switch to RAWSTAE.
                                                     As it is allowed to have spcaes and tabs between RAW and <{,
                                                     if RAWSTATE begin here, they will be processes ad RAWLINE instead of <{ toknen
@@ -1059,25 +1060,25 @@ YY_RULE_SETUP
 	YY_BREAK
 case 8:
 YY_RULE_SETUP
-#line 61 "lexer.l"
+#line 62 "lexer.l"
 { lastState = YY_START; BEGIN RAWSTATE; return RAWSTART; } /* check for space  <{  space pattern
                                                                                              as well starts the RAWSTATE.
                                                                                             */
 	YY_BREAK
 case 9:
 YY_RULE_SETUP
-#line 64 "lexer.l"
+#line 65 "lexer.l"
 { BEGIN lastState;yylval.s = ""; return RAWEND; } /* Ending brackets for RAW syntax. Allows for space - }> space
                                                                     */
 	YY_BREAK
 case 10:
 YY_RULE_SETUP
-#line 66 "lexer.l"
+#line 67 "lexer.l"
 {}
 	YY_BREAK
 case 11:
 YY_RULE_SETUP
-#line 67 "lexer.l"
+#line 68 "lexer.l"
 { char c = input(); if(c != '>'){yylval.s = strdup(yytext);unput(c);return RAWLINE;}
                                         else{yylval.s = ""; BEGIN lastState;return RAWEND;}}/* Check if the } is follwed by a >
                                                                                                     if it is that means it the end of RAW syntax
@@ -1087,34 +1088,34 @@ YY_RULE_SETUP
 case 12:
 /* rule 12 can match eol */
 YY_RULE_SETUP
-#line 72 "lexer.l"
+#line 73 "lexer.l"
 { yylval.s = strdup(yytext);if(print_lineno)printcode("\n#line %d \"%s\"\n",yylineno,crr_file_name); return RAWLINE; }                                                                                                                                                                                                    
 	YY_BREAK
 case 13:
 /* rule 13 can match eol */
 YY_RULE_SETUP
-#line 73 "lexer.l"
+#line 74 "lexer.l"
 { yylval.s = strdup(yytext); return RAWLINE; } /* Match All pattern for the internal text of RAW syntax.
                                                                                         except }, used to match the content inside the <{...}>*/
 	YY_BREAK
 case 14:
 YY_RULE_SETUP
-#line 75 "lexer.l"
+#line 76 "lexer.l"
 {lastState = YY_START; BEGIN COMMENT;return BEGINCOMMENT;}
 	YY_BREAK
 case 15:
 YY_RULE_SETUP
-#line 76 "lexer.l"
+#line 77 "lexer.l"
 {BEGIN lastState; return ENDCOMMENT;}
 	YY_BREAK
 case 16:
 /* rule 16 can match eol */
 YY_RULE_SETUP
-#line 77 "lexer.l"
+#line 78 "lexer.l"
 {yylval.s = strdup(yytext);return COMMENTLINE;}
 	YY_BREAK
 case YY_STATE_EOF(COMMENT):
-#line 78 "lexer.l"
+#line 79 "lexer.l"
 {yyerror("Unterminated multiline comment.");if(!pop_file()){yyterminate();}}
 	YY_BREAK
 case 17:
@@ -1122,236 +1123,236 @@ case 17:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 80 "lexer.l"
+#line 81 "lexer.l"
 {yylval.s = strdup(yytext);return COMMENTLINE;}
 	YY_BREAK
 case 18:
 YY_RULE_SETUP
-#line 83 "lexer.l"
+#line 84 "lexer.l"
 {BEGIN USE;}
 	YY_BREAK
 case 19:
 /* rule 19 can match eol */
 YY_RULE_SETUP
-#line 84 "lexer.l"
+#line 85 "lexer.l"
 {}
 	YY_BREAK
 case 20:
 YY_RULE_SETUP
-#line 85 "lexer.l"
+#line 86 "lexer.l"
 {if(!push_file(yytext)){yyterminate();}BEGIN INITIAL;}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(RAWSTATE):
 case YY_STATE_EOF(USE):
-#line 87 "lexer.l"
+#line 88 "lexer.l"
 {if(!pop_file()){yyterminate();}input();}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
-#line 89 "lexer.l"
+#line 90 "lexer.l"
 {}
 	YY_BREAK
 case 22:
 /* rule 22 can match eol */
 YY_RULE_SETUP
-#line 90 "lexer.l"
+#line 91 "lexer.l"
 {printcode("\n");if(print_lineno)printcode("\n#line %d \"%s\"\n",yylineno,crr_file_name);}
 	YY_BREAK
 /* Rules of declarations */
 case 23:
 YY_RULE_SETUP
-#line 92 "lexer.l"
+#line 93 "lexer.l"
 {return DECL;} /* Explicit declaration , used to declare the variables that are declared in RAW code*/
 	YY_BREAK
 case 24:
 YY_RULE_SETUP
-#line 94 "lexer.l"
+#line 95 "lexer.l"
 {return FNDECL;}
 	YY_BREAK
 case 25:
 YY_RULE_SETUP
-#line 96 "lexer.l"
+#line 97 "lexer.l"
 {return RETTYPE;}
 	YY_BREAK
 case 26:
 YY_RULE_SETUP
-#line 98 "lexer.l"
+#line 99 "lexer.l"
 {return CLASS;}
 	YY_BREAK
 case 27:
 YY_RULE_SETUP
-#line 99 "lexer.l"
+#line 100 "lexer.l"
 {return STATICMETHOD;}
 	YY_BREAK
 case 28:
 YY_RULE_SETUP
-#line 100 "lexer.l"
+#line 101 "lexer.l"
 {return PRIVATE;}
 	YY_BREAK
 case 29:
 YY_RULE_SETUP
-#line 102 "lexer.l"
+#line 103 "lexer.l"
 {if(current_class == NULL || is_static_method){yyerror("Canot use 'this' outside class mthods or inside static methods.");}else{return THIS;}}
 	YY_BREAK
 case 30:
 YY_RULE_SETUP
-#line 104 "lexer.l"
+#line 105 "lexer.l"
 { yylval.t = BOOL_TYPE; return BOOL; }
 	YY_BREAK
 case 31:
 YY_RULE_SETUP
-#line 105 "lexer.l"
+#line 106 "lexer.l"
 { yylval.t = COMPLEX_TYPE; return COMPLEX; }
 	YY_BREAK
 case 32:
 YY_RULE_SETUP
-#line 106 "lexer.l"
+#line 107 "lexer.l"
 { yylval.t = INT_TYPE;return INT; }
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
-#line 107 "lexer.l"
+#line 108 "lexer.l"
 { yylval.t = DOUBLE_TYPE;return DOUBLE; }
 	YY_BREAK
 case 34:
 YY_RULE_SETUP
-#line 108 "lexer.l"
+#line 109 "lexer.l"
 { yylval.t = FLOAT_TYPE;return FLOAT; }
 	YY_BREAK
 case 35:
 YY_RULE_SETUP
-#line 109 "lexer.l"
+#line 110 "lexer.l"
 { yylval.t = LONG_TYPE;return LONG; }
 	YY_BREAK
 case 36:
 YY_RULE_SETUP
-#line 110 "lexer.l"
+#line 111 "lexer.l"
 { yylval.t = SHORT_TYPE;return SHORT; }
 	YY_BREAK
 case 37:
 YY_RULE_SETUP
-#line 111 "lexer.l"
+#line 112 "lexer.l"
 { yylval.t = VOID_TYPE;return VOID; }
 	YY_BREAK
 case 38:
 YY_RULE_SETUP
-#line 112 "lexer.l"
+#line 113 "lexer.l"
 { yylval.t = STRING_TYPE; return STRING; }
 	YY_BREAK
 case 39:
 YY_RULE_SETUP
-#line 113 "lexer.l"
+#line 114 "lexer.l"
 {return CHARBUF;}
 	YY_BREAK
 case 40:
 YY_RULE_SETUP
-#line 114 "lexer.l"
+#line 115 "lexer.l"
 {return LET;}
 	YY_BREAK
 case 41:
 YY_RULE_SETUP
-#line 116 "lexer.l"
+#line 117 "lexer.l"
 { yylval.m = CONST_TYPE; return CONST; }
 	YY_BREAK
 case 42:
 YY_RULE_SETUP
-#line 117 "lexer.l"
+#line 118 "lexer.l"
 { yylval.m = STATIC_TYPE; return STATIC; }
 	YY_BREAK
 case 43:
 YY_RULE_SETUP
-#line 119 "lexer.l"
+#line 120 "lexer.l"
 { return MOD;}
 	YY_BREAK
 case 44:
 YY_RULE_SETUP
-#line 121 "lexer.l"
+#line 122 "lexer.l"
 {return EQL;}
 	YY_BREAK
 case 45:
 YY_RULE_SETUP
-#line 122 "lexer.l"
+#line 123 "lexer.l"
 {return AND;}
 	YY_BREAK
 case 46:
 YY_RULE_SETUP
-#line 123 "lexer.l"
+#line 124 "lexer.l"
 {return OR;}
 	YY_BREAK
 case 47:
 YY_RULE_SETUP
-#line 124 "lexer.l"
+#line 125 "lexer.l"
 {return NOT;}
 	YY_BREAK
 case 48:
 YY_RULE_SETUP
-#line 126 "lexer.l"
+#line 127 "lexer.l"
 {return IF;}
 	YY_BREAK
 case 49:
 YY_RULE_SETUP
-#line 127 "lexer.l"
+#line 128 "lexer.l"
 {return ELSE;}
 	YY_BREAK
 case 50:
 YY_RULE_SETUP
-#line 129 "lexer.l"
+#line 130 "lexer.l"
 {return WHILE;}
 	YY_BREAK
 case 51:
 YY_RULE_SETUP
-#line 130 "lexer.l"
+#line 131 "lexer.l"
 {return FOR;}
 	YY_BREAK
 case 52:
 YY_RULE_SETUP
-#line 131 "lexer.l"
+#line 132 "lexer.l"
 {return IN;}
 	YY_BREAK
 case 53:
 YY_RULE_SETUP
-#line 133 "lexer.l"
+#line 134 "lexer.l"
 {if(is_in_loop <= 0){yyerror("Cannot use break outside a Loop.");}else{return BREAK;}}
 	YY_BREAK
 case 54:
 YY_RULE_SETUP
-#line 134 "lexer.l"
+#line 135 "lexer.l"
 {if(is_in_loop <= 0){yyerror("Cannot use continue outside a Loop.");}else{return CONTINUE;}}
 	YY_BREAK
 case 55:
 YY_RULE_SETUP
-#line 136 "lexer.l"
+#line 137 "lexer.l"
 {yylval.s = strdup(yytext);return BOOLVAL;}
 	YY_BREAK
 case 56:
 YY_RULE_SETUP
-#line 138 "lexer.l"
+#line 139 "lexer.l"
 { if(is_in_fn){return RETURN;}else{yyerror("Cannot use return outside function.\n");} }
 	YY_BREAK
 case 57:
 YY_RULE_SETUP
-#line 140 "lexer.l"
+#line 141 "lexer.l"
 {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
 	YY_BREAK
 case 58:
 YY_RULE_SETUP
-#line 141 "lexer.l"
+#line 142 "lexer.l"
 {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
 	YY_BREAK
 case 59:
 YY_RULE_SETUP
-#line 142 "lexer.l"
+#line 143 "lexer.l"
 {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
 	YY_BREAK
 case 60:
 YY_RULE_SETUP
-#line 143 "lexer.l"
+#line 144 "lexer.l"
 {yyerror("Keyword %s is not support, consider using RAW<{..}>",yytext);}
 	YY_BREAK
 case 61:
 YY_RULE_SETUP
-#line 145 "lexer.l"
+#line 146 "lexer.l"
 {yylval.s = strdup(yytext);return STRINGVAL;}
 	YY_BREAK
 case 62:
@@ -1359,40 +1360,40 @@ case 62:
 (yy_c_buf_p) = yy_cp -= 1;
 YY_DO_BEFORE_ACTION; /* set up yytext again */
 YY_RULE_SETUP
-#line 146 "lexer.l"
+#line 147 "lexer.l"
 {yyerror("unterminated string "); yylval.s = strdup(yytext);return ';';}
 	YY_BREAK
 case 63:
 YY_RULE_SETUP
-#line 148 "lexer.l"
+#line 149 "lexer.l"
 { yylval.s = strdup(yytext); return INTNUM; }
 	YY_BREAK
 case 64:
 YY_RULE_SETUP
-#line 150 "lexer.l"
+#line 151 "lexer.l"
 { yylval.s = strdup(yytext); return FLOATNUM; }
 	YY_BREAK
 case 65:
 YY_RULE_SETUP
-#line 152 "lexer.l"
+#line 153 "lexer.l"
 {yyerror("Invalid variable name : Variable name format '__temp(number)' is reserved.");}
 	YY_BREAK
 case 66:
 YY_RULE_SETUP
-#line 154 "lexer.l"
+#line 155 "lexer.l"
 {yylval.s = strdup(yytext); if(is_class(yytext)){return CLASSNAME;}else{return IDENTIFIER;}}
 	YY_BREAK
 case 67:
 YY_RULE_SETUP
-#line 156 "lexer.l"
+#line 157 "lexer.l"
 {fprintf(stderr,"unknown token '%s'\n",yytext);}
 	YY_BREAK
 case 68:
 YY_RULE_SETUP
-#line 157 "lexer.l"
+#line 158 "lexer.l"
 YY_FATAL_ERROR( "flex scanner jammed" );
 	YY_BREAK
-#line 1396 "<stdout>"
+#line 1397 "<stdout>"
 
 	case YY_END_OF_BUFFER:
 		{
@@ -2407,14 +2408,21 @@ void yyfree (void * ptr )
 
 #define YYTABLES_NAME "yytables"
 
-#line 157 "lexer.l"
+#line 158 "lexer.l"
 
 
 static int push_file(char *name){
+    if(is_visited(name)){
+        return 0;
+    }
     FILE * f=fopen(name,"r");
     struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
     if(f == NULL){
-        yyerror("cannot open file %s",name);
+        if(strcmp(name,crr_file_name) ==0){
+            yyerror("File is included in itslef : %s",name);
+        }else{
+            perror("cannot open file");
+        }
         return 0;
     }
     if(crrbs == NULL){
@@ -2425,12 +2433,12 @@ static int push_file(char *name){
         crrbs->bs = YY_CURRENT_BUFFER;
         crrbs->f = yyin;
     }
+    crr_file_name = insert_filename(name);
     if(crrbs)crrbs->lineno = yylineno;
     bs->prev = crrbs;
     bs->bs = yy_create_buffer(f,YY_BUF_SIZE);
     bs->f = f;
     bs->filename = crr_file_name;
-    crr_file_name = strdup(name);
     yy_switch_to_buffer(bs->bs);
     crrbs = bs;
     yylineno = 1;
@@ -2444,7 +2452,6 @@ static int pop_file(){
     if(prev == NULL)return 0;
     if(prev->prev != NULL){
         fclose(bs->f);
-        free(bs->filename);
     }
     yy_delete_buffer(bs->bs);
     free(bs);

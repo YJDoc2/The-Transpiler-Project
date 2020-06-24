@@ -11,19 +11,19 @@ Linked_list* temp_list = NULL;
 
 char* fncall_incorrect_arg_num_msg =
     "incorrect %s function call on line %d :\n\texpected %d params as "
-    "per function delcaration on line %d,but got %d\n\n ";
+    "per function delcaration in %s line %d,but got %d\n\n ";
 
 char* fncall_incorrect_arg_type_msg =
     "incorrect argument type in function call on line %d :\n\tfor "
-    "argument %d expected type %s as per declaration on line %d, got %s\n\n";
+    "argument %d expected type %s as per declaration in %s line %d, got %s\n\n";
 char* fncall_incorrect_arr_msg =
     "incorrect argument type in function call on line %d :\n\tfor "
-    "argument %d expected type %s %s as per declaration on line %d, got %s "
+    "argument %d expected type %s %s as per declaration in %s line %d, got %s "
     "%s\n\n";
 
 char* fncall_incorrect_const_type_msg =
     "incorrect argument type in function call on line %d :\n\tfor "
-    "argument %d expected non-const argument as per declaration on line %d, "
+    "argument %d expected non-const argument as per declaration in %s line %d, "
     "got const.\n\n";
 
 /*
@@ -169,6 +169,8 @@ void add_function(modifier m, type t, char* fnname, char* printname,
   f->print_name = strdup(printname);
   f->ret_t.t = t;
   f->ret_m = m;
+  f->decl_file = crr_file_name;  // as this points to entry in filenames list,
+                                 // this should be valid until end of program
   hm_add(&fnmap, strdup(fnname), f);
 }
 
@@ -210,6 +212,8 @@ void add_class_ret_function(modifier m, char* classname, char* fnname,
   f->print_name = strdup(printname);
   f->ret_t.class = strdup(classname);
   f->ret_m = m;
+  f->decl_file = crr_file_name;  // as this points to entry in filenames list,
+                                 // this should be valid until end of program
   hm_add(&fnmap, strdup(fnname), f);
 }
 
@@ -316,7 +320,7 @@ int verify_call(char* fnname, Function* fn, int lineno) {
 
   // different number of arguments means incorrect call
   if (arglist->size != params) {
-    yyerror(fncall_incorrect_arg_num_msg, fnname, lineno, params,
+    yyerror(fncall_incorrect_arg_num_msg, fnname, lineno, params, fn->decl_file,
             fn->declaration, arglist->size);
     return 1;
   }
@@ -342,32 +346,33 @@ int verify_call(char* fnname, Function* fn, int lineno) {
         if (strcmp(p->t.class, arg->t.class) != 0) {
           // the classes of both are not same
           yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, p->t.class,
-                  fn->declaration, arg->t.class);
+                  fn->decl_file, fn->decl_file, fn->declaration, arg->t.class);
         }
       } else {
         // we got non-class type
         yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, p->t.class,
-                fn->declaration, type_arr[arg->t.t]);
+                fn->decl_file, fn->declaration, type_arr[arg->t.t]);
       }
     } else {
       // Param expects non-class type
       if (arg->is_class) {
         // we got class type
         yyerror(fncall_incorrect_arg_type_msg, lineno, argnum, type_arr[p->t.t],
-                fn->declaration, arg->t.class);
+                fn->decl_file, fn->declaration, arg->t.class);
       } else {
         // we got non-class type
         if (p->t.t != arg->t.t) {
           // we got mis-matching types
           yyerror(fncall_incorrect_arg_type_msg, lineno, argnum,
-                  type_arr[p->t.t], fn->declaration, type_arr[arg->t.t]);
+                  type_arr[p->t.t], fn->decl_file, fn->decl_file,
+                  fn->declaration, type_arr[arg->t.t]);
         }
       }
     }
     if (p->is_arr != arg->is_arr) {
       yyerror(fncall_incorrect_arr_msg, lineno, argnum,
               p->is_class ? p->t.class : type_arr[p->t.t],
-              p->is_arr ? "array" : "", fn->declaration,
+              p->is_arr ? "array" : "", fn->decl_file, fn->declaration,
               arg->is_class ? arg->t.class : type_arr[arg->t.t],
               arg->is_arr ? "array" : "");
     }
