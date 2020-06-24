@@ -82,9 +82,9 @@ RAW                               { return RAW; } /* Start of the RAW direction,
 
 use                                     {BEGIN USE;}
 <USE>[ \n\t"]*                           {}
-<USE>(\\.|[^\"\n])*                      {if(!push_file(yytext)){yyterminate();}BEGIN INITIAL;}
+<USE>(\\.|[^\"\n])*                      {if(!push_file(yytext)){yyterminate();}BEGIN INITIAL;char c = input();if(c != '"')unput(c);}
 
-<<EOF>>                             {if(!pop_file()){yyterminate();}input();}
+<<EOF>>                             {if(!pop_file()){yyterminate();}char c = input();if(c != '"')unput(c);}
 
 [ \t]*                              {}
 [\n]*                               {printcode("\n");if(print_lineno)printcode("\n#line %d \"%s\"\n",yylineno,crr_file_name);}
@@ -158,7 +158,7 @@ __temp[0-9]+                                        {yyerror("Invalid variable n
 
 static int push_file(char *name){
     if(is_visited(name)){
-        return 0;
+        return 1;
     }
     FILE * f=fopen(name,"r");
     struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
@@ -187,6 +187,7 @@ static int push_file(char *name){
     yy_switch_to_buffer(bs->bs);
     crrbs = bs;
     yylineno = 1;
+    printcode("\n#line 1 \"%s\"\n",crr_file_name);
     return 1;
 }
 
@@ -204,5 +205,6 @@ static int pop_file(){
     crrbs = prev;
     yylineno = crrbs->lineno;
     crr_file_name = crrbs->filename;
+    printcode("\n#line %d \"%s\"",yylineno,crr_file_name);
     return 1;
 }

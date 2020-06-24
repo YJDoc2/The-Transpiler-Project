@@ -53,7 +53,7 @@ RAW                               { }
 
 use                                     {BEGIN USE;}
 <USE>[ \n\t"]*                                 {}
-<USE>(\\.|[^\"\n])*                      {if(!push_file(pretext)){yyterminate();}BEGIN 0;}
+<USE>(\\.|[^\"\n])*                      {if(!push_file(pretext)){yyterminate();}BEGIN INITIAL;char c = input();if(c != '"')unput(c);}
 
 "/*"                                { BEGIN COMMENT;}
 <COMMENT>"*/"                       {BEGIN 0;}
@@ -85,7 +85,7 @@ let                                 {}
 const                               { prelval.m = CONST_TYPE; if(!in_fn && !pre_in_class)return CONST; }
 static                              { prelval.m = STATIC_TYPE; if(!in_fn && !pre_in_class)return STATIC; }
 
-<<EOF>>                             {if(!pop_file()){yyterminate();}input();}
+<<EOF>>                             {if(!pop_file()){yyterminate();}char c = input();if(c != '"')unput(c);}
 
 \"(\\.|[^\"\n])*\"                      {}
 \"(\\.|[^\"\n])*$                       {preerror("unterminated string ");}
@@ -112,7 +112,7 @@ int preerror(char *s){
 
 static int push_file(char *name){
     if(is_visited(name)){
-        return 0;
+        return 1;
     }
     FILE * f=fopen(name,"r");
     struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));

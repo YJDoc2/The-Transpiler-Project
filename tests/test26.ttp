@@ -1,0 +1,14 @@
+use "./test27.ttp"
+
+class test1{
+    test t;
+    int c;
+    string s;
+    private int d;
+    @static fn  new() ->test1{
+        test1 ret = { c =0,d=0,t = ::test::new() };
+        return ret;
+    }
+}
+
+fn test_fn()->void{}

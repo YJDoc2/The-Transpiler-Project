@@ -1,0 +1,12 @@
+use "./test26.ttp"
+use "./test27.ttp"
+fn main()->void{
+    test t = ::test::new();
+    // test1 t1 = ::test::new(); // should give error
+    test1 t1 = ::test1::new(); // should give error
+    //t.b = 5; // should give error
+    // t1.d = 6.8; // should give error
+    //t1.t =t; // should give error
+    //t1.c = 6.8; //should give error
+    t1.s = "hello"; // should not give error
+}

@@ -1,4 +1,0 @@
-use "./test1.ttp"
-fn test(int k)->void{
-    let a =5;
-}

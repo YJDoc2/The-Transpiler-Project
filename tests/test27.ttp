@@ -1,0 +1,8 @@
+class test{
+    int a;
+    const int b;
+    @static fn new()->test{
+        test ret = {a=0,b=0};
+        return ret;
+    }
+}

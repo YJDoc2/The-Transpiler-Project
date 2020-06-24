@@ -1140,13 +1140,13 @@ YY_RULE_SETUP
 case 20:
 YY_RULE_SETUP
 #line 86 "lexer.l"
-{if(!push_file(yytext)){yyterminate();}BEGIN INITIAL;}
+{if(!push_file(yytext)){yyterminate();}BEGIN INITIAL;char c = input();if(c != '"')unput(c);}
 	YY_BREAK
 case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(RAWSTATE):
 case YY_STATE_EOF(USE):
 #line 88 "lexer.l"
-{if(!pop_file()){yyterminate();}input();}
+{if(!pop_file()){yyterminate();}char c = input();if(c != '"')unput(c);}
 	YY_BREAK
 case 21:
 YY_RULE_SETUP
@@ -2413,7 +2413,7 @@ void yyfree (void * ptr )
 
 static int push_file(char *name){
     if(is_visited(name)){
-        return 0;
+        return 1;
     }
     FILE * f=fopen(name,"r");
     struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
@@ -2442,6 +2442,7 @@ static int push_file(char *name){
     yy_switch_to_buffer(bs->bs);
     crrbs = bs;
     yylineno = 1;
+    printcode("\n#line 1 \"%s\"\n",crr_file_name);
     return 1;
 }
 
@@ -2459,5 +2460,6 @@ static int pop_file(){
     crrbs = prev;
     yylineno = crrbs->lineno;
     crr_file_name = crrbs->filename;
+    printcode("\n#line %d \"%s\"",yylineno,crr_file_name);
     return 1;
 }

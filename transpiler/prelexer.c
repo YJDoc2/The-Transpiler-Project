@@ -1217,7 +1217,7 @@ YY_RULE_SETUP
 case 12:
 YY_RULE_SETUP
 #line 56 "prelexer.l"
-{if(!push_file(pretext)){yyterminate();}BEGIN 0;}
+{if(!push_file(pretext)){yyterminate();}BEGIN INITIAL;char c = input();if(c != '"')unput(c);}
 	YY_BREAK
 case 13:
 YY_RULE_SETUP
@@ -1330,7 +1330,7 @@ case YY_STATE_EOF(INITIAL):
 case YY_STATE_EOF(RAWSTATE):
 case YY_STATE_EOF(USE):
 #line 88 "prelexer.l"
-{if(!pop_file()){yyterminate();}input();}
+{if(!pop_file()){yyterminate();}char c = input();if(c != '"')unput(c);}
 	YY_BREAK
 case 33:
 YY_RULE_SETUP
@@ -2397,7 +2397,7 @@ int preerror(char *s){
 
 static int push_file(char *name){
     if(is_visited(name)){
-        return 0;
+        return 1;
     }
     FILE * f=fopen(name,"r");
     struct bufstack *bs = (struct bufstack*)calloc(1,sizeof(struct bufstack));
