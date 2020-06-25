@@ -189,3 +189,9 @@ methods can be accessed by syntax a::method_a(args), where a is instance of clas
 static methods can be accessed as ::Classname::static_method_name(args)
 
 'this' keyword can be used inside non-static methods for refereeing to members of calling instance.
+
+## Use syntax
+
+One can write use "filepath" to use classes / functions from one file into others.<br />
+<strong>NOTE</strong> that this will transpile all those file form starting. <br/>
+also is a file is encountered twice, it will be silently skipped. <br />
