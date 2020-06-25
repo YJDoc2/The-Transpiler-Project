@@ -246,7 +246,8 @@ static void print_params(Linked_list *paramlist) {
  */
 void print_code_header() {
   fprintf(header,
-          "#include<stdio.h>\n#include<stdlib.h>\n#include<stdbool.h>\n#"
+          "#include<stdio.h>\n#include<stdlib.h>\n#include<string.h>\n#include<"
+          "stdbool.h>\n#"
           "include<complex.h>\n#include<math.h>\n\n");
   char *name = basename(main_file_headname);
   name[strlen(name) - 2] = '\0';

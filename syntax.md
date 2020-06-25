@@ -90,16 +90,16 @@ so in a function , @decl return; makes transpiler assume that funtion return sta
 
 ## let syntax
 
-variables can also be declared using let :
-let varname = expr;
-let varname[] = {exprs...};
+variables can also be declared using let :<br/>
+let varname = expr;<br/>
+let varname[] = {exprs...};<br/>
 only one variable can be declared at a time, and in array type of the first element of array is considered the type of array.<br />
 
 ## Logical operators :
 
-eql for comparing equality
-not eql for checking inequality
-not for negation of condition
+eql for comparing equality<br/>
+not eql for checking inequality<br/>
+not for negation of condition<br/>
 \>,<,>=,<= have same meaning as C.
 
 ## conditionals
@@ -153,16 +153,17 @@ for loops :Four types of for loops are supported :
 
 ## Classes ... or glorified structs
 
-These are not true classes in OOP sense, neither do they support, OOP operations such as extending, interfaces, method overloading etc.
-These just provide a convenient way to combine data in structs and methods to operate on them.
+These are not true classes in OOP sense, neither do they support OOP operations such as extending, interfaces, method overloading etc.
+These just provide a convenient way to combine data in structs and methods to operate on them.<br/>
+Each class is transpiled into its own respective .c and .h file, named as class_classname.c/class_classname.h
 
 ### Syntax : declaration
 
 Please see examples in example folder for working examples.
 
-class classname{
-attributes/comments/RAW<{}>/@decl....
-methods....
+class classname{<br/>
+attributes/comments/RAW<{}>/@decl....<br/>
+methods....<br/>
 }
 
 only one attribute can be declared at one time.
@@ -178,6 +179,8 @@ method declaration syntax is similar to functions :
 fn method_name(args)->return_type{
 stmts
 }
+
+### Syntax : access
 
 class attributes can be accessed by '.' like :
 a.b, where a is instance of Class which has an attribute named b.

@@ -43,16 +43,27 @@ Once successfully run, this will generate an executable file named 'ttp' in the 
 ## Usage :
 
 The command line syntax is :
-ttp filename [ -hkl ][-o outfile]
-where filename is the name of file to be transpiiled, which is necessary argument
-h flag displays help
-k flag keeps the generated files even if there were any errors in the transpilation, which are otherwise deleted
-l prints the line numbers as pre-processor directives, which can be used by compilers to show the lines in original file, instead of generated, but these may be a bit off that actual
-o flag requires a name, which is given to the generated file instead of the name of input file.<strong>NOTE</strong> that this does not affect the generated class files, which are always named as 'class_classname.h' and 'class_classname.c'
+ttp filename [ -hkl ][-o outfile]<br/>
+where filename is the name of file to be transpiiled, which is necessary argument<br/>
+h flag displays help<br/>
+k flag keeps the generated files even if there were any errors in the transpilation, which are otherwise deleted<br/>
+l prints the line numbers as pre-processor directives, which can be used by compilers to show the lines in original file, instead of generated, but these may be a bit off that actual<br/>
+o flag requires a name, which is given to the generated file instead of the name of input file.<strong>NOTE</strong> that this does not affect the generated class files, which are always named as 'class_classname.h' and 'class_classname.c'<br/>
 
 ## For general Users :
 
 These are few points to be noted before use :
+
+All generated files contain these basic headers :
+
+<ul>
+<li>stdio.h</li>
+<li>stdlib.h</li>
+<li>stdbool.h</li>
+<li>string.h</li>
+<li>complex.h</li>
+<li>math.h</li>
+</ul>
 
 In code the Order would be maintained in generated files, but not the adjacency.
 that is the line 1 and line 2 are two consecutive lines, in generated files, line 1 will come before line 2, but there may be some extra generated code between those two lines<br />
