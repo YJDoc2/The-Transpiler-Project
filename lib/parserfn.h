@@ -35,6 +35,13 @@ int __init_io__(char* infile, char* outfile);
 int __cleanup_io__();
 
 /*
+ * Function that removes code files that are created in transpilateion
+ * Parmas : none
+ * Returns : void
+ */
+void rm_files();
+
+/*
  * A function to print errors to stderr according to given format string
  *
  * Params :

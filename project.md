@@ -137,9 +137,9 @@ Added file of decl in all fn methods classes<br />
 
 Cleared up TODOs' , and added a function to remove created files according to a switch variable
 if number of errors cross limit <br />
-add fn to remove files if any error has occurred according to switch<br />
+Added fn to remove files if any error has occurred according to switch<br />
 
-test for fn with void return types, maybe just let it be...?<br />
+Added check for void type in fn return<br />
 
 change action input and print to accommodate classes<br />
 Maybe merge add_var and add_array method in single as create_class_var has done<br />

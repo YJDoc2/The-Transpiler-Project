@@ -201,9 +201,9 @@ void add_method(Class* class, char* name, type ret_t, bool is_static,
   }
   char* keyname = strdup(name);
 
-  char* printname =
-      (char*)calloc(1, strlen(keyname) + strlen(class->name) +
-                           3);  // 2 ofr _ before and after classname, 1 for \0
+  char* printname = (char*)calloc(
+      sizeof(char), strlen(keyname) + strlen(class->name) +
+                        3);  // 2 ofr _ before and after classname, 1 for \0
   sprintf(printname, class_method_format, class->name, keyname);
   method* fn = (method*)calloc(1, sizeof(method));
   fn->is_static = is_static;
@@ -245,9 +245,9 @@ void add_class_ret_method(Class* class, char* name, char* ret_class,
   }
   char* keyname = strdup(name);
 
-  char* printname =
-      (char*)calloc(1, strlen(keyname) + strlen(class->name) +
-                           3);  // 2 ofr _ before and after classname, 1 for \0
+  char* printname = (char*)calloc(
+      sizeof(char), strlen(keyname) + strlen(class->name) +
+                        3);  // 2 ofr _ before and after classname, 1 for \0
   sprintf(printname, class_method_format, class->name, keyname);
   method* fn = (method*)calloc(1, sizeof(method));
   fn->is_static = is_static;

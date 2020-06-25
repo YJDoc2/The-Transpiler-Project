@@ -18,6 +18,8 @@
     void preparse(); // as preparse is a macro from preparser.l must be given here
     
     bool print_lineno = false;
+    extern bool remove_files;
+    extern int errs;
 
     extern char *type_arr[],*mod_arr[];
     extern Linked_list *temp_list;
@@ -308,7 +310,7 @@ comment : BEGINCOMMENT {printcode("/*");} commentlist ENDCOMMENT {printcode("*/"
 commentlist : /*nothing*/
     | commentlist COMMENTLINE {printcode("%s",$2);free($2);}
 
-returnstmt : RETURN expr { if(expr_type != fn_type){
+returnstmt : RETURN expr { if(expr_type != fn_type && verify_types(fn_type,expr_type)){
                                 yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[expr_type]);
                             }else if(fn_type == CLASS_TYPE && strcmp(expr_class,fn_ret_class) !=0){
                                 yyerror("invalid return type : expected class %s found class %s",fn_ret_class,expr_class);
@@ -544,6 +546,8 @@ fncall : IDENTIFIER '(' {push_expr_and_args();if(find_action($1)==0)is_in_fncall
                                                                                                         }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
                                                                                                             (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){
                                                                                                                 yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
+                                                                                                        }else if(fn_ret == VOID_TYPE){
+                                                                                                            expr_type = VOID_TYPE;
                                                                                                         }else if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
                                                                                                             expr_type = COMPLEX_TYPE;
                                                                                                         }else if(expr_type == FLOAT_TYPE || fn_ret == FLOAT_TYPE || fn_ret == DOUBLE_TYPE){
@@ -584,6 +588,8 @@ fncall : IDENTIFIER '(' {push_expr_and_args();if(find_action($1)==0)is_in_fncall
                                                                                                     }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
                                                                                                         (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){
                                                                                                             yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
+                                                                                                    }else if(fn_ret == VOID_TYPE){
+                                                                                                            expr_type = VOID_TYPE;
                                                                                                     }else if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
                                                                                                         expr_type = COMPLEX_TYPE;
                                                                                                     }else if(expr_type == FLOAT_TYPE || fn_ret == FLOAT_TYPE || fn_ret == DOUBLE_TYPE){
@@ -714,21 +720,21 @@ iterarraydummy : /*nothing*/ {Variable *v = lookup_var($<s>0);
 
 ;
 expr: expr '+'  expr  { $$=join($1,"+",$3); free($1);free($3); 
-                                            if(expr_type == CLASS_TYPE){yyerror("cannot use + operation on classes");}
+                                            if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use + operation on %s type",type_arr[expr_type]);}
                                             is_composite_val =false;}
     | expr '-'  expr  {$$=join($1,"-",$3); free($1);free($3); 
-                                            if(expr_type == CLASS_TYPE){yyerror("cannot use + operation on classes");}
+                                            if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use + operation on %s type",type_arr[expr_type]);}
                                             }
     | expr '*'  expr  {$$=join($1,"*",$3); free($1);free($3); 
-                                            if(expr_type == CLASS_TYPE){yyerror("cannot use + operation on classes");}
+                                            if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use + operation on %s type",type_arr[expr_type]);}
                                             }
     | expr '/'  expr  {$$=join($1,"/",$3); free($1);free($3);
-                                            if(expr_type == CLASS_TYPE){yyerror("cannot use + operation on classes");}
+                                            if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use + operation on %s type",type_arr[expr_type]);}
                                             }
-    | expr MOD  expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use mod on %s type",type_arr[expr_type]);} 
+    | expr MOD  expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use mod on %s type",type_arr[expr_type]);} 
                                             $$=join($1,"%",$3); free($1);free($3); is_composite_val =false;}
     | '(' type ')' expr  %prec UMINUS    {
-                                if(expr_type == CLASS_TYPE){yyerror("cannot typecast class values");}
+                                if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot typecast %s values",type_arr[expr_type]);}
                                 void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
                                 sprintf(v,"(%s) ",type_arr[$2]);
                                 char * t = join("(",$4,")");
@@ -740,27 +746,29 @@ expr: expr '+'  expr  { $$=join($1,"+",$3); free($1);free($3);
                                 expr_type = $2;
                             }
     | '(' expr ')'   {$$=join("( ",$2," )"); free($2); is_composite_val =false;}
-    | '-' expr  %prec UMINUS {$$=join("-","",$2);if(expr_type == CLASS_TYPE){yyerror("Cannot use negetive on class type");}}
-    | expr '<'  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use < with %s type",type_arr[expr_type]);} 
+    | '-' expr  %prec UMINUS {$$=join("-","",$2);if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use negetive on %s type",type_arr[expr_type]);}}
+    | expr '<'  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use < with %s type",type_arr[expr_type]);} 
                                             $$= join($1,"<",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr '>'  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use > with %s type",type_arr[expr_type]);} 
+    | expr '>'  expr   {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use > with %s type",type_arr[expr_type]);} 
                                             $$= join($1,">",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr LTE expr         {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE){yyerror("Cannot use <= with %s type",type_arr[expr_type]);} 
+    | expr LTE  expr         {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use <= with %s type",type_arr[expr_type]);} 
                                             $$= join($1,"<=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr GTE expr          {if(expr_type == COMPLEX_TYPE|| expr_type == CLASS_TYPE){yyerror("Cannot use >= with %s type",type_arr[expr_type]);} 
+    | expr GTE  expr          {if(expr_type == COMPLEX_TYPE|| expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use >= with %s type",type_arr[expr_type]);} 
                                             $$= join($1,">=",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr EQL expr  %prec LEAST        {if(expr_type == CLASS_TYPE){yyerror("cannot compare classes directly");}
+    | expr EQL  expr  %prec LEAST        {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot compare %s type directly",type_arr[expr_type]);}
                                             $$= join($1,"==",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr NOT EQL expr %prec LEAST     {if(expr_type == CLASS_TYPE){yyerror("cannot compare classes directly");}
+    | expr NOT EQL  expr %prec LEAST     {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot compare %s type directly",type_arr[expr_type]);}
                                         $$= join($1,"!=",$4);free($1);free($4);expr_type = BOOL_TYPE;}
-    | expr AND expr  {if(expr_type == CLASS_TYPE){yyerror("cannot use logical operators on classes directly");}
+    | expr AND  expr  {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use logical operators on %s type directly",type_arr[expr_type]);}
                             $$= join($1," && ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | expr OR expr    {if(expr_type == CLASS_TYPE){yyerror("cannot use logical operators on classes directly");} 
+    | expr OR  expr    {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use logical operators on %s type directly",type_arr[expr_type]);} 
                         $$= join($1," || ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
-    | NOT expr   {if(expr_type == CLASS_TYPE){yyerror("cannot use logical operators on classes directly");}
+    | NOT  expr   {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use logical operators on %s type directly",type_arr[expr_type]);}
                     char * t =join("(",$2,")");$$ = join("!",t,"");free(t);free($2);expr_type = BOOL_TYPE;}
-    | value
+    | value voidcheckdummy
 ;
+
+voidcheckdummy : /*nothing*/ {if(expr_type == VOID_TYPE){yyerror("Cannot use void type in expressions, consider typecasting the method explicitly for type, if external method is used");}}
 
 value : cmplxnum {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);
@@ -927,6 +935,8 @@ varvals :fncall
                                                                                                         }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
                                                                                                             (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){
                                                                                                                 yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
+                                                                                                        }else if(fn_ret == VOID_TYPE){
+                                                                                                            expr_type = VOID_TYPE;
                                                                                                         }else if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
                                                                                                             expr_type = COMPLEX_TYPE;
                                                                                                         }else if(expr_type == FLOAT_TYPE || fn_ret == FLOAT_TYPE || fn_ret == DOUBLE_TYPE){
@@ -1028,6 +1038,8 @@ varvals :fncall
                                                                                                     }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
                                                                                                         (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){
                                                                                                             yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
+                                                                                                    }else if(fn_ret == VOID_TYPE){
+                                                                                                            expr_type = VOID_TYPE;
                                                                                                     }else if(expr_type == COMPLEX_TYPE || fn_ret == COMPLEX_TYPE){
                                                                                                         expr_type = COMPLEX_TYPE;
                                                                                                     }else if(expr_type == FLOAT_TYPE || fn_ret == FLOAT_TYPE || fn_ret == DOUBLE_TYPE){
@@ -1055,7 +1067,9 @@ void main(int argc , char **argv){
     printcode("\n#line 1 \"%s\"\n\n",crr_file_name);
     yyparse();
     print_code_header();
-
+    if(remove_files && errs >0){
+        rm_files();
+    }
     global_cleanup();
 
     

@@ -413,8 +413,8 @@ char* get_fncall_str(char* fnname) {
     len += strlen(var->name) + 1;  // one extra for possible ','
     iter = iter->next;
   }
-  void* ret =
-      calloc(1, len + 2);  // one extra for end of string and one for ')'
+  void* ret = calloc(sizeof(char),
+                     len + 2);  // one extra for end of string and one for ')'
 
   strcat(ret, fnname);
   strcat(ret, "(");

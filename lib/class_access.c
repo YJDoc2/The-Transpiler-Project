@@ -276,8 +276,8 @@ char *get_methodcall_str(method *m, char *call_var) {
     len += strlen(call_var) + 2 +
            2;  // 1 for & and 1 for possible ',', 2 for '(' and  ')'
   }
-  void *ret =
-      calloc(1, len + 2);  // one extra for end of string and one for ')'
+  void *ret = calloc(sizeof(char),
+                     len + 2);  // one extra for end of string and one for ')'
 
   strcat(ret, m->print_name);
   strcat(ret, "(");

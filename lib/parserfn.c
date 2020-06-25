@@ -84,7 +84,7 @@ int __init_io__(char *infile, char *outfile) {
     __cleanup_io__();
     exit(EXIT_FAILURE);
   }
-  main_file_headname = (char *)calloc(1, strlen(headname));
+  main_file_headname = (char *)calloc(sizeof(char), strlen(headname));
   strcpy(main_file_headname, headname);
   printcode("#include \"%s\"\n\n", headname);
   return 0;
@@ -112,7 +112,11 @@ int __cleanup_io__() {
   return 0;
 }
 
-// helper function to delete created files
+/*
+ * Function that removes code files that are created in transpilateion
+ * Parmas : none
+ * Returns : void
+ */
 void rm_files() {
   // the only created files are of the classes and the main file
   hashpair *iter = classmap.start;
@@ -131,9 +135,13 @@ void rm_files() {
     }
     ++iter;
   }
-  remove(main_file_headname);
-  main_file_headname[strlen(main_file_headname) - 1] = 'c';
-  remove(main_file_headname);
+  fname = (char *)calloc(sizeof(char), strlen(main_file_headname) + 2 +
+                                           1);  // 2 for .c, .h,1 for \0
+  sprintf(fname, "%s.h", main_file_headname);
+  remove(fname);
+  fname[strlen(fname) - 1] = 'c';
+  remove(fname);
+  free(fname);
 }
 
 /*
