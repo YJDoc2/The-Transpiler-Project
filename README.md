@@ -29,7 +29,7 @@ This introduces some things that are not directly supported in C , like :
 
 See the <a href='https://github.com/YJDoc2/The-Transpiler-Project/blob/master/project.md'>project.md</a> for how the features were developed step-wise
 
-Also thanks to <a href='https://github.com/YatharthVyas'> for helping with windows makefile
+Also thanks to <a href='https://github.com/YatharthVyas'>Yatharth</a> for helping with windows makefile
 
 ## Build instructions
 
