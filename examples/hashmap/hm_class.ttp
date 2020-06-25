@@ -1,0 +1,52 @@
+class hashpair{
+    int key;
+    string val;
+    @static fn new(int k, string v)->hashpair{
+        hashpair ret = {key=k,val=v};
+        return ret;
+    }
+}
+class Hashmap{
+    private int members;
+    private int size;
+    RAW<{hashpair *mem;}>
+    @decl int mem;
+    @static fn new(int size) -> Hashmap{
+        RAW<{hashpair * data = (hashpair *)calloc(size,sizeof(hashpair));}>
+        @decl int data;
+        Hashmap ret = {members = 0, size = size,mem = data};
+        return ret; 
+    }
+    fn add(int k, string v) -> int{
+        int offset = k mod this.size;
+        RAW<{
+            hashpair * iter = this->mem+offset;
+            hashpair *end = this->mem+this->size;
+            while(iter <= end){
+                if(iter->key == 0){
+                    iter->key = k;
+                    iter->val = v;
+                    return 0;
+                }
+                ++iter;
+            }
+        }>
+        return -1;
+    }
+
+    fn get(int k)->string{
+        int offset = k mod this.size;
+        RAW<{
+            hashpair * iter = this->mem+offset;
+            hashpair *end = this->mem+this->size;
+            while(iter <= end){
+                if(iter->key == k){
+                    return iter->val;
+                }
+                ++iter;
+            }
+            return NULL;
+        }>
+        @decl return;
+    }
+}

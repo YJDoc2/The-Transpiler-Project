@@ -1,0 +1,44 @@
+class Complex{
+    private complex cartesian;
+    private complex polar;
+    @static fn new()->Complex{
+        Complex ret = {cartesian =0,polar=0};
+        return ret;
+    }
+    @static fn from_cartesian(float x, float y)->Complex{
+        complex c = (x,y);
+        float r = (float)sqrt(x*x+y*y);
+        float t = (float)atan(y/x);
+        complex p = (r,t);
+        Complex ret = {cartesian =c,polar =p};
+        return ret;
+    }
+    @static fn from_polar(float r, float t)->Complex{
+        complex p = (r,t);
+        float x = r* (float)cos(t);
+        float y = r* (float)sin(t);
+        complex c = (x,y);
+        Complex ret = {cartesian =c,polar =p};
+        return ret;
+    }
+    fn get_real()->float{
+        return (float)creal(this.cartesian);
+    }
+    fn get_img()->float{
+        return (float)cimag(this.cartesian);
+    }
+    fn get_r()->float{
+        return (float)creal(this.polar);
+    }
+    fn get_theta()->float{
+        return (float)cimag(this.polar);
+    }
+    fn add(Complex c)->void{
+        this.cartesian += (c::get_real(),c::get_img());
+        float x = (float)creal(this.cartesian);
+        float y = (float)cimag(this.cartesian);
+        float r = (float)sqrt(x * x + y * y);
+        float t = (float)atan(y/x);
+        this.polar = (r,t);
+    }
+}

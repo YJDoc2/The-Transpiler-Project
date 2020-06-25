@@ -736,7 +736,7 @@ expr: expr '+'  expr  { $$=join($1,"+",$3); free($1);free($3);
     | expr MOD  expr  {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use mod on %s type",type_arr[expr_type]);} 
                                             $$=join($1,"%",$3); free($1);free($3); is_composite_val =false;}
     | '(' type ')' expr  %prec UMINUS    {
-                                if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot typecast %s values",type_arr[expr_type]);}
+                                if(expr_type == CLASS_TYPE){yyerror("cannot typecast %s values",type_arr[expr_type]);}
                                 void * v = calloc(1,3+strlen(type_arr[$2])); // 2 for '()' one for end-of-string 0
                                 sprintf(v,"(%s) ",type_arr[$2]);
                                 char * t = join("(",$4,")");
@@ -767,7 +767,7 @@ expr: expr '+'  expr  { $$=join($1,"+",$3); free($1);free($3);
                         $$= join($1," || ",$3);free($1);free($3);expr_type = BOOL_TYPE;}
     | NOT  expr   {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use logical operators on %s type directly",type_arr[expr_type]);}
                     char * t =join("(",$2,")");$$ = join("!",t,"");free(t);free($2);expr_type = BOOL_TYPE;}
-    | value voidcheckdummy
+    | value 
 ;
 
 voidcheckdummy : /*nothing*/ {if(expr_type == VOID_TYPE){yyerror("Cannot use void type in expressions, consider typecasting the method explicitly for type, if external method is used");}}
@@ -932,8 +932,8 @@ varvals :fncall
                                                                                                             expr_class = m->ret_t.class;
                                                                                                         }else if(m->ret_t.t == VOID_TYPE){
                                                                                                             expr_type = VOID_TYPE;
-                                                                                                        }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
-                                                                                                            yyerror("Cannot combine string type with any type.");
+                                                                                                        }else if(fn_ret == STRING_TYPE ){
+                                                                                                            expr_type = STRING_TYPE;
                                                                                                         }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
                                                                                                             (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){
                                                                                                                 yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
@@ -1035,8 +1035,8 @@ varvals :fncall
                                                                                                         expr_class = m->ret_t.class;
                                                                                                     }else if(m->ret_t.t == VOID_TYPE){
                                                                                                         expr_type = VOID_TYPE;
-                                                                                                    }else if(expr_type == STRING_TYPE || expr_type != VOID_TYPE && fn_ret == STRING_TYPE ){
-                                                                                                        yyerror("Cannot combine string type with any type.");
+                                                                                                    }else if(fn_ret == STRING_TYPE ){
+                                                                                                        expr_type = STRING_TYPE;
                                                                                                     }else if((expr_type == BOOL_TYPE && fn_ret != BOOL_TYPE) ||
                                                                                                         (fn_ret ==BOOL_TYPE && expr_type !=BOOL_TYPE)){
                                                                                                             yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);

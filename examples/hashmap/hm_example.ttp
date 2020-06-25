@@ -1,0 +1,13 @@
+use "hm_class.ttp"
+
+fn main()->void{
+    Hashmap hm = ::Hashmap::new(10);
+    print("hahmap created...\n");
+    hm::add(5,"Five");
+    hm::add(15,"Fifteen");
+    print("val for key 5 is : ",hm::get(5));
+    print("\n");
+    print("val for key 15 is : ",hm::get(15));
+    print("\n");
+
+}

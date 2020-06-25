@@ -1,0 +1,3 @@
+fn test()->void{
+    print("Hello World from test function!!!\n");
+}

@@ -1,18 +1,21 @@
 .PHONY : lib util transpiler
 
 UCFLAGS = -O3
+CC = gcc
+AR = ar
+
 
 all : lib util transpiler
 	cp ./transpiler/ttp ./
 
 lib :
-	cd ./lib && make UCFLAGS=$(UCFLAGS) CC=gcc ARFLAGS=-rv CFLAGS=-c
+	cd ./lib && make UCFLAGS=$(UCFLAGS) CC=$(CC) ARFLAGS=-rv CFLAGS=-c AR=$(AR)
 
 util :
-	cd ./util && make UCFLAGS=$(UCFLAGS) CC=gcc ARFLAGS=-rv CFLAGS=-c
+	cd ./util && make UCFLAGS=$(UCFLAGS) CC=$(CC) ARFLAGS=-rv CFLAGS=-c AR=$(AR)
 
 transpiler :
-	cd ./transpiler && make UCFLAGS=$(UCFLAGS) CC=gcc ARFLAGS=-rv CFLAGS=-c
+	cd ./transpiler && make UCFLAGS=$(UCFLAGS) CC=$(CC) ARFLAGS=-rv CFLAGS=-c AR=$(AR)
 
 clean :
 	cd ./util && make clean

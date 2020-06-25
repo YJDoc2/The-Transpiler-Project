@@ -1,0 +1,7 @@
+use "helloworld_1.ttp"
+
+fn main()->void{
+    print("Hello World from Main!!!\n");
+    RAW<{printf("Hello World from RAW !!!\n");}>
+    test();
+}

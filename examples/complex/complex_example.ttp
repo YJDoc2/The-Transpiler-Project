@@ -1,0 +1,15 @@
+use "complex_class.ttp"
+
+fn main()->void{
+    Complex c = ::Complex::from_cartesian(3,4);
+    print("Radius of this is : ",c::get_r());
+    print("\n");
+    print("Theta of this is : ",c::get_theta());
+    Complex d = ::Complex::from_cartesian(3,4);
+    c::add(d);
+    print("\n");
+    print("New Radius of this is : ",c::get_r());
+    print("\n");
+    print("New Theta of this is : ",c::get_theta());
+    print("\n");
+}

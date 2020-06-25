@@ -64,14 +64,19 @@ int __init_io__(char *infile, char *outfile) {
   char headname[strlen(out) + 3];
   strcpy(codename, out);
   strcpy(headname, out);
+  int flag = 0;
   for (int i = strlen(out) - 1; i > 0; --i) {
     if (codename[i] == '.') {
       strcpy(codename + i, ".c\0");
       strcpy(headname + i, ".h\0");
+      flag = 1;
       break;
     }
   }
-
+  if (!flag) {
+    strcpy(codename + strlen(codename) - 1, ".c\0");
+    strcpy(headname + strlen(headname) - 1, ".h\0");
+  }
   code = fopen(codename, "w");
   if (code == NULL) {
     perror("cannot create new file for compiling");
@@ -242,7 +247,7 @@ static void print_params(Linked_list *paramlist) {
 void print_code_header() {
   fprintf(header,
           "#include<stdio.h>\n#include<stdlib.h>\n#include<stdbool.h>\n#"
-          "include<complex.h>\n\n");
+          "include<complex.h>\n#include<math.h>\n\n");
   char *name = basename(main_file_headname);
   name[strlen(name) - 2] = '\0';
   fprintf(header, "#ifndef __%s__ \n", name);
