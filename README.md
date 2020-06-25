@@ -29,6 +29,8 @@ This introduces some things that are not directly supported in C , like :
 
 See the <a href='https://github.com/YJDoc2/The-Transpiler-Project/blob/master/project.md'>project.md</a> for how the features were developed step-wise
 
+Also thanks to <a href='https://github.com/YatharthVyas'> for helping with windows makefile
+
 ## Build instructions
 
 This can be directly built on linux systems using the outermost Makefile, and is built and tested on Ubuntu 20.04
