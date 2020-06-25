@@ -7,7 +7,7 @@
 /*
  * Function which invokes all init functions from library files
  */
-void global_init();
+void global_init(char *, char *);
 
 /*
  * Function which invokes all cleanup funtions from library files

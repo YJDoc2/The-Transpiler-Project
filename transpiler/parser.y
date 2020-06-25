@@ -3,6 +3,7 @@
     #include<stdlib.h>   
     #include<string.h>
     #include <stdbool.h>
+    #include <getopt.h>
     #include "variables.h"
     #include "parserfn.h"
     #include "actions.h"
@@ -1057,14 +1058,35 @@ classcheckdummy : /*nothing*/ {if(expr_type != CLASS_TYPE){yyerror("attribute or
 
 void main(int argc , char **argv){
 
-    global_init();
+    extern char *optarg;
+    extern int optind;
+    char *infile=NULL, *outfile=NULL;
+    int c;
 
+    while((c=getopt(argc,argv,"hklo:")) != -1){
+        switch(c){
+            case 'k':{remove_files=false;break;}
+            case 'l':{print_lineno=true;break;}
+            case 'o':{outfile=optarg;break;}
+            case 'h':{printf("help is reamining ...\n");break;}
+            default : {printf("help is remaining...\n");break;}
+        }
+    }
+
+    if(optind == argc){
+        fprintf(stderr,"incorrect usage : help is remaining");
+        exit(EXIT_FAILURE);
+    }else{
+        infile = argv[optind];
+    }
+
+    global_init(infile,outfile);
     pre_class_map = make_hashmap(20, __hash_str__, __compair__str__);
     preparse();
     hm_delete(pre_class_map, pre_class_clean);
     switch_list();
     
-    printcode("\n#line 1 \"%s\"\n\n",crr_file_name);
+    if(print_lineno)printcode("\n#line 1 \"%s\"\n\n",crr_file_name);
     yyparse();
     print_code_header();
     if(remove_files && errs >0){

@@ -72,6 +72,7 @@
     #include<stdlib.h>   
     #include<string.h>
     #include <stdbool.h>
+    #include <getopt.h>
     #include "variables.h"
     #include "parserfn.h"
     #include "actions.h"
@@ -119,7 +120,7 @@
     bool is_private_method =false;
 
 
-#line 123 "parser.tab.c"
+#line 124 "parser.tab.c"
 
 # ifndef YY_CAST
 #  ifdef __cplusplus
@@ -225,14 +226,14 @@ extern int yydebug;
 #if ! defined YYSTYPE && ! defined YYSTYPE_IS_DECLARED
 union YYSTYPE
 {
-#line 54 "parser.y"
+#line 55 "parser.y"
 
     char *s;
     type t;
     modifier m;
     bool b;
 
-#line 236 "parser.tab.c"
+#line 237 "parser.tab.c"
 
 };
 typedef union YYSTYPE YYSTYPE;
@@ -612,30 +613,30 @@ static const yytype_int8 yytranslate[] =
   /* YYRLINE[YYN] -- Source line where rule number YYN was defined.  */
 static const yytype_int16 yyrline[] =
 {
-       0,   108,   108,   111,   112,   113,   114,   115,   116,   117,
-     118,   119,   122,   123,   124,   128,   129,   130,   133,   134,
-     135,   136,   137,   138,   140,   141,   145,   145,   145,   147,
-     148,   149,   153,   156,   164,   172,   173,   176,   179,   181,
-     182,   184,   185,   194,   203,   210,   220,   221,   223,   227,
-     228,   230,   238,   246,   255,   264,   266,   271,   277,   278,
-     279,   281,   282,   283,   284,   286,   287,   288,   289,   290,
-     291,   292,   293,   294,   295,   296,   299,   300,   301,   302,
-     303,   304,   307,   307,   308,   310,   311,   313,   322,   329,
-     332,   332,   333,   333,   334,   334,   335,   335,   336,   336,
-     337,   348,   351,   352,   359,   359,   360,   360,   361,   362,
-     369,   369,   373,   374,   390,   407,   408,   409,   410,   413,
-     414,   417,   420,   424,   424,   425,   428,   433,   433,   436,
-     442,   443,   443,   444,   444,   448,   450,   461,   472,   473,
-     484,   484,   485,   485,   488,   489,   491,   493,   493,   496,
-     496,   499,   501,   505,   511,   516,   516,   560,   560,   601,
-     602,   603,   606,   614,   639,   645,   646,   647,   648,   649,
-     650,   653,   654,   655,   655,   658,   662,   666,   666,   669,
-     669,   670,   670,   671,   671,   672,   672,   675,   679,   701,
-     722,   725,   728,   731,   734,   736,   748,   749,   750,   752,
-     754,   756,   758,   760,   762,   764,   766,   768,   771,   773,
-     778,   783,   789,   794,   795,   798,   807,   808,   831,   831,
-     859,   879,   879,   905,   905,   946,   973,   973,  1004,  1004,
-    1054
+       0,   109,   109,   112,   113,   114,   115,   116,   117,   118,
+     119,   120,   123,   124,   125,   129,   130,   131,   134,   135,
+     136,   137,   138,   139,   141,   142,   146,   146,   146,   148,
+     149,   150,   154,   157,   165,   173,   174,   177,   180,   182,
+     183,   185,   186,   195,   204,   211,   221,   222,   224,   228,
+     229,   231,   239,   247,   256,   265,   267,   272,   278,   279,
+     280,   282,   283,   284,   285,   287,   288,   289,   290,   291,
+     292,   293,   294,   295,   296,   297,   300,   301,   302,   303,
+     304,   305,   308,   308,   309,   311,   312,   314,   323,   330,
+     333,   333,   334,   334,   335,   335,   336,   336,   337,   337,
+     338,   349,   352,   353,   360,   360,   361,   361,   362,   363,
+     370,   370,   374,   375,   391,   408,   409,   410,   411,   414,
+     415,   418,   421,   425,   425,   426,   429,   434,   434,   437,
+     443,   444,   444,   445,   445,   449,   451,   462,   473,   474,
+     485,   485,   486,   486,   489,   490,   492,   494,   494,   497,
+     497,   500,   502,   506,   512,   517,   517,   561,   561,   602,
+     603,   604,   607,   615,   640,   646,   647,   648,   649,   650,
+     651,   654,   655,   656,   656,   659,   663,   667,   667,   670,
+     670,   671,   671,   672,   672,   673,   673,   676,   680,   702,
+     723,   726,   729,   732,   735,   737,   749,   750,   751,   753,
+     755,   757,   759,   761,   763,   765,   767,   769,   772,   774,
+     779,   784,   790,   795,   796,   799,   808,   809,   832,   832,
+     860,   880,   880,   906,   906,   947,   974,   974,  1005,  1005,
+    1055
 };
 #endif
 
@@ -1960,90 +1961,90 @@ yyreduce:
   switch (yyn)
     {
   case 12:
-#line 122 "parser.y"
+#line 123 "parser.y"
                          {(yyval.m) = NONE_TYPE; }
-#line 1966 "parser.tab.c"
+#line 1967 "parser.tab.c"
     break;
 
   case 16:
-#line 129 "parser.y"
+#line 130 "parser.y"
                         {yyerror("unknown token %s\n",yytext);}
-#line 1972 "parser.tab.c"
+#line 1973 "parser.tab.c"
     break;
 
   case 18:
-#line 133 "parser.y"
+#line 134 "parser.y"
                                 {printcode("%s",(yyvsp[0].s));}
-#line 1978 "parser.tab.c"
+#line 1979 "parser.tab.c"
     break;
 
   case 19:
-#line 134 "parser.y"
+#line 135 "parser.y"
                          {expr_type =VOID_TYPE;}
-#line 1984 "parser.tab.c"
+#line 1985 "parser.tab.c"
     break;
 
   case 20:
-#line 135 "parser.y"
+#line 136 "parser.y"
                      {yyerror("missing ;");expr_type =VOID_TYPE;}
-#line 1990 "parser.tab.c"
+#line 1991 "parser.tab.c"
     break;
 
   case 21:
-#line 136 "parser.y"
+#line 137 "parser.y"
                     {expr_type =VOID_TYPE;}
-#line 1996 "parser.tab.c"
+#line 1997 "parser.tab.c"
     break;
 
   case 23:
-#line 138 "parser.y"
+#line 139 "parser.y"
                {expr_type =VOID_TYPE;}
-#line 2002 "parser.tab.c"
+#line 2003 "parser.tab.c"
     break;
 
   case 25:
-#line 141 "parser.y"
+#line 142 "parser.y"
                         {printcode("%s",(yyvsp[0].s)); free((yyvsp[0].s));}
-#line 2008 "parser.tab.c"
+#line 2009 "parser.tab.c"
     break;
 
   case 26:
-#line 145 "parser.y"
+#line 146 "parser.y"
                                 {current_class = add_class((yyvsp[-1].s),yylineno);start_class_definition((yyvsp[-1].s));}
-#line 2014 "parser.tab.c"
+#line 2015 "parser.tab.c"
     break;
 
   case 27:
-#line 145 "parser.y"
+#line 146 "parser.y"
                                                                                                               {end_attr_list((yyvsp[-3].s));}
-#line 2020 "parser.tab.c"
+#line 2021 "parser.tab.c"
     break;
 
   case 28:
-#line 145 "parser.y"
+#line 146 "parser.y"
                                                                                                                                                     {end_class_definition();printcode("#include \"class_%s.h\"",(yyvsp[-6].s));free((yyvsp[-6].s));current_class = NULL;}
-#line 2026 "parser.tab.c"
+#line 2027 "parser.tab.c"
     break;
 
   case 31:
-#line 149 "parser.y"
+#line 150 "parser.y"
                                                 {if((yyvsp[-3].m) == STATIC_TYPE){
                                                 yyerror("Cannot use static on class attributes");(yyvsp[-3].m) = NONE_TYPE;
                                                 }add_attr(current_class,(yyvsp[-3].m),(yyvsp[-2].t),(yyvsp[-1].s),false,(yyvsp[-4].b),yylineno);
                                                 printcode("%s %s %s;",mod_arr[(yyvsp[-3].m)],type_arr[(yyvsp[-2].t)],(yyvsp[-1].s));free((yyvsp[-1].s));}
-#line 2035 "parser.tab.c"
+#line 2036 "parser.tab.c"
     break;
 
   case 32:
-#line 153 "parser.y"
+#line 154 "parser.y"
                                                                             {if((yyvsp[-7].m) == STATIC_TYPE){
                                                                     yyerror("Cannot use static on class attributes");(yyvsp[-7].m) = NONE_TYPE;
                                                                     }add_attr(current_class,(yyvsp[-7].m),(yyvsp[-6].t),(yyvsp[-5].s),true,(yyvsp[-8].b),yylineno);printcode("%s %s %s[%s];",mod_arr[(yyvsp[-7].m)],type_arr[(yyvsp[-6].t)],(yyvsp[-5].s),(yyvsp[-3].s));free((yyvsp[-5].s));free((yyvsp[-3].s));}
-#line 2043 "parser.tab.c"
+#line 2044 "parser.tab.c"
     break;
 
   case 33:
-#line 156 "parser.y"
+#line 157 "parser.y"
                                                       {if((yyvsp[-3].m) == STATIC_TYPE){
                                                     yyerror("Cannot use static on class attributes");(yyvsp[-3].m) = NONE_TYPE;
                                                     } 
@@ -2052,11 +2053,11 @@ yyreduce:
                                                     }else{add_class_type_attr(current_class,(yyvsp[-3].m),(yyvsp[-2].s),(yyvsp[-1].s),false,(yyvsp[-4].b),yylineno);
                                                     printcode("%s %s %s;",mod_arr[(yyvsp[-3].m)],(yyvsp[-2].s),(yyvsp[-1].s));
                                                     free((yyvsp[-2].s));free((yyvsp[-1].s));}}
-#line 2056 "parser.tab.c"
+#line 2057 "parser.tab.c"
     break;
 
   case 34:
-#line 164 "parser.y"
+#line 165 "parser.y"
                                                                                 {if((yyvsp[-7].m) == STATIC_TYPE){
                                                     yyerror("Cannot use static on class attributes");(yyvsp[-7].m) = NONE_TYPE;
                                                     }
@@ -2065,45 +2066,45 @@ yyreduce:
                                                     }else{add_class_type_attr(current_class,(yyvsp[-7].m),(yyvsp[-6].s),(yyvsp[-5].s),true,(yyvsp[-8].b),yylineno);
                                                     printcode("%s %s %s[%s];",mod_arr[(yyvsp[-7].m)],(yyvsp[-6].s),(yyvsp[-5].s),(yyvsp[-3].s));
                                                     free((yyvsp[-6].s));free((yyvsp[-5].s));free((yyvsp[-3].s));}}
-#line 2069 "parser.tab.c"
+#line 2070 "parser.tab.c"
     break;
 
   case 35:
-#line 172 "parser.y"
+#line 173 "parser.y"
                                      {printcode("%s",(yyvsp[0].s));}
-#line 2075 "parser.tab.c"
+#line 2076 "parser.tab.c"
     break;
 
   case 36:
-#line 173 "parser.y"
+#line 174 "parser.y"
                                                                 {if((yyvsp[-4].m) == STATIC_TYPE){
                                                 yyerror("Cannot use static on class attributes");(yyvsp[-4].m) = NONE_TYPE;
                                                 }add_attr(current_class,(yyvsp[-4].m),(yyvsp[-3].t),(yyvsp[-2].s),(yyvsp[-1].b),(yyvsp[-5].b),yylineno);free((yyvsp[-2].s));}
-#line 2083 "parser.tab.c"
+#line 2084 "parser.tab.c"
     break;
 
   case 37:
-#line 176 "parser.y"
+#line 177 "parser.y"
                                                                      {if((yyvsp[-4].m) == STATIC_TYPE){
                                                             yyerror("Cannot use static on class attributes");(yyvsp[-4].m) = NONE_TYPE;
                                                             }add_class_type_attr(current_class,(yyvsp[-4].m),(yyvsp[-3].s),(yyvsp[-2].s),(yyvsp[-1].b),(yyvsp[-5].b),yylineno);free((yyvsp[-3].s));free((yyvsp[-2].s));}
-#line 2091 "parser.tab.c"
+#line 2092 "parser.tab.c"
     break;
 
   case 39:
-#line 181 "parser.y"
+#line 182 "parser.y"
                         {(yyval.b)= false;}
-#line 2097 "parser.tab.c"
+#line 2098 "parser.tab.c"
     break;
 
   case 40:
-#line 182 "parser.y"
+#line 183 "parser.y"
                 {(yyval.b) = true;}
-#line 2103 "parser.tab.c"
+#line 2104 "parser.tab.c"
     break;
 
   case 42:
-#line 185 "parser.y"
+#line 186 "parser.y"
                                                                                                                          {printcode("}\n");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",(yyvsp[-10].s),type_arr[fn_type]);
@@ -2113,11 +2114,11 @@ yyreduce:
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     is_static_method = false;}
-#line 2117 "parser.tab.c"
+#line 2118 "parser.tab.c"
     break;
 
   case 43:
-#line 194 "parser.y"
+#line 195 "parser.y"
                                                                                                                      {printcode("}\n");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",(yyvsp[-10].s),type_arr[fn_type]);
@@ -2127,11 +2128,11 @@ yyreduce:
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     is_static_method = false;}
-#line 2131 "parser.tab.c"
+#line 2132 "parser.tab.c"
     break;
 
   case 44:
-#line 203 "parser.y"
+#line 204 "parser.y"
                                                                                                                                     {printcode("}\n");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){yyerror("function %s require %s return type, corresponding return statement not found",(yyvsp[-10].s),type_arr[fn_type]);}
                                                                                                     free((yyvsp[-10].s));free((yyvsp[-4].s));
@@ -2139,11 +2140,11 @@ yyreduce:
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     is_static_method = false;}
-#line 2143 "parser.tab.c"
+#line 2144 "parser.tab.c"
     break;
 
   case 45:
-#line 210 "parser.y"
+#line 211 "parser.y"
                                                                                                                                 {printcode("}\n");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){yyerror("function %s require %s return type, corresponding return statement not found",(yyvsp[-10].s),type_arr[fn_type]);}
                                                                                                     free((yyvsp[-10].s));free((yyvsp[-4].s));
@@ -2151,52 +2152,52 @@ yyreduce:
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     is_static_method = false;}
-#line 2155 "parser.tab.c"
+#line 2156 "parser.tab.c"
     break;
 
   case 46:
-#line 220 "parser.y"
+#line 221 "parser.y"
                          {is_private_method = false;}
-#line 2161 "parser.tab.c"
+#line 2162 "parser.tab.c"
     break;
 
   case 47:
-#line 221 "parser.y"
+#line 222 "parser.y"
                 {is_private_method = true;}
-#line 2167 "parser.tab.c"
+#line 2168 "parser.tab.c"
     break;
 
   case 48:
-#line 223 "parser.y"
+#line 224 "parser.y"
                            {is_static_method = true;is_private_method = false;}
-#line 2173 "parser.tab.c"
+#line 2174 "parser.tab.c"
     break;
 
   case 49:
-#line 227 "parser.y"
+#line 228 "parser.y"
              {(yyval.b) = false;}
-#line 2179 "parser.tab.c"
+#line 2180 "parser.tab.c"
     break;
 
   case 50:
-#line 228 "parser.y"
+#line 229 "parser.y"
                     {(yyval.b) = true;}
-#line 2185 "parser.tab.c"
+#line 2186 "parser.tab.c"
     break;
 
   case 51:
-#line 230 "parser.y"
+#line 231 "parser.y"
                           {add_method(current_class, (yyvsp[(-6) - (0)].s), (yyvsp[0].t), is_static_method,temp_list, is_private_method,yylineno);
                             print_method(current_class,(yyvsp[(-6) - (0)].s));
                             temp_list = NULL;
                             fn_type = (yyvsp[0].t);
                             is_in_fn = true;
                             has_returned = false;}
-#line 2196 "parser.tab.c"
+#line 2197 "parser.tab.c"
     break;
 
   case 52:
-#line 238 "parser.y"
+#line 239 "parser.y"
                                 {add_class_ret_method(current_class, (yyvsp[(-6) - (0)].s), (yyvsp[0].s), is_static_method,temp_list,is_private_method, yylineno);
                             print_method(current_class,(yyvsp[(-6) - (0)].s));
                             temp_list = NULL;
@@ -2204,11 +2205,11 @@ yyreduce:
                             fn_ret_class = (yyvsp[0].s);
                             is_in_fn = true;
                             has_returned = false;}
-#line 2208 "parser.tab.c"
+#line 2209 "parser.tab.c"
     break;
 
   case 53:
-#line 246 "parser.y"
+#line 247 "parser.y"
                                                                                                                  {printcode("}"); 
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require %s return type, corresponding return statement not found",(yyvsp[-11].s),type_arr[fn_type]);
@@ -2218,11 +2219,11 @@ yyreduce:
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     }
-#line 2222 "parser.tab.c"
+#line 2223 "parser.tab.c"
     break;
 
   case 54:
-#line 255 "parser.y"
+#line 256 "parser.y"
                                                                                                                         {printcode("}");
                                                                                                     if(fn_type != VOID_TYPE && !has_returned){
                                                                                                         yyerror("function %s require class %s return type, corresponding return statement not found",(yyvsp[-11].s),(yyvsp[-4].s));
@@ -2232,156 +2233,156 @@ yyreduce:
                                                                                                     popscope();
                                                                                                     clear_literals();
                                                                                                     }
-#line 2236 "parser.tab.c"
+#line 2237 "parser.tab.c"
     break;
 
   case 55:
-#line 264 "parser.y"
+#line 265 "parser.y"
                                 {pushscope();}
-#line 2242 "parser.tab.c"
+#line 2243 "parser.tab.c"
     break;
 
   case 56:
-#line 266 "parser.y"
+#line 267 "parser.y"
                             {print_fn_delc((yyvsp[(-7) - (0)].s));
                             fn_type = (yyvsp[0].t);
                             is_in_fn = true;
                             has_returned = false;}
-#line 2251 "parser.tab.c"
+#line 2252 "parser.tab.c"
     break;
 
   case 57:
-#line 271 "parser.y"
+#line 272 "parser.y"
                                 {print_fn_delc((yyvsp[(-7) - (0)].s));
                                 fn_type = CLASS_TYPE;
                                 fn_ret_class =(yyvsp[0].s);
                                 is_in_fn = true;
                                 has_returned = false;}
-#line 2261 "parser.tab.c"
+#line 2262 "parser.tab.c"
     break;
 
   case 61:
-#line 281 "parser.y"
+#line 282 "parser.y"
                                     {add_param((yyvsp[-2].m),(yyvsp[-1].t),false,(yyvsp[0].s));add_var((yyvsp[-2].m),(yyvsp[-1].t),(yyvsp[0].s),yylineno); free((yyvsp[0].s));}
-#line 2267 "parser.tab.c"
+#line 2268 "parser.tab.c"
     break;
 
   case 62:
-#line 282 "parser.y"
+#line 283 "parser.y"
                                        {add_param((yyvsp[-4].m),(yyvsp[-3].t),true,(yyvsp[-2].s));add_array((yyvsp[-4].m),(yyvsp[-3].t),(yyvsp[-2].s),yylineno); free((yyvsp[-2].s));}
-#line 2273 "parser.tab.c"
+#line 2274 "parser.tab.c"
     break;
 
   case 63:
-#line 283 "parser.y"
+#line 284 "parser.y"
                                         {add_class_param((yyvsp[-2].m), (yyvsp[-1].s), false,(yyvsp[0].s));create_class_var((yyvsp[-2].m), (yyvsp[-1].s), (yyvsp[0].s), false,yylineno);free((yyvsp[-1].s));free((yyvsp[0].s));}
-#line 2279 "parser.tab.c"
+#line 2280 "parser.tab.c"
     break;
 
   case 64:
-#line 284 "parser.y"
+#line 285 "parser.y"
                                             {add_class_param((yyvsp[-4].m), (yyvsp[-3].s), true,(yyvsp[-2].s));create_class_var((yyvsp[-4].m), (yyvsp[-3].s), (yyvsp[-2].s), true,yylineno);free((yyvsp[-3].s));free((yyvsp[-2].s));}
-#line 2285 "parser.tab.c"
+#line 2286 "parser.tab.c"
     break;
 
   case 66:
-#line 287 "parser.y"
+#line 288 "parser.y"
                                      {printcode("%s",(yyvsp[0].s));}
-#line 2291 "parser.tab.c"
+#line 2292 "parser.tab.c"
     break;
 
   case 67:
-#line 288 "parser.y"
+#line 289 "parser.y"
                          {yyerror("error on token %s",yytext);expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
-#line 2297 "parser.tab.c"
+#line 2298 "parser.tab.c"
     break;
 
   case 68:
-#line 289 "parser.y"
+#line 290 "parser.y"
                          {yyerror("error on token %s",yytext);expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
-#line 2303 "parser.tab.c"
+#line 2304 "parser.tab.c"
     break;
 
   case 69:
-#line 290 "parser.y"
+#line 291 "parser.y"
                          {yyerror("error on token %s",yytext);expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
-#line 2309 "parser.tab.c"
+#line 2310 "parser.tab.c"
     break;
 
   case 70:
-#line 291 "parser.y"
+#line 292 "parser.y"
                         {expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
-#line 2315 "parser.tab.c"
+#line 2316 "parser.tab.c"
     break;
 
   case 71:
-#line 292 "parser.y"
+#line 293 "parser.y"
                     {yyerror("missing ;");expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
-#line 2321 "parser.tab.c"
+#line 2322 "parser.tab.c"
     break;
 
   case 73:
-#line 294 "parser.y"
+#line 295 "parser.y"
                       {expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
-#line 2327 "parser.tab.c"
+#line 2328 "parser.tab.c"
     break;
 
   case 74:
-#line 295 "parser.y"
+#line 296 "parser.y"
                          {expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
-#line 2333 "parser.tab.c"
+#line 2334 "parser.tab.c"
     break;
 
   case 75:
-#line 296 "parser.y"
+#line 297 "parser.y"
                        {expr_type=temp_type= VOID_TYPE;expr_class=temp_class= NULL;}
-#line 2339 "parser.tab.c"
+#line 2340 "parser.tab.c"
     break;
 
   case 77:
-#line 300 "parser.y"
+#line 301 "parser.y"
               {printcode("%s",(yyvsp[0].s));if(strcmp((yyvsp[0].s),"")!=0)printcode(";");free((yyvsp[0].s));}
-#line 2345 "parser.tab.c"
+#line 2346 "parser.tab.c"
     break;
 
   case 80:
-#line 303 "parser.y"
+#line 304 "parser.y"
             {printcode("break;");}
-#line 2351 "parser.tab.c"
+#line 2352 "parser.tab.c"
     break;
 
   case 81:
-#line 304 "parser.y"
+#line 305 "parser.y"
                 {printcode("continue;");}
-#line 2357 "parser.tab.c"
+#line 2358 "parser.tab.c"
     break;
 
   case 82:
-#line 307 "parser.y"
+#line 308 "parser.y"
                        {printcode("/*");}
-#line 2363 "parser.tab.c"
+#line 2364 "parser.tab.c"
     break;
 
   case 83:
-#line 307 "parser.y"
+#line 308 "parser.y"
                                                                  {printcode("*/");}
-#line 2369 "parser.tab.c"
+#line 2370 "parser.tab.c"
     break;
 
   case 84:
-#line 308 "parser.y"
+#line 309 "parser.y"
                     {printcode("%s",(yyvsp[0].s));free((yyvsp[0].s));}
-#line 2375 "parser.tab.c"
+#line 2376 "parser.tab.c"
     break;
 
   case 86:
-#line 311 "parser.y"
+#line 312 "parser.y"
                               {printcode("%s",(yyvsp[0].s));free((yyvsp[0].s));}
-#line 2381 "parser.tab.c"
+#line 2382 "parser.tab.c"
     break;
 
   case 87:
-#line 313 "parser.y"
+#line 314 "parser.y"
                          { if(expr_type != fn_type && verify_types(fn_type,expr_type)){
                                 yyerror("invalid return type : expected %s, found %s",type_arr[fn_type],type_arr[expr_type]);
                             }else if(fn_type == CLASS_TYPE && strcmp(expr_class,fn_ret_class) !=0){
@@ -2391,11 +2392,11 @@ yyreduce:
                                 has_returned = true;
                             }
                             free((yyvsp[0].s));}
-#line 2395 "parser.tab.c"
+#line 2396 "parser.tab.c"
     break;
 
   case 88:
-#line 322 "parser.y"
+#line 323 "parser.y"
                       {if(fn_type != VOID_TYPE){
                             yyerror("return statement without value is not allowed for function type other than void.");
                         }else{
@@ -2403,77 +2404,77 @@ yyreduce:
                             has_returned = true;
                         }
                         }
-#line 2407 "parser.tab.c"
+#line 2408 "parser.tab.c"
     break;
 
   case 89:
-#line 329 "parser.y"
+#line 330 "parser.y"
                           {has_returned = true;}
-#line 2413 "parser.tab.c"
+#line 2414 "parser.tab.c"
     break;
 
   case 90:
-#line 332 "parser.y"
+#line 333 "parser.y"
                                     {temp_type = (yyvsp[0].t);}
-#line 2419 "parser.tab.c"
+#line 2420 "parser.tab.c"
     break;
 
   case 91:
-#line 332 "parser.y"
+#line 333 "parser.y"
                                                                {temp_type = VOID_TYPE;}
-#line 2425 "parser.tab.c"
+#line 2426 "parser.tab.c"
     break;
 
   case 92:
-#line 333 "parser.y"
+#line 334 "parser.y"
                               {temp_type = CLASS_TYPE;temp_class=(yyvsp[0].s);}
-#line 2431 "parser.tab.c"
+#line 2432 "parser.tab.c"
     break;
 
   case 93:
-#line 333 "parser.y"
+#line 334 "parser.y"
                                                                                     {temp_type = VOID_TYPE;temp_class=NULL;free((yyvsp[-2].s));}
-#line 2437 "parser.tab.c"
+#line 2438 "parser.tab.c"
     break;
 
   case 94:
-#line 334 "parser.y"
+#line 335 "parser.y"
                          {printcode("%s %s ",mod_arr[(yyvsp[-1].m)],(yyvsp[0].s));arr_type=temp_type=CLASS_TYPE;temp_class=(yyvsp[0].s);}
-#line 2443 "parser.tab.c"
+#line 2444 "parser.tab.c"
     break;
 
   case 95:
-#line 334 "parser.y"
+#line 335 "parser.y"
                                                                                                                         {printcode(" ;");free((yyvsp[-2].s));arr_type=temp_type=VOID_TYPE;temp_class= NULL;}
-#line 2449 "parser.tab.c"
+#line 2450 "parser.tab.c"
     break;
 
   case 96:
-#line 335 "parser.y"
+#line 336 "parser.y"
                     { printcode("%s %s ",mod_arr[(yyvsp[-1].m)],type_arr[(yyvsp[0].t)]); arr_type = (yyvsp[0].t);}
-#line 2455 "parser.tab.c"
+#line 2456 "parser.tab.c"
     break;
 
   case 97:
-#line 335 "parser.y"
+#line 336 "parser.y"
                                                                                             {printcode(" ;");arr_type=VOID_TYPE;}
-#line 2461 "parser.tab.c"
+#line 2462 "parser.tab.c"
     break;
 
   case 98:
-#line 336 "parser.y"
+#line 337 "parser.y"
                        {printcode("%s char ",mod_arr[(yyvsp[-1].m)]); char_buf_mod = (yyvsp[-1].m);}
-#line 2467 "parser.tab.c"
+#line 2468 "parser.tab.c"
     break;
 
   case 99:
-#line 336 "parser.y"
+#line 337 "parser.y"
                                                                                                {printcode(" ;");char_buf_mod = NONE_TYPE;}
-#line 2473 "parser.tab.c"
+#line 2474 "parser.tab.c"
     break;
 
   case 100:
-#line 337 "parser.y"
+#line 338 "parser.y"
                               {if(expr_type == VOID_TYPE){
             yyerror("Cannot figure ou type of variable %s, consider typecasting the expression or explicitly stating type",(yyvsp[-2].s));
             }else if(expr_type == CLASS_TYPE){
@@ -2485,17 +2486,17 @@ yyreduce:
                 printcode("%s %s = %s;",type_arr[expr_type],(yyvsp[-2].s),(yyvsp[0].s));
             }
             free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 2489 "parser.tab.c"
+#line 2490 "parser.tab.c"
     break;
 
   case 102:
-#line 351 "parser.y"
+#line 352 "parser.y"
                                 {create_class_var((yyvsp[(-2) - (1)].m),(yyvsp[(-1) - (1)].s),(yyvsp[0].s),false,yylineno);printcode("%s",(yyvsp[0].s));free((yyvsp[0].s));}
-#line 2495 "parser.tab.c"
+#line 2496 "parser.tab.c"
     break;
 
   case 103:
-#line 352 "parser.y"
+#line 353 "parser.y"
                           {if(expr_type != CLASS_TYPE){yyerror("cannot assign %s to class type variable",type_arr[expr_type]);}
                             if(expr_class == NULL || strcmp(expr_class,temp_class) !=0){
                                 yyerror("cannot assign class %s to variable of class %s",expr_class,temp_class);   
@@ -2503,41 +2504,41 @@ yyreduce:
                                 printcode(" %s = %s",(yyvsp[-2].s),(yyvsp[0].s));
                             }create_class_var((yyvsp[(-2) - (3)].m),(yyvsp[(-1) - (3)].s),(yyvsp[-2].s),false,yylineno);
                             free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 2507 "parser.tab.c"
+#line 2508 "parser.tab.c"
     break;
 
   case 104:
-#line 359 "parser.y"
+#line 360 "parser.y"
                           {printcode("%s = { ",(yyvsp[-2].s));}
-#line 2513 "parser.tab.c"
+#line 2514 "parser.tab.c"
     break;
 
   case 105:
-#line 359 "parser.y"
+#line 360 "parser.y"
                                                                     {printcode(" }");create_class_var((yyvsp[(-2) - (6)].m),(yyvsp[(-1) - (6)].s),(yyvsp[-5].s),false,yylineno);free((yyvsp[-5].s));}
-#line 2519 "parser.tab.c"
+#line 2520 "parser.tab.c"
     break;
 
   case 106:
-#line 360 "parser.y"
+#line 361 "parser.y"
                  {/*nothing dummymust be kept to maintain arraydecl*/}
-#line 2525 "parser.tab.c"
+#line 2526 "parser.tab.c"
     break;
 
   case 107:
-#line 360 "parser.y"
+#line 361 "parser.y"
                                                                                  {create_class_var((yyvsp[(-2) - (3)].m),(yyvsp[(-1) - (3)].s),(yyvsp[-2].s),true,yylineno);free((yyvsp[-2].s));}
-#line 2531 "parser.tab.c"
+#line 2532 "parser.tab.c"
     break;
 
   case 108:
-#line 361 "parser.y"
+#line 362 "parser.y"
                                       {create_class_var((yyvsp[(-2) - (3)].m),(yyvsp[(-1) - (3)].s),(yyvsp[0].s),false,yylineno);printcode(", %s",(yyvsp[0].s));free((yyvsp[0].s));}
-#line 2537 "parser.tab.c"
+#line 2538 "parser.tab.c"
     break;
 
   case 109:
-#line 362 "parser.y"
+#line 363 "parser.y"
                                            {if(expr_type != CLASS_TYPE){yyerror("cannot assign %s to class type variable",type_arr[expr_type]);}
                             if(expr_class == NULL || strcmp(expr_class,temp_class) !=0){
                                 yyerror("cannot assign class %s to variable of class %s",expr_class,temp_class);   
@@ -2545,23 +2546,23 @@ yyreduce:
                                 printcode(" ,%s = %s",(yyvsp[-2].s),(yyvsp[0].s));
                             }create_class_var((yyvsp[(-2) - (5)].m),(yyvsp[(-1) - (5)].s),(yyvsp[-2].s),false,yylineno);
                             free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 2549 "parser.tab.c"
+#line 2550 "parser.tab.c"
     break;
 
   case 110:
-#line 369 "parser.y"
+#line 370 "parser.y"
                                   {printcode(", ");}
-#line 2555 "parser.tab.c"
+#line 2556 "parser.tab.c"
     break;
 
   case 111:
-#line 369 "parser.y"
+#line 370 "parser.y"
                                                                {create_class_var((yyvsp[(-2) - (5)].m),(yyvsp[(-1) - (5)].s),(yyvsp[-2].s),true,yylineno);free((yyvsp[-2].s));}
-#line 2561 "parser.tab.c"
+#line 2562 "parser.tab.c"
     break;
 
   case 113:
-#line 374 "parser.y"
+#line 375 "parser.y"
                                     {attr * a = find_attr(temp_class,(yyvsp[-2].s));
                                             if(a==NULL){yyerror("No attribute named %s defined on class %s",(yyvsp[-2].s),temp_class);
                                             }else{
@@ -2578,11 +2579,11 @@ yyreduce:
                                                 }else{
                                                     printcode(".%s = %s,",(yyvsp[-2].s),(yyvsp[0].s));
                                                 }}}
-#line 2582 "parser.tab.c"
+#line 2583 "parser.tab.c"
     break;
 
   case 114:
-#line 390 "parser.y"
+#line 391 "parser.y"
                                         {attr * a = find_attr(temp_class,(yyvsp[-2].s));
                                             if(a==NULL){yyerror("No attribute named %s defined on class %s",(yyvsp[-2].s),temp_class);
                                             }else{
@@ -2599,153 +2600,153 @@ yyreduce:
                                                 }else{
                                                     printcode(".%s = %s,",(yyvsp[-2].s),(yyvsp[0].s));
                                                 }}}
-#line 2603 "parser.tab.c"
+#line 2604 "parser.tab.c"
     break;
 
   case 115:
-#line 407 "parser.y"
+#line 408 "parser.y"
                      {add_var((yyvsp[(-1) - (1)].m),temp_type,(yyvsp[0].s),yylineno); free((yyvsp[0].s)); }
-#line 2609 "parser.tab.c"
+#line 2610 "parser.tab.c"
     break;
 
   case 116:
-#line 408 "parser.y"
+#line 409 "parser.y"
                          {add_array((yyvsp[(-1) - (3)].m),temp_type,(yyvsp[-2].s),yylineno);free((yyvsp[-2].s));}
-#line 2615 "parser.tab.c"
+#line 2616 "parser.tab.c"
     break;
 
   case 117:
-#line 409 "parser.y"
+#line 410 "parser.y"
                               {add_var((yyvsp[(-1) - (3)].m),temp_type,(yyvsp[0].s),yylineno); free((yyvsp[0].s)); }
-#line 2621 "parser.tab.c"
+#line 2622 "parser.tab.c"
     break;
 
   case 118:
-#line 410 "parser.y"
+#line 411 "parser.y"
                                       {add_array((yyvsp[(-1) - (5)].m),temp_type,(yyvsp[-2].s),yylineno);free((yyvsp[-2].s));}
-#line 2627 "parser.tab.c"
+#line 2628 "parser.tab.c"
     break;
 
   case 119:
-#line 413 "parser.y"
+#line 414 "parser.y"
                                      {create_class_var((yyvsp[(-2) - (2)].m),temp_class,(yyvsp[-1].s),(yyvsp[0].b),yylineno);free((yyvsp[-1].s));}
-#line 2633 "parser.tab.c"
+#line 2634 "parser.tab.c"
     break;
 
   case 120:
-#line 414 "parser.y"
+#line 415 "parser.y"
                                             {create_class_var((yyvsp[(-2) - (4)].m),temp_class,(yyvsp[-1].s),(yyvsp[0].b),yylineno);free((yyvsp[-1].s));}
-#line 2639 "parser.tab.c"
+#line 2640 "parser.tab.c"
     break;
 
   case 121:
-#line 417 "parser.y"
+#line 418 "parser.y"
                      {add_var((yyvsp[(-2) - (1)].m),(yyvsp[(-1) - (1)].t),(yyvsp[0].s),yylineno); 
                         printcode("%s ",(yyvsp[0].s));
                         free((yyvsp[0].s)); }
-#line 2647 "parser.tab.c"
+#line 2648 "parser.tab.c"
     break;
 
   case 122:
-#line 420 "parser.y"
+#line 421 "parser.y"
                           { if(verify_types((yyvsp[(-1) - (3)].t),expr_type))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[expr_type], type_arr[(yyvsp[(-1) - (3)].t)]);
                                 add_var((yyvsp[(-2) - (3)].m),(yyvsp[(-1) - (3)].t),(yyvsp[-2].s),yylineno);
                                 printcode("%s = %s",(yyvsp[-2].s),(yyvsp[0].s));
                                 free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 2656 "parser.tab.c"
+#line 2657 "parser.tab.c"
     break;
 
   case 123:
-#line 424 "parser.y"
+#line 425 "parser.y"
                 {/*nothing dummy*/}
-#line 2662 "parser.tab.c"
+#line 2663 "parser.tab.c"
     break;
 
   case 124:
-#line 424 "parser.y"
+#line 425 "parser.y"
                                               {add_array((yyvsp[(-2) - (3)].m),  (yyvsp[(-1) - (3)].t), (yyvsp[-2].s), yylineno);free((yyvsp[-2].s));}
-#line 2668 "parser.tab.c"
+#line 2669 "parser.tab.c"
     break;
 
   case 125:
-#line 425 "parser.y"
+#line 426 "parser.y"
                              {add_var((yyvsp[(-2) - (3)].m),(yyvsp[(-1) - (3)].t),(yyvsp[0].s),yylineno); 
                                 printcode(",%s ",(yyvsp[0].s));
                                 free((yyvsp[0].s));}
-#line 2676 "parser.tab.c"
+#line 2677 "parser.tab.c"
     break;
 
   case 126:
-#line 428 "parser.y"
+#line 429 "parser.y"
                                       {
                                         if(verify_types((yyvsp[(-1) - (5)].t),expr_type))yyerror("Invalid assignment : %s cannot be assigned to var type %s",type_arr[expr_type], type_arr[(yyvsp[(-1) - (5)].t)]);
                                         add_var((yyvsp[(-2) - (5)].m),(yyvsp[(-1) - (5)].t),(yyvsp[-2].s),yylineno);
                                         printcode(",%s = %s",(yyvsp[-2].s),(yyvsp[0].s));
                                         free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 2686 "parser.tab.c"
+#line 2687 "parser.tab.c"
     break;
 
   case 127:
-#line 433 "parser.y"
+#line 434 "parser.y"
                              {printcode(", ");}
-#line 2692 "parser.tab.c"
+#line 2693 "parser.tab.c"
     break;
 
   case 128:
-#line 433 "parser.y"
+#line 434 "parser.y"
                                                           {add_array((yyvsp[(-2) - (5)].m),  (yyvsp[(-1) - (5)].t), (yyvsp[-2].s), yylineno);free((yyvsp[-2].s));}
-#line 2698 "parser.tab.c"
+#line 2699 "parser.tab.c"
     break;
 
   case 129:
-#line 436 "parser.y"
+#line 437 "parser.y"
                              {if(expr_type != INT_TYPE){yyerror("Array size must be an int type got %s.",type_arr[expr_type]);
                                             }else{
                                                 printcode("%s[%s]",(yyvsp[(-1) - (3)].s),(yyvsp[-1].s));
                                             }
                                             free((yyvsp[-1].s));
                                             }
-#line 2709 "parser.tab.c"
+#line 2710 "parser.tab.c"
     break;
 
   case 130:
-#line 442 "parser.y"
+#line 443 "parser.y"
                       {yyerror("Array size missing");}
-#line 2715 "parser.tab.c"
+#line 2716 "parser.tab.c"
     break;
 
   case 131:
-#line 443 "parser.y"
+#line 444 "parser.y"
                        {printcode("%s[] = { ",(yyvsp[(-1) - (4)].s));}
-#line 2721 "parser.tab.c"
+#line 2722 "parser.tab.c"
     break;
 
   case 132:
-#line 443 "parser.y"
+#line 444 "parser.y"
                                                                          {printcode(" }");}
-#line 2727 "parser.tab.c"
+#line 2728 "parser.tab.c"
     break;
 
   case 133:
-#line 444 "parser.y"
+#line 445 "parser.y"
                                           {printcode("%s[%s] = { ",(yyvsp[(-1) - (6)].s),(yyvsp[-4].s));free((yyvsp[-4].s));}
-#line 2733 "parser.tab.c"
+#line 2734 "parser.tab.c"
     break;
 
   case 134:
-#line 444 "parser.y"
+#line 445 "parser.y"
                                                                                                           {printcode(" }");}
-#line 2739 "parser.tab.c"
+#line 2740 "parser.tab.c"
     break;
 
   case 135:
-#line 448 "parser.y"
+#line 449 "parser.y"
                              {if(expr_type != INT_TYPE){yyerror("Array size must be an int type got %s.",type_arr[expr_type]);}expr_type = VOID_TYPE;}
-#line 2745 "parser.tab.c"
+#line 2746 "parser.tab.c"
     break;
 
   case 136:
-#line 450 "parser.y"
+#line 451 "parser.y"
                                                         {if(arr_type == VOID_TYPE){
                                                             yyerror("Cannot figure ou type of array %s, consider typecasting the expression or explicitly stating type",(yyvsp[-6].s));
                                                             }else if(arr_type == CLASS_TYPE){
@@ -2757,11 +2758,11 @@ yyreduce:
                                                             }
                                                             expr_type = VOID_TYPE;
                                                             free((yyvsp[-6].s));free((yyvsp[-1].s));}
-#line 2761 "parser.tab.c"
+#line 2762 "parser.tab.c"
     break;
 
   case 137:
-#line 461 "parser.y"
+#line 462 "parser.y"
                                                                     {if(arr_type== VOID_TYPE){
                                                             yyerror("Cannot figure ou type of array %s, consider typecasting the expression or explicitly stating type",(yyvsp[-8].s));
                                                             }else if(arr_type == CLASS_TYPE){
@@ -2772,17 +2773,17 @@ yyreduce:
                                                                 printcode("%s %s[%s] = { %s };",type_arr[arr_type],(yyvsp[-8].s),(yyvsp[-6].s),(yyvsp[-1].s));
                                                             }expr_type = VOID_TYPE;
                                                             free((yyvsp[-8].s));free((yyvsp[-6].s));free((yyvsp[-1].s));}
-#line 2776 "parser.tab.c"
+#line 2777 "parser.tab.c"
     break;
 
   case 138:
-#line 472 "parser.y"
+#line 473 "parser.y"
                             {arr_type = expr_type;if(arr_type == STRING_TYPE){expr_type = VOID_TYPE;}if(expr_type == CLASS_TYPE){expr_type = VOID_TYPE;temp_class=expr_class;}}
-#line 2782 "parser.tab.c"
+#line 2783 "parser.tab.c"
     break;
 
   case 139:
-#line 473 "parser.y"
+#line 474 "parser.y"
                             {if(verify_types(expr_type,arr_type)){
                                 yyerror("Invalid assignment : %s type cannot be stored in same array as %s",type_arr[expr_type],type_arr[arr_type]);
                             }else if(expr_type == CLASS_TYPE && strcmp(expr_class,temp_class)!=0){
@@ -2792,121 +2793,121 @@ yyreduce:
                             }
                             if(arr_type == STRING_TYPE || expr_type == CLASS_TYPE)expr_type = VOID_TYPE;
                             (yyval.s)=join((yyvsp[-2].s),",",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));}
-#line 2796 "parser.tab.c"
+#line 2797 "parser.tab.c"
     break;
 
   case 140:
-#line 484 "parser.y"
+#line 485 "parser.y"
                             {printcode("%s",(yyvsp[0].s));}
-#line 2802 "parser.tab.c"
+#line 2803 "parser.tab.c"
     break;
 
   case 141:
-#line 484 "parser.y"
+#line 485 "parser.y"
                                                          {free((yyvsp[-2].s));expr_type = VOID_TYPE;}
-#line 2808 "parser.tab.c"
+#line 2809 "parser.tab.c"
     break;
 
   case 142:
-#line 485 "parser.y"
+#line 486 "parser.y"
                                      {printcode(" ,%s",(yyvsp[0].s));}
-#line 2814 "parser.tab.c"
+#line 2815 "parser.tab.c"
     break;
 
   case 143:
-#line 485 "parser.y"
+#line 486 "parser.y"
                                                                      {free((yyvsp[-2].s));expr_type = VOID_TYPE;}
-#line 2820 "parser.tab.c"
+#line 2821 "parser.tab.c"
     break;
 
   case 144:
-#line 488 "parser.y"
+#line 489 "parser.y"
                                       {printcode("[%s]",(yyvsp[-2].s));add_var(char_buf_mod,STRING_TYPE,(yyvsp[(-1) - (4)].s),yylineno);free((yyvsp[-2].s));}
-#line 2826 "parser.tab.c"
+#line 2827 "parser.tab.c"
     break;
 
   case 145:
-#line 489 "parser.y"
+#line 490 "parser.y"
                                            {if(expr_type != STRING_TYPE){yyerror("cannot assign any type other than string to charbuf, got %s.",type_arr[expr_type]);
                                     }else{printcode("[%s] = %s",(yyvsp[-4].s),(yyvsp[0].s));add_var(char_buf_mod,STRING_TYPE,(yyvsp[(-1) - (6)].s),yylineno);}free((yyvsp[-4].s));free((yyvsp[0].s));}
-#line 2833 "parser.tab.c"
+#line 2834 "parser.tab.c"
     break;
 
   case 146:
-#line 491 "parser.y"
+#line 492 "parser.y"
                        {if(expr_type != STRING_TYPE){yyerror("cannot assign any type other than string to charbuf, got %s.",type_arr[expr_type]);
                         }else{printcode("[] = %s",(yyvsp[0].s));add_var(char_buf_mod,STRING_TYPE,(yyvsp[(-1) - (4)].s),yylineno);}free((yyvsp[0].s));}
-#line 2840 "parser.tab.c"
+#line 2841 "parser.tab.c"
     break;
 
   case 147:
-#line 493 "parser.y"
+#line 494 "parser.y"
                                                                     {printcode("[%s][%s] = {",(yyvsp[-8].s),(yyvsp[-4].s));arr_type = STRING_TYPE;}
-#line 2846 "parser.tab.c"
+#line 2847 "parser.tab.c"
     break;
 
   case 148:
-#line 493 "parser.y"
+#line 494 "parser.y"
                                                                                                                                                {printcode("}");arr_type = VOID_TYPE;
                                                                                                                 add_array(char_buf_mod,  STRING_TYPE, (yyvsp[(-1) - (13)].s), yylineno);
                                                                                                                 free((yyvsp[-11].s));free((yyvsp[-7].s));}
-#line 2854 "parser.tab.c"
+#line 2855 "parser.tab.c"
     break;
 
   case 149:
-#line 496 "parser.y"
+#line 497 "parser.y"
                                                   {printcode("[][%s] = { ",(yyvsp[-4].s));arr_type = STRING_TYPE;}
-#line 2860 "parser.tab.c"
+#line 2861 "parser.tab.c"
     break;
 
   case 150:
-#line 496 "parser.y"
+#line 497 "parser.y"
                                                                                                                          {printcode("}");arr_type = VOID_TYPE;
                                                                                                 add_array(char_buf_mod,  STRING_TYPE, (yyvsp[(-1) - (11)].s), yylineno);
                                                                                                 free((yyvsp[-7].s));}
-#line 2868 "parser.tab.c"
+#line 2869 "parser.tab.c"
     break;
 
   case 151:
-#line 499 "parser.y"
+#line 500 "parser.y"
                                                             {printcode("[%s][%s]",(yyvsp[-6].s),(yyvsp[-2].s));add_array(char_buf_mod,  STRING_TYPE, (yyvsp[(-1) - (8)].s), yylineno);}
-#line 2874 "parser.tab.c"
+#line 2875 "parser.tab.c"
     break;
 
   case 152:
-#line 501 "parser.y"
+#line 502 "parser.y"
                       {yyerror("Both sizes cannot be empty in a charbuf array");}
-#line 2880 "parser.tab.c"
+#line 2881 "parser.tab.c"
     break;
 
   case 153:
-#line 505 "parser.y"
+#line 506 "parser.y"
                     { if(verify_types(arr_type,expr_type)){yyerror("Invalid assignment : %s type cannot be stored in array of type %s",type_arr[expr_type],type_arr[arr_type]);}
 
                         expr_type = VOID_TYPE;
                         printcode("%s ",(yyvsp[0].s));
                         free((yyvsp[0].s));
                         }
-#line 2891 "parser.tab.c"
+#line 2892 "parser.tab.c"
     break;
 
   case 154:
-#line 511 "parser.y"
+#line 512 "parser.y"
                             { if(verify_types(arr_type,expr_type)){yyerror("Invalid assignment : %s type cannot be stored in array of type %s",type_arr[expr_type],type_arr[arr_type]);}
                         expr_type = VOID_TYPE;
                         printcode(", %s",(yyvsp[0].s));
                         free((yyvsp[0].s));}
-#line 2900 "parser.tab.c"
+#line 2901 "parser.tab.c"
     break;
 
   case 155:
-#line 516 "parser.y"
+#line 517 "parser.y"
                         {push_expr_and_args();if(find_action((yyvsp[-1].s))==0)is_in_fncall=true;}
-#line 2906 "parser.tab.c"
+#line 2907 "parser.tab.c"
     break;
 
   case 156:
-#line 516 "parser.y"
+#line 517 "parser.y"
                                                                                                     {if(!is_in_fn){
                                                                                                     yyerror("Function call is not allowed outside a function.");
                                                                                                     (yyval.s) = strdup("");
@@ -2951,17 +2952,17 @@ yyreduce:
                                                                                                 }
                                                                                                 is_in_fncall = false;
                                                                                                 free((yyvsp[-4].s));}
-#line 2955 "parser.tab.c"
+#line 2956 "parser.tab.c"
     break;
 
   case 157:
-#line 560 "parser.y"
+#line 561 "parser.y"
                                          {push_expr_and_args();is_in_fncall=true;}
-#line 2961 "parser.tab.c"
+#line 2962 "parser.tab.c"
     break;
 
   case 158:
-#line 560 "parser.y"
+#line 561 "parser.y"
                                                                                                {if(!is_in_fn){
                                                                                                     yyerror("Function call is not allowed outside a function.");
                                                                                                     (yyval.s) = strdup("");
@@ -3001,22 +3002,22 @@ yyreduce:
                                                                                                         expr_type = FLOAT_TYPE;
                                                                                                     }}free((yyvsp[-6].s));free((yyvsp[-4].s));
                                                                                                 is_in_fncall = false;}
-#line 3005 "parser.tab.c"
+#line 3006 "parser.tab.c"
     break;
 
   case 162:
-#line 606 "parser.y"
+#line 607 "parser.y"
             { void *v = lookup_var((yyvsp[0].s));
                 if(v == NULL){
                     v = add_literal(NONE_TYPE,expr_type,(yyvsp[0].s));
                 }
                 if(is_composite_val){((Variable *)v)->is_raw = false;}
                 ll_add(arglist,v);free((yyvsp[0].s));expr_type = VOID_TYPE;is_composite_val = false;}
-#line 3016 "parser.tab.c"
+#line 3017 "parser.tab.c"
     break;
 
   case 163:
-#line 614 "parser.y"
+#line 615 "parser.y"
                                                {
                                     if(temp_type == CLASS_TYPE){
                                         if(expr_type != CLASS_TYPE ){
@@ -3039,152 +3040,152 @@ yyreduce:
                                     expr_type = VOID_TYPE;expr_class = NULL;
                                     temp_class = NULL; temp_type = VOID_TYPE;
                                     }
-#line 3043 "parser.tab.c"
+#line 3044 "parser.tab.c"
     break;
 
   case 164:
-#line 639 "parser.y"
+#line 640 "parser.y"
                           {temp_type=expr_type;temp_class=expr_class;
                             expr_type=VOID_TYPE;expr_class=NULL;
                             if(!is_assignable){yyerror("cannot assign to given variable");}
                             }
-#line 3052 "parser.tab.c"
+#line 3053 "parser.tab.c"
     break;
 
   case 165:
-#line 645 "parser.y"
+#line 646 "parser.y"
                 {(yyval.s) = "=";}
-#line 3058 "parser.tab.c"
+#line 3059 "parser.tab.c"
     break;
 
   case 166:
-#line 646 "parser.y"
+#line 647 "parser.y"
               {(yyval.s) = "+=";}
-#line 3064 "parser.tab.c"
+#line 3065 "parser.tab.c"
     break;
 
   case 167:
-#line 647 "parser.y"
+#line 648 "parser.y"
               {(yyval.s) = "-=";}
-#line 3070 "parser.tab.c"
+#line 3071 "parser.tab.c"
     break;
 
   case 168:
-#line 648 "parser.y"
+#line 649 "parser.y"
               {(yyval.s) = "*=";}
-#line 3076 "parser.tab.c"
+#line 3077 "parser.tab.c"
     break;
 
   case 169:
-#line 649 "parser.y"
+#line 650 "parser.y"
               {(yyval.s) = "/=";}
-#line 3082 "parser.tab.c"
+#line 3083 "parser.tab.c"
     break;
 
   case 170:
-#line 650 "parser.y"
+#line 651 "parser.y"
               {(yyval.s) = "%=";}
-#line 3088 "parser.tab.c"
+#line 3089 "parser.tab.c"
     break;
 
   case 171:
-#line 653 "parser.y"
+#line 654 "parser.y"
                                          {popscope();printcode("}\n");}
-#line 3094 "parser.tab.c"
+#line 3095 "parser.tab.c"
     break;
 
   case 172:
-#line 654 "parser.y"
+#line 655 "parser.y"
                                                                        {printcode("}\n");popscope();}
-#line 3100 "parser.tab.c"
+#line 3101 "parser.tab.c"
     break;
 
   case 173:
-#line 655 "parser.y"
+#line 656 "parser.y"
                                             {popscope();printcode("}else ");}
-#line 3106 "parser.tab.c"
+#line 3107 "parser.tab.c"
     break;
 
   case 175:
-#line 658 "parser.y"
+#line 659 "parser.y"
                         {if(expr_type !=BOOL_TYPE){yyerror("Condition must be of bool type");}pushscope();printcode("if(%s){",(yyvsp[(-1) - (0)].s));free((yyvsp[(-1) - (0)].s));}
-#line 3112 "parser.tab.c"
+#line 3113 "parser.tab.c"
     break;
 
   case 176:
-#line 662 "parser.y"
+#line 663 "parser.y"
                             {popscope();pushscope();printcode("}else{");}
-#line 3118 "parser.tab.c"
+#line 3119 "parser.tab.c"
     break;
 
   case 177:
-#line 666 "parser.y"
+#line 667 "parser.y"
                            {if(expr_type !=BOOL_TYPE){yyerror("Condition must be of bool type");}++is_in_loop;printcode("while (%s) {",(yyvsp[-1].s));pushscope();free((yyvsp[-1].s));}
-#line 3124 "parser.tab.c"
+#line 3125 "parser.tab.c"
     break;
 
   case 178:
-#line 666 "parser.y"
+#line 667 "parser.y"
                                                                                                                                                                                {printcode(" }");popscope();expr_type=VOID_TYPE;--is_in_loop;}
-#line 3130 "parser.tab.c"
+#line 3131 "parser.tab.c"
     break;
 
   case 179:
-#line 669 "parser.y"
+#line 670 "parser.y"
                                                               {++is_in_loop;pushscope();add_var(NONE_TYPE,expr_type,(yyvsp[-6].s),yylineno);print_simple_range_loop((yyvsp[-6].s),(yyvsp[-4].s),(yyvsp[-1].s),expr_type);free((yyvsp[-6].s));free((yyvsp[-4].s));free((yyvsp[-1].s));}
-#line 3136 "parser.tab.c"
+#line 3137 "parser.tab.c"
     break;
 
   case 180:
-#line 669 "parser.y"
+#line 670 "parser.y"
                                                                                                                                                                                                                           {printcode("}");popscope();--is_in_loop;}
-#line 3142 "parser.tab.c"
+#line 3143 "parser.tab.c"
     break;
 
   case 181:
-#line 670 "parser.y"
+#line 671 "parser.y"
                                                                        {++is_in_loop;pushscope();add_var(NONE_TYPE,expr_type,(yyvsp[-9].s),yylineno);print_step_range_loop((yyvsp[-9].s),(yyvsp[-7].s),(yyvsp[-4].s),(yyvsp[-1].s),expr_type);free((yyvsp[-9].s));free((yyvsp[-7].s));free((yyvsp[-4].s));free((yyvsp[-1].s));}
-#line 3148 "parser.tab.c"
+#line 3149 "parser.tab.c"
     break;
 
   case 182:
-#line 670 "parser.y"
+#line 671 "parser.y"
                                                                                                                                                                                                                                                 {printcode("}");popscope();--is_in_loop;}
-#line 3154 "parser.tab.c"
+#line 3155 "parser.tab.c"
     break;
 
   case 183:
-#line 671 "parser.y"
+#line 672 "parser.y"
                                                     {++is_in_loop;free((yyvsp[-3].s));free((yyvsp[-1].s));}
-#line 3160 "parser.tab.c"
+#line 3161 "parser.tab.c"
     break;
 
   case 184:
-#line 671 "parser.y"
+#line 672 "parser.y"
                                                                                                        {printcode("}");popscope();--is_in_loop;}
-#line 3166 "parser.tab.c"
+#line 3167 "parser.tab.c"
     break;
 
   case 185:
-#line 672 "parser.y"
+#line 673 "parser.y"
                                                                  {++is_in_loop;free((yyvsp[-5].s));free((yyvsp[-3].s));free((yyvsp[-1].s));}
-#line 3172 "parser.tab.c"
+#line 3173 "parser.tab.c"
     break;
 
   case 186:
-#line 672 "parser.y"
+#line 673 "parser.y"
                                                                                                                              {printcode("}");popscope();--is_in_loop;}
-#line 3178 "parser.tab.c"
+#line 3179 "parser.tab.c"
     break;
 
   case 187:
-#line 675 "parser.y"
+#line 676 "parser.y"
                               {if(expr_type != INT_TYPE && expr_type != FLOAT_TYPE){yyerror("The range bounds and step must be of type int or float , got %s",type_arr[expr_type]);}}
-#line 3184 "parser.tab.c"
+#line 3185 "parser.tab.c"
     break;
 
   case 188:
-#line 679 "parser.y"
+#line 680 "parser.y"
                                {Variable *v = lookup_var((yyvsp[0].s));
                                     pushscope(); // must be done here, as the popscope occurs irrespective of existance of arr
                                     if(v == NULL){
@@ -3204,11 +3205,11 @@ yyreduce:
                                         
                                     }
                                 }
-#line 3208 "parser.tab.c"
+#line 3209 "parser.tab.c"
     break;
 
   case 189:
-#line 701 "parser.y"
+#line 702 "parser.y"
                              {Variable *v = lookup_var((yyvsp[0].s));
                                         pushscope(); // must be done here, as the popscope occurs irrespective of existance of arr
                                     if(v == NULL){
@@ -3228,50 +3229,50 @@ yyreduce:
                                         }
                                         
                                     }}
-#line 3232 "parser.tab.c"
+#line 3233 "parser.tab.c"
     break;
 
   case 190:
-#line 722 "parser.y"
+#line 723 "parser.y"
                       { (yyval.s)=join((yyvsp[-2].s),"+",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s)); 
                                             if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use + operation on %s type",type_arr[expr_type]);}
                                             is_composite_val =false;}
-#line 3240 "parser.tab.c"
+#line 3241 "parser.tab.c"
     break;
 
   case 191:
-#line 725 "parser.y"
+#line 726 "parser.y"
                       {(yyval.s)=join((yyvsp[-2].s),"-",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s)); 
                                             if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use + operation on %s type",type_arr[expr_type]);}
                                             }
-#line 3248 "parser.tab.c"
+#line 3249 "parser.tab.c"
     break;
 
   case 192:
-#line 728 "parser.y"
+#line 729 "parser.y"
                       {(yyval.s)=join((yyvsp[-2].s),"*",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s)); 
                                             if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use + operation on %s type",type_arr[expr_type]);}
                                             }
-#line 3256 "parser.tab.c"
+#line 3257 "parser.tab.c"
     break;
 
   case 193:
-#line 731 "parser.y"
+#line 732 "parser.y"
                       {(yyval.s)=join((yyvsp[-2].s),"/",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s));
                                             if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use + operation on %s type",type_arr[expr_type]);}
                                             }
-#line 3264 "parser.tab.c"
+#line 3265 "parser.tab.c"
     break;
 
   case 194:
-#line 734 "parser.y"
+#line 735 "parser.y"
                       {if(expr_type == COMPLEX_TYPE || expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use mod on %s type",type_arr[expr_type]);} 
                                             (yyval.s)=join((yyvsp[-2].s),"%",(yyvsp[0].s)); free((yyvsp[-2].s));free((yyvsp[0].s)); is_composite_val =false;}
-#line 3271 "parser.tab.c"
+#line 3272 "parser.tab.c"
     break;
 
   case 195:
-#line 736 "parser.y"
+#line 737 "parser.y"
                                          {
                                 if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot typecast %s values",type_arr[expr_type]);}
                                 void * v = calloc(1,3+strlen(type_arr[(yyvsp[-2].t)])); // 2 for '()' one for end-of-string 0
@@ -3284,139 +3285,139 @@ yyreduce:
                                 free((yyvsp[0].s));
                                 expr_type = (yyvsp[-2].t);
                             }
-#line 3288 "parser.tab.c"
+#line 3289 "parser.tab.c"
     break;
 
   case 196:
-#line 748 "parser.y"
+#line 749 "parser.y"
                      {(yyval.s)=join("( ",(yyvsp[-1].s)," )"); free((yyvsp[-1].s)); is_composite_val =false;}
-#line 3294 "parser.tab.c"
+#line 3295 "parser.tab.c"
     break;
 
   case 197:
-#line 749 "parser.y"
+#line 750 "parser.y"
                              {(yyval.s)=join("-","",(yyvsp[0].s));if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use negetive on %s type",type_arr[expr_type]);}}
-#line 3300 "parser.tab.c"
+#line 3301 "parser.tab.c"
     break;
 
   case 198:
-#line 750 "parser.y"
+#line 751 "parser.y"
                        {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use < with %s type",type_arr[expr_type]);} 
                                             (yyval.s)= join((yyvsp[-2].s),"<",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));expr_type = BOOL_TYPE;}
-#line 3307 "parser.tab.c"
+#line 3308 "parser.tab.c"
     break;
 
   case 199:
-#line 752 "parser.y"
+#line 753 "parser.y"
                        {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use > with %s type",type_arr[expr_type]);} 
                                             (yyval.s)= join((yyvsp[-2].s),">",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));expr_type = BOOL_TYPE;}
-#line 3314 "parser.tab.c"
+#line 3315 "parser.tab.c"
     break;
 
   case 200:
-#line 754 "parser.y"
+#line 755 "parser.y"
                              {if(expr_type == COMPLEX_TYPE || expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use <= with %s type",type_arr[expr_type]);} 
                                             (yyval.s)= join((yyvsp[-2].s),"<=",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));expr_type = BOOL_TYPE;}
-#line 3321 "parser.tab.c"
+#line 3322 "parser.tab.c"
     break;
 
   case 201:
-#line 756 "parser.y"
+#line 757 "parser.y"
                               {if(expr_type == COMPLEX_TYPE|| expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("Cannot use >= with %s type",type_arr[expr_type]);} 
                                             (yyval.s)= join((yyvsp[-2].s),">=",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));expr_type = BOOL_TYPE;}
-#line 3328 "parser.tab.c"
+#line 3329 "parser.tab.c"
     break;
 
   case 202:
-#line 758 "parser.y"
+#line 759 "parser.y"
                                          {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot compare %s type directly",type_arr[expr_type]);}
                                             (yyval.s)= join((yyvsp[-2].s),"==",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));expr_type = BOOL_TYPE;}
-#line 3335 "parser.tab.c"
+#line 3336 "parser.tab.c"
     break;
 
   case 203:
-#line 760 "parser.y"
+#line 761 "parser.y"
                                          {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot compare %s type directly",type_arr[expr_type]);}
                                         (yyval.s)= join((yyvsp[-3].s),"!=",(yyvsp[0].s));free((yyvsp[-3].s));free((yyvsp[0].s));expr_type = BOOL_TYPE;}
-#line 3342 "parser.tab.c"
+#line 3343 "parser.tab.c"
     break;
 
   case 204:
-#line 762 "parser.y"
+#line 763 "parser.y"
                       {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use logical operators on %s type directly",type_arr[expr_type]);}
                             (yyval.s)= join((yyvsp[-2].s)," && ",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));expr_type = BOOL_TYPE;}
-#line 3349 "parser.tab.c"
+#line 3350 "parser.tab.c"
     break;
 
   case 205:
-#line 764 "parser.y"
+#line 765 "parser.y"
                        {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use logical operators on %s type directly",type_arr[expr_type]);} 
                         (yyval.s)= join((yyvsp[-2].s)," || ",(yyvsp[0].s));free((yyvsp[-2].s));free((yyvsp[0].s));expr_type = BOOL_TYPE;}
-#line 3356 "parser.tab.c"
+#line 3357 "parser.tab.c"
     break;
 
   case 206:
-#line 766 "parser.y"
+#line 767 "parser.y"
                   {if(expr_type == CLASS_TYPE || expr_type == VOID_TYPE){yyerror("cannot use logical operators on %s type directly",type_arr[expr_type]);}
                     char * t =join("(",(yyvsp[0].s),")");(yyval.s) = join("!",t,"");free(t);free((yyvsp[0].s));expr_type = BOOL_TYPE;}
-#line 3363 "parser.tab.c"
+#line 3364 "parser.tab.c"
     break;
 
   case 208:
-#line 771 "parser.y"
+#line 772 "parser.y"
                              {if(expr_type == VOID_TYPE){yyerror("Cannot use void type in expressions, consider typecasting the method explicitly for type, if external method is used");}}
-#line 3369 "parser.tab.c"
+#line 3370 "parser.tab.c"
     break;
 
   case 209:
-#line 773 "parser.y"
+#line 774 "parser.y"
                  {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);
                 }else{
                     expr_type = COMPLEX_TYPE;
                 }}
-#line 3379 "parser.tab.c"
+#line 3380 "parser.tab.c"
     break;
 
   case 210:
-#line 778 "parser.y"
+#line 779 "parser.y"
              {if( expr_type == STRING_TYPE || expr_type == CLASS_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[INT_TYPE],type_arr[expr_type]);;
                 }else if(!(expr_type == FLOAT_TYPE || expr_type == DOUBLE_TYPE || expr_type == COMPLEX_TYPE)){
                     expr_type = INT_TYPE;
                 }}
-#line 3389 "parser.tab.c"
+#line 3390 "parser.tab.c"
     break;
 
   case 211:
-#line 783 "parser.y"
+#line 784 "parser.y"
                { if( expr_type == STRING_TYPE|| expr_type == CLASS_TYPE){
                     
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[FLOAT_TYPE],type_arr[expr_type]);;
                 }else if(expr_type != COMPLEX_TYPE){
                     expr_type = FLOAT_TYPE;
                 }}
-#line 3400 "parser.tab.c"
+#line 3401 "parser.tab.c"
     break;
 
   case 212:
-#line 789 "parser.y"
+#line 790 "parser.y"
                 {if(expr_type == VOID_TYPE){
                     expr_type = BOOL_TYPE;
                 }else if(expr_type == STRING_TYPE|| expr_type == CLASS_TYPE){
                     yyerror("Invalid operand types : %s and %s cannot be combined.",type_arr[expr_type],type_arr[BOOL_TYPE]);
                 }}
-#line 3410 "parser.tab.c"
+#line 3411 "parser.tab.c"
     break;
 
   case 213:
-#line 794 "parser.y"
+#line 795 "parser.y"
                 {if(expr_type != VOID_TYPE){yyerror("Cannot combine string type with any type.");}expr_type = STRING_TYPE;}
-#line 3416 "parser.tab.c"
+#line 3417 "parser.tab.c"
     break;
 
   case 215:
-#line 798 "parser.y"
+#line 799 "parser.y"
                                  {void* _t = calloc(1, strlen((yyvsp[-3].s)) + strlen((yyvsp[-1].s)) + 1+2+2);/*1 for the + symbol,
                                                                                         2 for the perenthesis around the img part
                                                                                         2 for the parenthesis around the whole*/
@@ -3424,11 +3425,11 @@ yyreduce:
                                         strcat(_t,"(");strcat(_t, (yyvsp[-1].s));strcat(_t,")");
                                         strcat(_t, "*I");strcat(_t,")");
                                             (yyval.s) = (char*)_t;free((yyvsp[-3].s));free((yyvsp[-1].s));}
-#line 3428 "parser.tab.c"
+#line 3429 "parser.tab.c"
     break;
 
   case 217:
-#line 808 "parser.y"
+#line 809 "parser.y"
                  { Variable *_t = lookup_var((yyvsp[0].s));
                     if(_t == NULL){
                         yyerror("Undefined variable %s",(yyvsp[0].s));
@@ -3452,17 +3453,17 @@ yyreduce:
                     }else if(expr_type != COMPLEX_TYPE && expr_type != FLOAT_TYPE){
                         expr_type = _t->t.t;
                     }}}
-#line 3456 "parser.tab.c"
+#line 3457 "parser.tab.c"
     break;
 
   case 218:
-#line 831 "parser.y"
+#line 832 "parser.y"
                      {push_expr_and_args();}
-#line 3462 "parser.tab.c"
+#line 3463 "parser.tab.c"
     break;
 
   case 219:
-#line 831 "parser.y"
+#line 832 "parser.y"
                                                       { Variable *v = lookup_var((yyvsp[-4].s));
                                                         if(v == NULL){
                                                             yyerror("Undefined variable %s",(yyval.s));
@@ -3491,11 +3492,11 @@ yyreduce:
                                                                 expr_type = v->t.t;
                                                             }
                                                         }free((yyvsp[-4].s));free((yyvsp[-1].s));}
-#line 3495 "parser.tab.c"
+#line 3496 "parser.tab.c"
     break;
 
   case 220:
-#line 859 "parser.y"
+#line 860 "parser.y"
                             {attr* a = NULL;
                                         a = (attr*)hm_get(current_class->attr,(yyvsp[0].s));
                                         if(a== NULL){
@@ -3516,17 +3517,17 @@ yyreduce:
                                                 expr_type = a->t.t;
                                             }
                                         }(yyval.s) = join("this","->",(yyvsp[0].s));free((yyvsp[0].s));}
-#line 3520 "parser.tab.c"
+#line 3521 "parser.tab.c"
     break;
 
   case 221:
-#line 879 "parser.y"
+#line 880 "parser.y"
                               {push_expr_and_args();}
-#line 3526 "parser.tab.c"
+#line 3527 "parser.tab.c"
     break;
 
   case 222:
-#line 879 "parser.y"
+#line 880 "parser.y"
                                                                                { attr* a = NULL;
                                                                             pop_expr_and_args();
                                                                             a = (attr*)hm_get(current_class->attr,(yyvsp[-5].s));
@@ -3553,17 +3554,17 @@ yyreduce:
                                                                             (yyval.s) = join(tt,"]","");
                                                                             free(t);free(tt);
                                                                             free((yyvsp[-5].s));free((yyvsp[-2].s));}
-#line 3557 "parser.tab.c"
+#line 3558 "parser.tab.c"
     break;
 
   case 223:
-#line 905 "parser.y"
+#line 906 "parser.y"
                               {push_expr_and_args();is_in_fncall=true;}
-#line 3563 "parser.tab.c"
+#line 3564 "parser.tab.c"
     break;
 
   case 224:
-#line 905 "parser.y"
+#line 906 "parser.y"
                                                                                     {if(!is_in_fn){yyerror("Function call is not allowed outside a function.");
                                                                                                     (yyval.s) = strdup("");
                                                                                                 }else {
@@ -3605,11 +3606,11 @@ yyreduce:
                                                                                                             expr_type = FLOAT_TYPE;
                                                                                                         }}}
                                                                                                 is_callable = false;free((yyvsp[-4].s));is_in_fncall = false;}
-#line 3609 "parser.tab.c"
+#line 3610 "parser.tab.c"
     break;
 
   case 225:
-#line 946 "parser.y"
+#line 947 "parser.y"
                                              { attr* a = NULL;
                                         if(expr_type == CLASS_TYPE){a = find_attr(expr_class,(yyvsp[0].s));
                                         }else{
@@ -3637,17 +3638,17 @@ yyreduce:
                                         }
                                         (yyval.s) = join((yyvsp[-3].s),".",(yyvsp[0].s));free((yyvsp[-3].s));free((yyvsp[0].s));
                                     }
-#line 3641 "parser.tab.c"
+#line 3642 "parser.tab.c"
     break;
 
   case 226:
-#line 973 "parser.y"
+#line 974 "parser.y"
                                                  {push_expr_and_args();}
-#line 3647 "parser.tab.c"
+#line 3648 "parser.tab.c"
     break;
 
   case 227:
-#line 973 "parser.y"
+#line 974 "parser.y"
                                                                                                   { attr* a = NULL;
                                                                                                 pop_expr_and_args();
                                                                                             if(expr_type == CLASS_TYPE){a = find_attr(expr_class,(yyvsp[-5].s));
@@ -3679,17 +3680,17 @@ yyreduce:
                                                                                             (yyval.s) = join(tt,"]","");
                                                                                             free(t);free(tt);
                                                                                             free((yyvsp[-8].s));free((yyvsp[-5].s));free((yyvsp[-2].s));}
-#line 3683 "parser.tab.c"
+#line 3684 "parser.tab.c"
     break;
 
   case 228:
-#line 1004 "parser.y"
+#line 1005 "parser.y"
                                   {push_expr_and_args();is_in_fncall=true;}
-#line 3689 "parser.tab.c"
+#line 3690 "parser.tab.c"
     break;
 
   case 229:
-#line 1004 "parser.y"
+#line 1005 "parser.y"
                                                                                         {if(!is_in_fn){
                                                                                                     yyerror("Function call is not allowed outside a function.");
                                                                                                     (yyval.s) = strdup("");
@@ -3738,17 +3739,17 @@ yyreduce:
 
                                                                                                 is_callable = false;free((yyvsp[-6].s));free((yyvsp[-4].s));
                                                                                                 is_in_fncall = false;}
-#line 3742 "parser.tab.c"
+#line 3743 "parser.tab.c"
     break;
 
   case 230:
-#line 1054 "parser.y"
+#line 1055 "parser.y"
                               {if(expr_type != CLASS_TYPE){yyerror("attribute or methods can only be accessed on class type objects found %s",type_arr[expr_type]);}}
-#line 3748 "parser.tab.c"
+#line 3749 "parser.tab.c"
     break;
 
 
-#line 3752 "parser.tab.c"
+#line 3753 "parser.tab.c"
 
       default: break;
     }
@@ -3980,19 +3981,40 @@ yyreturn:
 #endif
   return yyresult;
 }
-#line 1056 "parser.y"
+#line 1057 "parser.y"
 
 
 void main(int argc , char **argv){
 
-    global_init();
+    extern char *optarg;
+    extern int optind;
+    char *infile=NULL, *outfile=NULL;
+    int c;
 
+    while((c=getopt(argc,argv,"hklo:")) != -1){
+        switch(c){
+            case 'k':{remove_files=false;break;}
+            case 'l':{print_lineno=true;break;}
+            case 'o':{outfile=optarg;break;}
+            case 'h':{printf("help is reamining ...\n");break;}
+            default : {printf("help is remaining...\n");break;}
+        }
+    }
+
+    if(optind == argc){
+        fprintf(stderr,"incorrect usage : help is remaining");
+        exit(EXIT_FAILURE);
+    }else{
+        infile = argv[optind];
+    }
+
+    global_init(infile,outfile);
     pre_class_map = make_hashmap(20, __hash_str__, __compair__str__);
     preparse();
     hm_delete(pre_class_map, pre_class_clean);
     switch_list();
     
-    printcode("\n#line 1 \"%s\"\n\n",crr_file_name);
+    if(print_lineno)printcode("\n#line 1 \"%s\"\n\n",crr_file_name);
     yyparse();
     print_code_header();
     if(remove_files && errs >0){

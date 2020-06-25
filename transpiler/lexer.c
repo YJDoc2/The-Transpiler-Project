@@ -2443,7 +2443,7 @@ static int push_file(char *name){
     yy_switch_to_buffer(bs->bs);
     crrbs = bs;
     yylineno = 1;
-    printcode("\n#line 1 \"%s\"\n",crr_file_name);
+    if(print_lineno)printcode("\n#line 1 \"%s\"\n",crr_file_name);
     return 1;
 }
 
@@ -2461,6 +2461,6 @@ static int pop_file(){
     crrbs = prev;
     yylineno = crrbs->lineno;
     crr_file_name = crrbs->filename;
-    printcode("\n#line %d \"%s\"",yylineno,crr_file_name);
+    if(print_lineno)printcode("\n#line %d \"%s\"",yylineno,crr_file_name);
     return 1;
 }

@@ -141,7 +141,8 @@ Added fn to remove files if any error has occurred according to switch<br />
 
 Added check for void type in fn return<br />
 
+Added actual options for output file, line numbering, file delete, in short form using getopt<br />
+
 change action input and print to accommodate classes<br />
-Maybe merge add_var and add_array method in single as create_class_var has done<br />
 
 DO some formatting and pretty-printing of the parser and lexer<br />

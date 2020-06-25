@@ -16,8 +16,8 @@
 /*
  * Function which invokes all init functions from library files
  */
-void global_init() {
-  __init_io__("./test.ttp", (void*)0);
+void global_init(char *infile, char *outfile) {
+  __init_io__(infile, outfile);
   __init_literals__();
   __init_vars__();
   __init_actions__();
