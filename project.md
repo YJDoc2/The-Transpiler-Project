@@ -143,6 +143,6 @@ Added check for void type in fn return<br />
 
 Added actual options for output file, line numbering, file delete, in short form using getopt<br />
 
-change action input and print to accommodate classes<br />
+Changed action input and print to accommodate classes and array by showing error message if found in args<br />
 
 DO some formatting and pretty-printing of the parser and lexer<br />

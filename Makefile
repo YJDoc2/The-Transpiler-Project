@@ -1,16 +1,18 @@
 .PHONY : lib util transpiler
 
+UCFLAGS = -O3
+
 all : lib util transpiler
 	cp ./transpiler/ttp ./
 
 lib :
-	cd ./lib && make
+	cd ./lib && make UCFLAGS=$(UCFLAGS)
 
 util :
-	cd ./util && make
+	cd ./util && make UCFLAGS=$(UCFLAGS)
 
 transpiler :
-	cd ./transpiler && make
+	cd ./transpiler && make UCFLAGS=$(UCFLAGS)
 
 clean :
 	cd ./util && make clean

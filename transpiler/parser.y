@@ -16,6 +16,7 @@
     #include "class_access.h"
     #include "filenames.h"
     #include "globals.h"
+    #include "help.h"
     void preparse(); // as preparse is a macro from preparser.l must be given here
     
     bool print_lineno = false;
@@ -1062,19 +1063,21 @@ void main(int argc , char **argv){
     extern int optind;
     char *infile=NULL, *outfile=NULL;
     int c;
+    int help_flag = 0;
 
     while((c=getopt(argc,argv,"hklo:")) != -1){
         switch(c){
             case 'k':{remove_files=false;break;}
             case 'l':{print_lineno=true;break;}
             case 'o':{outfile=optarg;break;}
-            case 'h':{printf("help is reamining ...\n");break;}
-            default : {printf("help is remaining...\n");break;}
+            case 'h':{if(!help_flag)printf("%s",helpstr);help_flag =1;break;}
+            default : {fprintf(stderr,"Expected format : ttp filename [-hkl] [-o outfile]\n");help_flag =1;break;}
         }
     }
 
     if(optind == argc){
-        fprintf(stderr,"incorrect usage : help is remaining");
+        fprintf(stderr,"incorrect usage \n");
+        if(!help_flag)fprintf(stderr,"%s",helpstr);
         exit(EXIT_FAILURE);
     }else{
         infile = argv[optind];

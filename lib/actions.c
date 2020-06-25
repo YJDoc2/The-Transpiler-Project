@@ -39,6 +39,14 @@ static void __print_var__(void* v) {
     printcode("%s", type_str_arr[var->t.t]);
     return;
   }
+  if (var->is_arr) {
+    yyerror("Cannot print array directly. Consider using a loop");
+    return;
+  }
+  if (var->is_class) {
+    yyerror("Cannot print a class type variable");
+    return;
+  }
   switch (var->t.t) {
     case VOID_TYPE:  // Should never be reached, but for safety
       yyerror("cannot print value of variable of type void : %s", var->name);
@@ -68,7 +76,11 @@ static void action_print() {
     printcode(",");
 
     Variable* var = (Variable*)_t->data;
-    if (var->t.t == COMPLEX_TYPE) {
+    if (var->is_arr) {
+      // taken care of error message in __print_var__
+    } else if (var->is_class) {
+      // taken care of error message in __print_var__
+    } else if (var->t.t == COMPLEX_TYPE) {
       // If its complex type print real and img part seperately,
       // also complex doesn't have a default format specifier
       printcode(complex_format, var->name, var->name, var->name);
@@ -106,6 +118,14 @@ static void __input_var__(void* v) {
   char* _tempname;  // save place on stack in case a temp var is required
   if (var->m == CONST_TYPE) {
     yyerror("cannot change value of constant variable %s", var->name);
+    return;
+  }
+  if (var->is_arr) {
+    yyerror("cannot take input directly in an array. Consider using a loop");
+    return;
+  }
+  if (var->is_class) {
+    yyerror("cannot take input of class type variables.");
     return;
   }
   // print the value if its raw ,i.e an expression

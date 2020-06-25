@@ -1,14 +1,15 @@
 VPATH = ../lib ../util
 
 CPPFLAGS = -I../util -I../lib
-CFLAGS = -c -g
+CFLAGS = -c
+UCFLAGS = -g
 
 all : ttp
 
 ttp : parser.o lexer.o preparser.o prelexer.o libutil liblib 
 	cp ../lib/liblib.a ./
 	cp ../util/libutil.a ./
-	$(CC) $(CPPFLAGS) prelexer.o preparser.o lexer.o parser.o -L. liblib.a libutil.a -ottp
+	$(CC) $(CPPFLAGS) $(UCFLAGS) prelexer.o preparser.o lexer.o parser.o -L. liblib.a libutil.a -ottp
 
 libutil :
 	cd ../util && make
@@ -18,26 +19,26 @@ liblib :
 
 lexer.o : lexer.l
 	flex -st lexer.l > lexer.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) lexer.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(UCFLAGS) lexer.c
 
 prelexer.o : prelexer.l
 	flex -st prelexer.l > prelexer.c
-	$(CC) $(CPPFLAGS) $(CFLAGS) prelexer.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(UCFLAGS) prelexer.c
 
 parser.o: parser.y
 	bison -dv parser.y
 	mv ./parser.tab.c ./parser.c
 	mv ./parser.tab.h ./parser.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) parser.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(UCFLAGS) parser.c
 
 preparser.o : preparser.y
 	bison -d preparser.y
 	mv ./preparser.tab.c ./preparser.c
 	mv ./preparser.tab.h ./preparser.h
-	$(CC) $(CPPFLAGS) $(CFLAGS) preparser.c
+	$(CC) $(CPPFLAGS) $(CFLAGS) $(UCFLAGS) preparser.c
 
 memcheck : ttp
-	valgrind --leak-check=full --show-leak-kinds=all  ./ttp
+	valgrind --leak-check=full --show-leak-kinds=all  ./ttp ./test.ttp
 
 clean:
 	rm ./*.o ./ttp ./a.out -f
