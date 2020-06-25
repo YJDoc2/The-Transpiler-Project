@@ -18,23 +18,31 @@ liblib :
 	cd ../lib && make
 
 lexer.o : lexer.l
+ifeq ($(UCFLAGS),-g)
 	flex -st lexer.l > lexer.c
+endif
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(UCFLAGS) lexer.c
 
 prelexer.o : prelexer.l
+ifeq ($(UCFLAGS),-g)
 	flex -st prelexer.l > prelexer.c
+endif
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(UCFLAGS) prelexer.c
 
 parser.o: parser.y
+ifeq ($(UCFLAGS),-g)
 	bison -dv parser.y
 	mv ./parser.tab.c ./parser.c
 	mv ./parser.tab.h ./parser.h
+endif
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(UCFLAGS) parser.c
 
 preparser.o : preparser.y
+ifeq ($(UCFLAGS),-g)
 	bison -d preparser.y
 	mv ./preparser.tab.c ./preparser.c
 	mv ./preparser.tab.h ./preparser.h
+endif
 	$(CC) $(CPPFLAGS) $(CFLAGS) $(UCFLAGS) preparser.c
 
 memcheck : ttp
